@@ -7,7 +7,7 @@
  */
 public class Registers {
     private int a, b, c, d, e, f, h, l; // Registers A, B, C, D, E, F, H, L (8 bit)
-    // AF, BC, DE, HL pairings enable 16bit registers
+    // AF, BC, DE, HL pairings enable 16bit registers (Note: Bitshift to combine)
     private int sp, PC;          // SP, PC (16 bit) registers
     private int program_counter = 0x100;    // Used by program instructions
 
