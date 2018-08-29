@@ -4,6 +4,7 @@
  * Last Updated on: 2018-08-28
  * Filename: Registers
  * Description: GameBoy registers (excluding flags) and functions to manage them.
+ * TODO Switch from int to byte
  */
 public class Registers {
     private int a, b, c, d, e, f, h, l; // Registers A, B, C, D, E, F, H, L (8 bit)

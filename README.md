@@ -48,6 +48,9 @@ This will probably be one of the most time consuming parts and can be quite tedi
 ### Understanding the bootrom
 It took me longer than I it should've to understand the Bootrom and how it is stored in the GameBoy's memory. Simply put, the opcode is first stored in memory followed by any of the required arguments. E.g. The first instruction (LD SP,$FFFE) takes up 3 bytes of memory ($31 $FF $FE). This is because LD SP,nn is an instruction which can be compressed into a single byte known as the opcode ($31). The following two bytes ($FF and $FE) are then used by the LD instruction and loaded into the SP register.
 
+### The CB prefixed opcode
+The CB prefix notifies the CPU that there will be an additonal byte which must be read (uninterruptable). These two bytes form the opcode for the instruction. Two opcode lists is a solution. One for standard codes and another for CB-prefixed codes. Use second byte as index to the CB-code array.
+
 ## Resources:
 
 [Coffee-gb](https://blog.rekawek.eu/2017/02/09/coffee-gb/) - Looking at other people's emulators can help get you started
@@ -58,8 +61,10 @@ It took me longer than I it should've to understand the Bootrom and how it is st
 
 [GameBoy Opcodes Summary](http://gameboy.mongenel.com/dmg/opcodes.html) - Provides more detail on how the flags work for different opcodes
 
+[Opcode chart](http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html) - Shows the size of bytes each opcode takes up. Prov
+
 [Bootrom](http://gbdev.gg8.se/wiki/articles/Gameboy_Bootstrap_ROM) - The bootrom in assembly
 
-[A Look At The Game Boy Bootstrap: Let The Fun Begin!](https://realboyemulator.wordpress.com/2013/01/03/a-look-at-the-game-boy-bootstrap-let-the-fun-begin/)
+[A Look At The Game Boy Bootstrap: Let The Fun Begin!](https://realboyemulator.wordpress.com/2013/01/03/a-look-at-the-game-boy-bootstrap-let-the-fun-begin/) - An extensive walkthrough of the bootrom
 
 [Bitwise operation](https://en.wikipedia.org/wiki/Bitwise_operation) - Brush up on some bitwise operators.

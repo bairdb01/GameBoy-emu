@@ -4,6 +4,7 @@
  * Last Updated on: 2018-08-28
  * Filename: Flags
  * Description: GameBoy flag register.
+ *  TODO: Move this flag to registers to better represent actual hardware
  */
 class Flags {
     private int flag = 0x0;    // Flag register Z=7, N=6, H=5, C=4, Other=0-3
