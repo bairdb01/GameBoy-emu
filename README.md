@@ -8,19 +8,36 @@ At the beginning of this project I had next to no idea of what an opcode was. Up
 
 E.g. FunctionalInterface
 ```
+public class Instructions {
+    String label;
+    int Opcode;
+    int cycles;
+    Operation op;
+
+    public Instructions(String label, int Opcode, int clocks, Operation op) {
+        this.label = label;
+        this.Opcode = Opcode;
+        this.cycles = cycles;
+        this.op = op;
+    }
+}
+
+
 @FunctionalInterface
 interface Operation {
     void cmd(Registers regs, int[] memory, int[] args);
 }
-...    
 
-private void setOpcode(String label, int opcode, int clocks, Operation op) {
-    opcodes[opcode] = new Instructions(label, opcode, clocks, op);
-}
+public Opcode{
+    Instructions [] opcodes = new Instructions[0x100]; 
+    private void setOpcode(String label, int opcode, int clocks, Operation op) {
+        opcodes[opcode] = new Instructions(label, opcode, clocks, op);
+    }
 
-public int main(){
-    setOpcode("LD B,n", 0x06, 8, (regs, memory, args) -> regs.setB(args[0]));
-    setOpcode("INC D", 0x14, 4, (regs, memory, args) -> regs.decD());
+    public int main(){
+        setOpcode("LD B,n", 0x06, 8, (regs, memory, args) -> regs.setB(args[0]));
+        setOpcode("INC D", 0x14, 4, (regs, memory, args) -> regs.decD());
+    }
 }
 ```
 
