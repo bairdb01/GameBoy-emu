@@ -2,6 +2,8 @@
 A WIP GameBoy emulator.
 
 ## Some of my troubles and thoughts
+Since this is my first emulator I have ever programmed, I thought it would be nice to note down some of my thoughts and problems. 
+
 ### How to handle opcodes?
 At the beginning of this project I had next to no idea of what an opcode was. Upon further research I found out that an opcode is just an instruction from an instruction set. So with that knowledge under my belt I had a bigger problem I asked myself: "How do I store a set of instructions?" Of course I could have used a bunch of switch statements, but that would be very ugly. I originally wanted to use some kind of array of function pointers, however Java doesn't have those. So I went searching and the closest thing I could find was a Functional Interface. The FunctionalInterface checked everybox I wanted. The FunctionalInterface allowed me to pass different functions as a parameter through the use of lambda expressions. This allowed me to create an array of objects which each had different methods.
 
@@ -40,18 +42,24 @@ public Opcode{
     }
 }
 ```
+### Opcodes
+This will probably be one of the most time consuming parts and can be quite tedious. Don't make it any more tedious than you have too! A lot of the functions perform similar actions, so it would be smart to keep things modular.
 
 ### Understanding the bootrom
 It took me longer than I it should've to understand the Bootrom and how it is stored in the GameBoy's memory. Simply put, the opcode is first stored in memory followed by any of the required arguments. E.g. The first instruction (LD SP,$FFFE) takes up 3 bytes of memory ($31 $FF $FE). This is because LD SP,nn is an instruction which can be compressed into a single byte known as the opcode ($31). The following two bytes ($FF and $FE) are then used by the LD instruction and loaded into the SP register.
 
 ## Resources:
 
-https://blog.rekawek.eu/2017/02/09/coffee-gb/
+[Coffee-gb](https://blog.rekawek.eu/2017/02/09/coffee-gb/) - Looking at other people's emulators can help get you started
 
-https://youtu.be/HyzD8pNlpwI
+[The Ultimate Game Boy Talk (33c3)](https://youtu.be/HyzD8pNlpwI) - A nice video to get an understanding of how the GameBoy works
 
-http://gameboy.mongenel.com/dmg/opcodes.html
+[GameBoy CPU Manual](http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf) - Recommended when writing the CPU. Chapter 3 has almost all you need.
 
-[Bootrom](http://gbdev.gg8.se/wiki/articles/Gameboy_Bootstrap_ROM)
+[GameBoy Opcodes Summary](http://gameboy.mongenel.com/dmg/opcodes.html) - Provides more detail on how the flags work for different opcodes
+
+[Bootrom](http://gbdev.gg8.se/wiki/articles/Gameboy_Bootstrap_ROM) - The bootrom in assembly
 
 [A Look At The Game Boy Bootstrap: Let The Fun Begin!](https://realboyemulator.wordpress.com/2013/01/03/a-look-at-the-game-boy-bootstrap-let-the-fun-begin/)
+
+[Bitwise operation](https://en.wikipedia.org/wiki/Bitwise_operation) - Brush up on some bitwise operators.
