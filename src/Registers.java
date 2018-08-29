@@ -8,8 +8,7 @@
 public class Registers {
     private int a, b, c, d, e, f, h, l; // Registers A, B, C, D, E, F, H, L (8 bit)
     // AF, BC, DE, HL pairings enable 16bit registers (Note: Bitshift to combine)
-    private int sp, PC;          // SP, PC (16 bit) registers
-    private int program_counter = 0x100;    // Used by program instructions
+    private int SP, PC;          // SP (stack pointer), PC (program counter) (16 bit) registers
 
     public int getA() {
         return a;
@@ -75,27 +74,21 @@ public class Registers {
         this.l = l;
     }
 
-    public int getSp() {
-        return sp;
+    public int getSP() {
+        return SP;
     }
 
-    public void setSp(int sp) {
-        this.sp = sp;
+    public void setSP(int sp) {
+        this.SP = sp;
     }
 
     public int getPC() {
         return PC;
     }
 
-    public void setPC(int PC) {
-        this.PC = PC;
+    public void setPC(int pc) {
+        this.PC = pc;
     }
 
-    public int getProgram_counter() {
-        return program_counter;
-    }
 
-    public void setProgram_counter(int program_counter) {
-        this.program_counter = program_counter;
-    }
 }
