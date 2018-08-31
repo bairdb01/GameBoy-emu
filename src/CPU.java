@@ -20,7 +20,8 @@
 public class CPU {
     Registers regs = new Registers();
     Flags flags = new Flags();
-    private int stack_pointer = 0xFFFE;     // Initialized on startup, but should explicity set its value
+    private int stack_pointer = regs.getSP();     // Initialized on startup, but should explicity set its value
+    private int program_counter = regs.getPC();
 
 
     private int[] memory = new int[0xFFFF];    // Memory stack
