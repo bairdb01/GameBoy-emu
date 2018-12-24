@@ -26,7 +26,7 @@ public class CPU {
     private int stack_pointer = regs.getSP();     // Initialized on startup, but should explicity set its value
     private int program_counter = regs.getPC();
     private Memory memory = new Memory();    // Memory stack
-    int[] args = new int[3];
+    short[] args = new short[3];
 
 
     /**
@@ -37,7 +37,7 @@ public class CPU {
         //opcodes.execute(0x04, regs, memory, args);
 
 
-        // Testing loads
+        // Loading something into registers A - L
         args[0] = 1;
         opcodes.execute(0x06, regs, memory, args);
         args[0] = 2;
@@ -56,24 +56,25 @@ public class CPU {
         System.out.println("Pre-Exe");
         System.out.println(debug);
 
-        opcodes.execute(0x47, regs, memory, args);
-        System.out.println(regs.getB());
-        opcodes.execute(0x40, regs, memory, args);
-        System.out.println(regs.getB());
-        opcodes.execute(0x41, regs, memory, args);
-        System.out.println(regs.getB());
-        opcodes.execute(0x42, regs, memory, args);
-        System.out.println(regs.getB());
-        opcodes.execute(0x43, regs, memory, args);
-        System.out.println(regs.getB());
-        opcodes.execute(0x44, regs, memory, args);
-        System.out.println(regs.getB());
-        opcodes.execute(0x45, regs, memory, args);
-        System.out.println(regs.getB());
+        args[0] = Byte.MIN_VALUE;
+        opcodes.execute(0x3C, regs, memory, args);
+        args[0] = 2;
+        opcodes.execute(0x04, regs, memory, args);
+        args[0] = 3;
+        opcodes.execute(0x0C, regs, memory, args);
+        args[0] = 4;
+        opcodes.execute(0x14, regs, memory, args);
+        args[0] = 5;
+        opcodes.execute(0x1C, regs, memory, args);
+        args[0] = 6;
+        opcodes.execute(0x24, regs, memory, args);
+        args[0] = 7;
+        opcodes.execute(0x2C, regs, memory, args);
 
-//        System.out.println("Executed");
-//        debug = regs.toString();
-//        System.out.println(debug);
+
+        System.out.println("Executed");
+        debug = regs.toString();
+        System.out.println(debug);
     }
 
 }

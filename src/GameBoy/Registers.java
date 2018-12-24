@@ -1,5 +1,7 @@
 package GameBoy;
 
+import java.util.Arrays;
+
 /**
  * Author: Benjamin Baird
  * Created on: 2018-08-28
@@ -7,9 +9,12 @@ package GameBoy;
  * Filename: GameBoy.Registers
  * Description: GameBoy registers (excluding flags) and functions to manage them.
  * TODO Different 8bit and 16bit register functions
+ * - Might not be feasible to operate on Bytes/shorts. Might have to use ints to prevent two's complements being changed.
  */
 public class Registers {
-    private Byte a = 0x0, b = 0x0, c = 0x0, d = 0x0, e = 0x0, f = 0x0, h = 0x0, l = 0x0; // GameBoy.Registers A, B, C, D, E, F, H, L (8 bit)
+    private Byte[] registers = new Byte[8]; // GameBoy.Registers A, B, C, D, E, F, H, L (8 bit)
+
+
     // AF, BC, DE, HL pairings enable 16bit registers (Note: Bitshift to combine)
     private short SP, PC;          // SP (stack pointer), PC (program counter) (16 bit) registers
     private byte flag = 0x0;    // Flag register reference to make things easier Z=7, N=6, H=5, C=4, Other=0-3
@@ -19,77 +24,89 @@ public class Registers {
     private byte h_pos = 5;
     private byte c_pos = 4;
 
-
-    public void setRegPair(byte upperReg, byte lowerReg, byte val) {
-        // TODO Complete function
+    public Registers() {
+        for (int i = 0; i < 8; i++)
+            registers[i] = 0x0;
     }
 
-    public void getRegPair(byte upperReg, byte lowerReg) {
-        // TODO Complete function
+    public void setRegPair(int upperReg, int lowerReg, short val) {
+        registers[lowerReg] = (byte) (val);
+        registers[upperReg] = (byte) (val >> 8);
+
+        System.out.println(registers[lowerReg]);
+        System.out.println(registers[upperReg]);
+        System.out.println("L: " + Integer.toBinaryString(registers[lowerReg]));
+        System.out.println("H: " + Integer.toBinaryString(registers[upperReg]));
+    }
+
+    public short getRegPair(byte upperReg, byte lowerReg) {
+        short regPair = (short) (upperReg << 8);
+        regPair += lowerReg;
+        return regPair;
     }
 
     public byte getA() {
-        return a;
+        return this.registers[0];
     }
 
     public void setA(byte a) {
-        this.a = a;
+        this.registers[0] = a;
     }
 
     public byte getB() {
-        return b;
+        return this.registers[1];
     }
 
     public void setB(byte b) {
-        this.b = b;
+        this.registers[1] = b;
     }
 
     public byte getC() {
-        return c;
+        return this.registers[2];
     }
 
     public void setC(byte c) {
-        this.c = c;
+        this.registers[2] = c;
     }
 
     public byte getD() {
-        return d;
+        return registers[3];
     }
 
     public void setD(byte d) {
-        this.d = d;
+        this.registers[3] = d;
     }
 
     public byte getE() {
-        return e;
+        return registers[4];
     }
 
     public void setE(byte e) {
-        this.e = e;
+        this.registers[4] = e;
     }
 
     public byte getF() {
-        return f;
+        return registers[5];
     }
 
     public void setF(byte f) {
-        this.f = f;
+        this.registers[5] = f;
     }
 
     public byte getH() {
-        return h;
+        return registers[6];
     }
 
     public void setH(byte h) {
-        this.h = h;
+        this.registers[6] = h;
     }
 
     public byte getL() {
-        return l;
+        return registers[7];
     }
 
     public void setL(byte l) {
-        this.l = l;
+        this.registers[7] = l;
     }
 
 
@@ -159,55 +176,44 @@ public class Registers {
 
 
     public short getAF() {
-        short AF = (short) (this.getA() << 8);
-        AF += this.getC();
-        return AF;
+        return getRegPair(registers[0], registers[5]);
     }
 
     public void setAF(short val) {
-        // TODO Complete function
+        setRegPair(0, 5, val);
     }
 
     public short getBC() {
-        short BC = (short) (this.getB() << 8);
-        BC += this.getC();
-        return BC;
+        return getRegPair(registers[1], registers[2]);
     }
 
     public void setBC(short val) {
-        // TODO Complete function
+        setRegPair(1, 2, val);
     }
 
     public short getDE() {
-        short DE = (short) (this.getD() << 8);
-        DE += this.getE();
-        return DE;
+        return getRegPair(registers[3], registers[4]);
     }
 
     public void setDE(short val) {
-        // TODO Complete function
+        setRegPair(3, 4, val);
     }
 
     public short getHL() {
-        short HL = (short) (this.getH() << 8);
-        HL += this.getL();
-        return HL;
+        return getRegPair(registers[6], registers[7]);
     }
 
     public void setHL(short val) {
-        // TODO Complete function
+        setRegPair(6, 7, val);
     }
-
-    public void setReg(byte reg, byte val) {
-        reg = val;
-    }
-
 
     public byte getZFlag() {
+        // TODO Complete function
         return -1;
     }
 
     public byte getCFlag() {
+        // TODO Complete function
         return -1;
     }
 
@@ -222,7 +228,7 @@ public class Registers {
         s += "Register L: " + getL() + "\n\n";
 
         s += "SP = " + getSP() + "\n\n";
-        s += "Flags: " + Integer.toBinaryString(getFlag()) + "\n";
+        s += "Flags: " + Integer.toBinaryString(getFlag()) + "\n"; // probably won't work for short
         s += "       ZNHC\n\n";
         return s;
 

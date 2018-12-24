@@ -118,14 +118,14 @@ public class Opcodes {
         setOpCode(std_opcodes, "LD L,L", 0x6D, 4, (regs, memory, args) -> regs.setL(regs.getL()));
 //        setOpCode(std_opcodes, "LD L,(HL)", 0x6E, 8, (regs, memory, args) -> regs.setL(regs.getHL()));
 
-        //LD INTO HL
-        setOpCode(std_opcodes, "LD (HL),A", 0x77, 8, (regs, memory, args) -> regs.setHL(regs.getA()));
-        setOpCode(std_opcodes, "LD (HL),B", 0x70, 8, (regs, memory, args) -> regs.setHL(regs.getB()));
-        setOpCode(std_opcodes, "LD (HL),C", 0x71, 8, (regs, memory, args) -> regs.setHL(regs.getC()));
-        setOpCode(std_opcodes, "LD (HL),D", 0x72, 8, (regs, memory, args) -> regs.setHL(regs.getD()));
-        setOpCode(std_opcodes, "LD (HL),E", 0x73, 8, (regs, memory, args) -> regs.setHL(regs.getE()));
-        setOpCode(std_opcodes, "LD (HL),H", 0x74, 8, (regs, memory, args) -> regs.setHL(regs.getH()));
-        setOpCode(std_opcodes, "LD (HL),L", 0x75, 8, (regs, memory, args) -> regs.setHL(regs.getL()));
+        //LD INTO address at HL
+//        setOpCode(std_opcodes, "LD (HL),A", 0x77, 8, (regs, memory, args) -> regs.setHL(regs.getA()));
+//        setOpCode(std_opcodes, "LD (HL),B", 0x70, 8, (regs, memory, args) -> regs.setHL(regs.getB()));
+//        setOpCode(std_opcodes, "LD (HL),C", 0x71, 8, (regs, memory, args) -> regs.setHL(regs.getC()));
+//        setOpCode(std_opcodes, "LD (HL),D", 0x72, 8, (regs, memory, args) -> regs.setHL(regs.getD()));
+//        setOpCode(std_opcodes, "LD (HL),E", 0x73, 8, (regs, memory, args) -> regs.setHL(regs.getE()));
+//        setOpCode(std_opcodes, "LD (HL),H", 0x74, 8, (regs, memory, args) -> regs.setHL(regs.getH()));
+//        setOpCode(std_opcodes, "LD (HL),L", 0x75, 8, (regs, memory, args) -> regs.setHL(regs.getL()));
 //        setOpCode(std_opcodes, "LD (HL),n", 0x36, 12, (regs, memory, args) -> regs.setHL(memory.getValue(args[0])));    // Maybe
 //        setOpCode(std_opcodes, "LDD (HL),A", 0x32, 8, (regs, memory, args) -> {
 //            regs.setHL(regs.getA());
@@ -136,9 +136,11 @@ public class Opcodes {
 //            regs.incReg(regs.getHL());
 //        });
 //
-//        /**
-//         * 16-bit Loads
-//         */
+
+
+        /**
+         * 16-bit Loads
+         */
 //        // See GameBoy.CPU book for flags
 //        setOpCode(std_opcodes, "LDHL SP,n", 0xF8, 12, (regs, memory, args) -> {
 //            regs.setHL(memory.getValue(regs.getSP() + args[0]));
@@ -147,17 +149,17 @@ public class Opcodes {
 //            regs.setH();
 //            regs.setC();
 //        });
-//        setOpCode(std_opcodes, "LD HL,nn", 0x21, 12, (regs, memory, args) -> regs.setHL(args[0]));
+        setOpCode(std_opcodes, "LD HL,nn", 0x21, 12, (regs, memory, args) -> regs.setHL(args[0]));
 //
-//        // LD INTO (BC)
-//        setOpCode(std_opcodes, "LD (BC),nn", 0x01, 12, (regs, memory, args) -> regs.setBC(args[0]));
-//        setOpCode(std_opcodes, "LD (BC),A", 0x02, 8, (regs, memory, args) -> regs.setBC(regs.getA()));
+//        // LD INTO BC
+        setOpCode(std_opcodes, "LD (BC),nn", 0x01, 12, (regs, memory, args) -> regs.setBC(args[0]));
+        setOpCode(std_opcodes, "LD (BC),A", 0x02, 8, (regs, memory, args) -> regs.setBC(regs.getA()));
 //
-//        // LD INTO (DE)
+//        // LD INTO DE
 //        setOpCode(std_opcodes, "LD DE,nn", 0x11, 12, (regs, memory, args) -> regs.setDE(args[0]));
 //        setOpCode(std_opcodes, "LD (DE),A", 0x12, 8, (regs, memory, args) -> regs.setDE(regs.getA()));
 //
-//        // LD INTO (SP)
+//        // LD INTO SP
 //        setOpCode(std_opcodes, "LD SP,nn", 0x31, 12, (regs, memory, args) -> regs.setSP(args[0]));
 //        setOpCode(std_opcodes, "LD SP,HL", 0xF9, 8, (regs, memory, args) -> regs.setSP(regs.getHL()));
 //
@@ -436,13 +438,13 @@ public class Opcodes {
 //        setOpCode(std_opcodes, "CP #", 0xFE, 8, (regs, memory, args) -> regs.cp(regs.getA(), memory.getValue(args[0]));
 //
 //        // INCREMENT REGISTER N; FLAGS AFFECTED
-//        setOpCode(std_opcodes, "INC A", 0x3C, 4, (regs, memory, args) -> regs.incReg(regs.getA()));
-//        setOpCode(std_opcodes, "INC B", 0x04, 4, (regs, memory, args) -> regs.incReg(regs.getB()));
-//        setOpCode(std_opcodes, "INC C", 0x0C, 4, (regs, memory, args) -> regs.incReg(regs.getC()));
-//        setOpCode(std_opcodes, "INC D", 0x14, 4, (regs, memory, args) -> regs.incReg(regs.getD()));
-//        setOpCode(std_opcodes, "INC E", 0x1C, 4, (regs, memory, args) -> regs.incReg(regs.getE()));
-//        setOpCode(std_opcodes, "INC H", 0x24, 4, (regs, memory, args) -> regs.incReg(regs.getH()));
-//        setOpCode(std_opcodes, "INC L", 0x2C, 4, (regs, memory, args) -> regs.incReg(regs.getL()));
+        setOpCode(std_opcodes, "INC A", 0x3C, 4, (regs, memory, args) -> regs.setA(Commands.incReg(regs.getA())));
+        setOpCode(std_opcodes, "INC B", 0x04, 4, (regs, memory, args) -> regs.setB(Commands.incReg(regs.getB())));
+        setOpCode(std_opcodes, "INC C", 0x0C, 4, (regs, memory, args) -> regs.setC(Commands.incReg(regs.getC())));
+        setOpCode(std_opcodes, "INC D", 0x14, 4, (regs, memory, args) -> regs.setD(Commands.incReg(regs.getD())));
+        setOpCode(std_opcodes, "INC E", 0x1C, 4, (regs, memory, args) -> regs.setE(Commands.incReg(regs.getE())));
+        setOpCode(std_opcodes, "INC H", 0x24, 4, (regs, memory, args) -> regs.setH(Commands.incReg(regs.getH())));
+        setOpCode(std_opcodes, "INC L", 0x2C, 4, (regs, memory, args) -> regs.setL(Commands.incReg(regs.getL())));
 //        setOpCode(std_opcodes, "INC (HL)", 0x34, 12, (regs, memory, args) -> regs.incRegPair(regs.getH(), regs.getL()));
 //
 //        // DECREMENT REGISTER N; FLAGS AFFECTED
@@ -715,7 +717,7 @@ public class Opcodes {
         opcodes[opcode] = new Instructions(label, opcode, clocks, op);
     }
 
-    public void execute(int opcode, Registers regs, Memory memory, int[] args) {
+    public void execute(int opcode, Registers regs, Memory memory, short[] args) {
         std_opcodes[opcode].op.cmd(regs, memory, args);
 
     }
