@@ -1,3 +1,5 @@
+package GameBoy;
+
 /**
  * Author: Benjamin Baird
  * Created on: 2018-08-28
@@ -33,5 +35,6 @@ interface Operation {
      * @param memory Memory(RAM+ROM) to read/write from
      * @param args   additional arguments for any operations
      */
-    void cmd(Registers regs, int[] memory, int[] args);
+    void cmd(Registers regs, Memory memory, int[] args);
+
 }

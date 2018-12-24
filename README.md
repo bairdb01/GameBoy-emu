@@ -10,13 +10,13 @@ At the beginning of this project I had next to no idea of what an opcode was. Up
 
 E.g. FunctionalInterface
 ```
-public class Instructions {
+public class GameBoy.Instructions {
     String label;
     int Opcode;
     int cycles;
-    Operation op;
+    GameBoy.Operation op;
 
-    public Instructions(String label, int Opcode, int clocks, Operation op) {
+    public GameBoy.Instructions(String label, int Opcode, int clocks, GameBoy.Operation op) {
         this.label = label;
         this.Opcode = Opcode;
         this.cycles = cycles;
@@ -26,14 +26,14 @@ public class Instructions {
 
 
 @FunctionalInterface
-interface Operation {
-    void cmd(Registers regs, int[] memory, int[] args);
+interface GameBoy.Operation {
+    void cmd(GameBoy.Registers regs, int[] memory, int[] args);
 }
 
 public Opcode{
-    Instructions [] opcodes = new Instructions[0x100]; 
-    private void setOpcode(String label, int opcode, int clocks, Operation op) {
-        opcodes[opcode] = new Instructions(label, opcode, clocks, op);
+    GameBoy.Instructions [] opcodes = new GameBoy.Instructions[0x100];
+    private void setOpcode(String label, int opcode, int clocks, GameBoy.Operation op) {
+        opcodes[opcode] = new GameBoy.Instructions(label, opcode, clocks, op);
     }
 
     public int main(){
@@ -42,14 +42,17 @@ public Opcode{
     }
 }
 ```
-### Opcodes
+### GameBoy.Opcodes
 This will probably be one of the most time consuming parts and can be quite tedious. Don't make it any more tedious than you have too! A lot of the functions perform similar actions, so it would be smart to keep things modular.
 
 ### Understanding the bootrom
 It took me longer than I it should've to understand the Bootrom and how it is stored in the GameBoy's memory. Simply put, the opcode is first stored in memory followed by any of the required arguments. E.g. The first instruction (LD SP,$FFFE) takes up 3 bytes of memory ($31 $FF $FE). This is because LD SP,nn is an instruction which can be compressed into a single byte known as the opcode ($31). The following two bytes ($FF and $FE) are then used by the LD instruction and loaded into the SP register.
 
 ### The CB prefixed opcode
-The CB prefix notifies the CPU that there will be an additonal byte which must be read (uninterruptable). These two bytes form the opcode for the instruction. Two opcode lists is a solution. One for standard codes and another for CB-prefixed codes. Use second byte as index to the CB-code array.
+The CB prefix notifies the GameBoy.CPU that there will be an additonal byte which must be read (uninterruptable). These two bytes form the opcode for the instruction. Two opcode lists is a solution. One for standard codes and another for CB-prefixed codes. Use second byte as index to the CB-code array.
+
+### How to modify register values if they are primitive data types? (ints, bytes, shorts, etc. are pass by value in Java)
+The use of functional interface and lambda to store instructions in a variable allows for more than just one instruction to be performed. I simply return the value the register/memory should be and assign it in the same lambda. Of course this means that I need to return the proper values from each method.
 
 ## Resources:
 
@@ -57,9 +60,9 @@ The CB prefix notifies the CPU that there will be an additonal byte which must b
 
 [The Ultimate Game Boy Talk (33c3)](https://youtu.be/HyzD8pNlpwI) - A nice video to get an understanding of how the GameBoy works
 
-[GameBoy CPU Manual](http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf) - Recommended when writing the CPU. Chapter 3 has almost all you need.
+[GameBoy GameBoy.CPU Manual](http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf) - Recommended when writing the GameBoy.CPU. Chapter 3 has almost all you need.
 
-[GameBoy Opcodes Summary](http://gameboy.mongenel.com/dmg/opcodes.html) - Provides more detail on how the flags work for different opcodes
+[GameBoy GameBoy.Opcodes Summary](http://gameboy.mongenel.com/dmg/opcodes.html) - Provides more detail on how the flags work for different opcodes
 
 [Opcode chart](http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html) - Shows the size of bytes each opcode takes up. Prov
 

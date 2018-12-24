@@ -1,8 +1,10 @@
+package GameBoy;
+
 /**
  * Author: Benjamin Baird
  * Created on: 2018-08-28
  * Last Updated on: 2018-08-28
- * Filename: Flags
+ * Filename: GameBoy.Flags
  * Description: GameBoy flag register.
  *  TODO: Move this flag to registers to better represent actual hardware
  */

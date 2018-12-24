@@ -11,12 +11,13 @@ public class Memory {
     int[] memory = new int[0xFFFFFF];   // Check actual size. "8bit memory"
 
 
-    public int getValue(int adr) {
+    public int getMemVal(int adr) {
         return memory[adr];
     }
 
-    public int setValue(int adr, int val) {
-
+    public int setMemVal(int adr, int val) {
+        memory[adr] = val;
+        return memory[adr];
     }
 
     public void push(int SP, int val) {
