@@ -498,18 +498,27 @@ public class Opcodes {
 
 //        // Decimal adjust register A
 //        setOpCode(std_opcodes, "DAA", 27, 4, (regs, memory, args) -> regs.daa());
-//
-//        // Complement A register
-//        setOpCode(std_opcodes, "CPL", 2F, 4, (regs, memory, args) -> regs.cpl());
+
+        // Complement A register
+        setOpCode(std_opcodes, "CPL", 0x2F, 4, (regs, memory, args) -> {
+            regs.setA((byte) (~regs.getA()));
+            regs.setNFlag();
+            regs.setHFlag();
+        });
 //
 //        // Complement carry flag
 //        setOpCode(std_opcodes, "CCF", 3F, 4, (regs, memory, args) -> regs.ccf());
-//
-//        // Set carry flag
-//        setOpCode(std_opcodes, "SCF", 37, 4, (regs, memory, args) -> regs.setC());
-//
-//
-//        setOpCode(std_opcodes, "NOP", 00, 4, (regs, memory, args) -> regs.nop());
+
+        // Set carry flag
+        setOpCode(std_opcodes, "SCF", 37, 4, (regs, memory, args) -> {
+            regs.setCFlag();
+            regs.clearNFlag();
+            regs.clearHFlag();
+            regs.setCFlag();
+        });
+
+
+        setOpCode(std_opcodes, "NOP", 00, 4, (regs, memory, args) -> Commands.nop());
 //        setOpCode(std_opcodes, "HALT", 76, 4, (regs, memory, args) -> regs.halt());
 //        setOpCode(std_opcodes, "STOP", 0x1000, 4, (regs, memory, args) -> regs.stop());
 //
@@ -642,25 +651,25 @@ public class Opcodes {
 //
 //
 //
-//        /**
-//         * Jumps
-//         */
-//        //  Jump to address nn
-//        setOpCode(std_opcodes, "JP NN", 0xC3, 12, (regs, memory, args) -> regs.jp(args[0]));
-//
-//
+        /**
+         * Jumps
+         */
+        //  Jump to address nn
+        setOpCode(std_opcodes, "JP NN", 0xC3, 12, (regs, memory, args) -> regs.setPC(args[0]));
+
+
 //        // Jump to address n if following condition is true
 //        setOpCode(std_opcodes, "JP NZ,NN", 0xC2, 12, (regs, memory, args) -> regs.jpIf(args[0]));
 //        setOpCode(std_opcodes, "JP Z,NN", 0xCA, 12, (regs, memory, args) -> regs.jpIf(args[0]));
 //        setOpCode(std_opcodes, "JP NC,NN", 0xD2, 12, (regs, memory, args) -> regs.jpIf(args[0]));
 //        setOpCode(std_opcodes, "JP C,NN", 0xDA, 12, (regs, memory, args) -> regs.jpIf(args[0]));
-//
-//        // JUMP TO ADDRESS HL
-//        setOpCode(std_opcodes, "JP (HL)", 0xE9, 4, (regs, memory, args) -> regs.jp(regs.getHL()));
-//
-//        // Add n to current address and jump to it
-//        setOpCode(std_opcodes, "JR n", 0x18, 8, (regs, memory, args) -> regs.jr(args[0])); // Fix function
-//
+
+        // JUMP TO ADDRESS HL
+        setOpCode(std_opcodes, "JP (HL)", 0xE9, 4, (regs, memory, args) -> regs.setPC(regs.getHL()));
+
+        // Add n to current address and jump to it
+        setOpCode(std_opcodes, "JR n", 0x18, 8, (regs, memory, args) -> regs.setPC((short) (regs.getPC() + args[0]))); // Fix function
+
 //        // Conditional jump + add
 //        setOpCode(std_opcodes, "JR NZ, *", 0x20, 8, (regs, memory, args) -> regs.jrIf(args[0]));
 //        setOpCode(std_opcodes, "JR Z,*", 0x28, 8, (regs, memory, args) -> regs.jrIf(args[0]));
