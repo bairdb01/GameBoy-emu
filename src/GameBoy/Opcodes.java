@@ -210,15 +210,15 @@ public class Opcodes {
 //        setOpCode(std_opcodes, "ADD A,#", 0xCE, 8, (regs, memory, args) -> regs.addA(args[0]) +);
 //
 //        // SUBTRACT N FROM A; FLAGS AFFECTED
-//        setOpCode(std_opcodes, "SUB A", 0x97, 4, (regs, memory, args) -> regs.subA(regs.getA()));
-//        setOpCode(std_opcodes, "SUB B", 0x90, 4, (regs, memory, args) -> regs.subA(regs.getB()));
-//        setOpCode(std_opcodes, "SUB C", 0x91, 4, (regs, memory, args) -> regs.subA(regs.getC()));
-//        setOpCode(std_opcodes, "SUB D", 0x92, 4, (regs, memory, args) -> regs.subA(regs.getD()));
-//        setOpCode(std_opcodes, "SUB E", 0x93, 4, (regs, memory, args) -> regs.subA(regs.getE()));
-//        setOpCode(std_opcodes, "SUB H", 0x94, 4, (regs, memory, args) -> regs.subA(regs.getH()));
-//        setOpCode(std_opcodes, "SUB L", 0x95, 4, (regs, memory, args) -> regs.subA(regs.getL()));
-//        setOpCode(std_opcodes, "SUB (HL)", 0x96, 8, (regs, memory, args) -> regs.subA(regs.getHL()));
-//        setOpCode(std_opcodes, "SUB #", 0xD6, 8, (regs, memory, args) -> regs.subA(args[0]));
+        setOpCode(std_opcodes, "SUB A", 0x97, 4, (regs, memory, args) -> Commands.sub(regs.getA(), regs));
+        setOpCode(std_opcodes, "SUB B", 0x90, 4, (regs, memory, args) -> Commands.sub(regs.getB(), regs));
+        setOpCode(std_opcodes, "SUB C", 0x91, 4, (regs, memory, args) -> Commands.sub(regs.getC(), regs));
+        setOpCode(std_opcodes, "SUB D", 0x92, 4, (regs, memory, args) -> Commands.sub(regs.getD(), regs));
+        setOpCode(std_opcodes, "SUB E", 0x93, 4, (regs, memory, args) -> Commands.sub(regs.getE(), regs));
+        setOpCode(std_opcodes, "SUB H", 0x94, 4, (regs, memory, args) -> Commands.sub(regs.getH(), regs));
+        setOpCode(std_opcodes, "SUB L", 0x95, 4, (regs, memory, args) -> Commands.sub(regs.getL(), regs));
+        setOpCode(std_opcodes, "SUB (HL)", 0x96, 8, (regs, memory, args) -> Commands.sub(memory.getMemVal(regs.getHL()), regs));
+        setOpCode(std_opcodes, "SUB #", 0xD6, 8, (regs, memory, args) -> Commands.sub((byte) args[0], regs));
 //
 //        // SUBTRACT + CARRY FLAG FROM A
 //        setOpCode(std_opcodes, "SBC A", 0x9F, 4, (regs, memory, args) -> regs.sbcA(regs.getA()));
@@ -487,14 +487,14 @@ public class Opcodes {
          * Misc.
          */
         // Swap upper and lower nibbles of n
-        setOpCode(cb_opcodes, "SWAP A", 0xCB37, 8, (regs, memory, args) -> regs.setA(Commands.swap(regs.getA())));
-        setOpCode(cb_opcodes, "SWAP B", 0xCB30, 8, (regs, memory, args) -> regs.setB(Commands.swap(regs.getB())));
-        setOpCode(cb_opcodes, "SWAP C", 0xCB31, 8, (regs, memory, args) -> regs.setC(Commands.swap(regs.getC())));
-        setOpCode(cb_opcodes, "SWAP D", 0xCB32, 8, (regs, memory, args) -> regs.setD(Commands.swap(regs.getD())));
-        setOpCode(cb_opcodes, "SWAP E", 0xCB33, 8, (regs, memory, args) -> regs.setE(Commands.swap(regs.getE())));
-        setOpCode(cb_opcodes, "SWAP H", 0xCB34, 8, (regs, memory, args) -> regs.setH(Commands.swap(regs.getH())));
-        setOpCode(cb_opcodes, "SWAP L", 0xCB35, 8, (regs, memory, args) -> regs.setL(Commands.swap(regs.getL())));
-        setOpCode(cb_opcodes, "SWAP (HL)", 0xCB36, 16, (regs, memory, args) -> memory.setMemVal(regs.getHL(), Commands.swap(memory.getMemVal(regs.getHL()))));
+//        setOpCode(cb_opcodes, "SWAP A", 0xCB37, 8, (regs, memory, args) -> regs.setA(Commands.swap(regs.getA())));
+//        setOpCode(cb_opcodes, "SWAP B", 0xCB30, 8, (regs, memory, args) -> regs.setB(Commands.swap(regs.getB())));
+//        setOpCode(cb_opcodes, "SWAP C", 0xCB31, 8, (regs, memory, args) -> regs.setC(Commands.swap(regs.getC())));
+//        setOpCode(cb_opcodes, "SWAP D", 0xCB32, 8, (regs, memory, args) -> regs.setD(Commands.swap(regs.getD())));
+//        setOpCode(cb_opcodes, "SWAP E", 0xCB33, 8, (regs, memory, args) -> regs.setE(Commands.swap(regs.getE())));
+//        setOpCode(cb_opcodes, "SWAP H", 0xCB34, 8, (regs, memory, args) -> regs.setH(Commands.swap(regs.getH())));
+//        setOpCode(cb_opcodes, "SWAP L", 0xCB35, 8, (regs, memory, args) -> regs.setL(Commands.swap(regs.getL())));
+//        setOpCode(cb_opcodes, "SWAP (HL)", 0xCB36, 16, (regs, memory, args) -> memory.setMemVal(regs.getHL(), Commands.swap(memory.getMemVal(regs.getHL()))));
 
 //        // Decimal adjust register A
 //        setOpCode(std_opcodes, "DAA", 27, 4, (regs, memory, args) -> regs.daa());

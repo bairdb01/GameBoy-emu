@@ -159,44 +159,46 @@ public class Registers {
         return flag;
     }
 
-    private void clearBit(byte register, byte pos) {
+    private byte clearBit(byte register, byte pos) {
         register &= ~(1 << pos);
+        return register;
     }
 
-    private void setBit(byte register, byte pos) {
+    private byte setBit(byte register, byte pos) {
         register |= (1 << pos);
+        return register;
     }
 
     public void setZFlag() {
-        setBit(flag, z_pos);
+        flag = setBit(flag, z_pos);
     }
 
     public void clearZFlag() {
-        clearBit(flag, z_pos);
+        flag = clearBit(flag, z_pos);
     }
 
     public void setNFlag() {
-        setBit(flag, n_pos);
+        flag = setBit(flag, n_pos);
     }
 
     public void clearNFlag() {
-        clearBit(flag, n_pos);
+        flag = clearBit(flag, n_pos);
     }
 
     public void setHFlag() {
-        setBit(flag, h_pos);
+        flag = setBit(flag, h_pos);
     }
 
     public void clearHFlag() {
-        clearBit(flag, h_pos);
+        flag = clearBit(flag, h_pos);
     }
 
     public void setCFlag() {
-        setBit(flag, c_pos);
+        flag = setBit(flag, c_pos);
     }
 
     public void clearCFlag() {
-        clearBit(flag, c_pos);
+        flag = clearBit(flag, c_pos);
     }
 
     public String toString() {
@@ -210,8 +212,7 @@ public class Registers {
         s += "Register L: " + getL() + "\n\n";
 
         s += "SP = " + getSP() + "\n\n";
-        s += "Flags: " + Integer.toBinaryString(getFlag()) + "\n"; // probably won't work for short
-        s += "       ZNHC\n\n";
+        s += "Flags (ZNHCXXXX): " + getFlag() + "\n";
         return s;
 
 

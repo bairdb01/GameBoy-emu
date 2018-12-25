@@ -73,3 +73,6 @@ The use of functional interface and lambda to store instructions in a variable a
 [A Look At The Game Boy Bootstrap: Let The Fun Begin!](https://realboyemulator.wordpress.com/2013/01/03/a-look-at-the-game-boy-bootstrap-let-the-fun-begin/) - An extensive walkthrough of the bootrom
 
 [Bitwise operation](https://en.wikipedia.org/wiki/Bitwise_operation) - Brush up on some bitwise operators.
+
+## Handy Tools
+[Two's Complement Convertor](https://www.exploringbinary.com/twos-complement-converter/) Useful for debugging

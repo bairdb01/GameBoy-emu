@@ -38,6 +38,8 @@ public class CPU {
 
 
         // Loading something into registers A - L
+        args[0] = 0x0;
+        opcodes.execute(0x3E, regs, memory, args);
         args[0] = 1;
         opcodes.execute(0x06, regs, memory, args);
         args[0] = 2;
@@ -50,21 +52,17 @@ public class CPU {
         opcodes.execute(0x26, regs, memory, args);
         args[0] = 6;
         opcodes.execute(0x2E, regs, memory, args);
-        args[0] = 0x4a;
-        opcodes.execute(0x3E, regs, memory, args);
+
         String debug = regs.toString();
         System.out.println("Pre-Exe");
         System.out.println(debug);
 
         args[0] = 0x2A;
-        opcodes.execute(0x36, regs, memory, args);
+        opcodes.execute(0xD6, regs, memory, args);
 
-        byte b = memory.getMemVal(regs.getHL());
-        System.out.println();
-        System.out.println(b);
-//        System.out.println("Executed");
-//        debug = regs.toString();
-//        System.out.println(debug);
+        System.out.println("Executed");
+        debug = regs.toString();
+        System.out.println(debug);
     }
 
 }

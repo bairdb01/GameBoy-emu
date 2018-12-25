@@ -88,8 +88,36 @@ public class Commands {
      * @param a   register a
      * @param val value to subtract
      */
-    public static void subFromA(int a, int val) {
+    public static byte sub(byte val, Registers regs) {
+        byte a = regs.getA();
+        byte result = (byte) (a - val);
 
+        // Z Flag
+        if (result == 0) {
+            regs.setZFlag();
+        } else {
+            regs.clearZFlag();
+        }
+
+        // N Flag
+        regs.setNFlag();
+
+        // H Flag set if no borrow, clear if borrow from bit 4
+        if (((a & 0xF) - (val & 0xF)) < 0) {
+            regs.clearHFlag();
+        } else {
+            regs.setHFlag();
+        }
+
+        // C Flag
+        if ((a - val) < 0) {
+            regs.setCFlag();
+        } else {
+            regs.clearCFlag();
+        }
+
+        regs.setA(result);
+        return result;
     }
 
     /**
@@ -144,53 +172,53 @@ public class Commands {
 
     /**
      * Increment register
-     *
-     * @param reg 8bit register to increment (r, (HL))
+     * Z-Flag affected, N-Flag reset, H-Flag set if carry from bit 3, C-Flag not affected
+     * @param val 8bit register to increment (r, (HL))
      */
-    public static byte inc8Bit(Registers regs, byte reg) {
+    public static byte inc8Bit(Registers regs, byte val) {
         // Half carry check
         // Truncates register value to first nibble and then adds 1 to see if there is a carry from bit 3 to 4
-        if ((((reg & 0xf) + (0x01)) & 0x10) == 0x10) {
+        if ((((val & 0xf) + (0x01 & 0xF)) & 0x10) == 0x10) {
             regs.setHFlag();
         }
 
-        reg += 1;
+        val += 1;
 
         // Z and N flags
-        if (reg == 0) {
+        if (val == 0) {
             regs.setZFlag();
         } else {
             regs.clearZFlag();
         }
         regs.clearNFlag();
 
-        return reg;
+        return val;
     }
 
     /**
-     * Decrement register
-     *
-     * @param reg 8bit register to increment (r, (HL))
+     * Decrement value
+     * Z-Flag set if 0, N-Flag set, H-Flag set if no borrow from bit 4, C-Flag not affected
+     * @param val 8bit register to increment (r, (HL))
      */
-    public static byte dec8Bit(Registers regs, byte reg) {
+    public static byte dec8Bit(Registers regs, byte val) {
         // Truncates the first 4 bits and subtracts 1. If result is less than 0 (borrowed from bit 4) then it is a half carry.
-        if (((reg & 0xf) - (0x01)) < 0) {
+        if (((val & 0xf) - (0x01)) < 0) {
             regs.clearHFlag();
         } else {
             regs.setHFlag();
         }
 
-        reg += 1;
+        val += 1;
 
         // Z and N Flags
-        if (reg == 0) {
+        if (val == 0) {
             regs.setZFlag();
         } else {
             regs.clearZFlag();
         }
         regs.setNFlag();
 
-        return reg;
+        return val;
     }
 
 
@@ -216,7 +244,7 @@ public class Commands {
      * @param reg 16bit register (BC, DE, HL, SP)
      * @return reg
      */
-    public static int inc16(int reg) {
+    public static int inc16Bit(int reg) {
 
         return reg;
     }
@@ -227,7 +255,7 @@ public class Commands {
      * @param reg 16bit register (BC, DE, HL, SP)
      * @return reg
      */
-    public static int dec16(int reg) {
+    public static int dec16Bit(int reg) {
 
         return reg;
     }
