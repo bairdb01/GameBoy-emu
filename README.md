@@ -62,6 +62,8 @@ The use of functional interface and lambda to store instructions in a variable a
 
 [GameBoy GameBoy.CPU Manual](http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf) - Recommended when writing the GameBoy.CPU. Chapter 3 has almost all you need.
 
+[GameBoy Programming Manual](https://ia801906.us.archive.org/19/items/GameBoyProgManVer1.1/GameBoyProgManVer1.1.pdf) - Highly detailed GameBoy manual. Goes into detail of how the GameBoy works.
+
 [GameBoy GameBoy.Opcodes Summary](http://gameboy.mongenel.com/dmg/opcodes.html) - Provides more detail on how the flags work for different opcodes
 
 [Opcode chart](http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html) - Shows the size of bytes each opcode takes up. Prov

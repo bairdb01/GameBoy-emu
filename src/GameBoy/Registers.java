@@ -1,15 +1,12 @@
 package GameBoy;
 
-import java.util.Arrays;
-
 /**
  * Author: Benjamin Baird
  * Created on: 2018-08-28
  * Last Updated on: 2018-08-28
  * Filename: GameBoy.Registers
  * Description: GameBoy registers (excluding flags) and functions to manage them.
- * TODO Different 8bit and 16bit register functions
- * - Might not be feasible to operate on Bytes/shorts. Might have to use ints to prevent two's complements being changed.
+ * TODO: Register F should be the flag register
  */
 public class Registers {
     private Byte[] registers = new Byte[8]; // GameBoy.Registers A, B, C, D, E, F, H, L (8 bit)
@@ -19,10 +16,10 @@ public class Registers {
     private short SP, PC;          // SP (stack pointer), PC (program counter) (16 bit) registers
     private byte flag = 0x0;    // Flag register reference to make things easier Z=7, N=6, H=5, C=4, Other=0-3
 
-    private byte z_pos = 7;
-    private byte n_pos = 6;
-    private byte h_pos = 5;
-    private byte c_pos = 4;
+    private byte z_pos = 7; // Zero
+    private byte n_pos = 6; // Subtraction
+    private byte h_pos = 5; // Half-carry
+    private byte c_pos = 4; // Carry
 
     public Registers() {
         for (int i = 0; i < 8; i++)
@@ -31,7 +28,7 @@ public class Registers {
 
     public void setRegPair(int upperReg, int lowerReg, short val) {
         registers[lowerReg] = (byte) (val);
-        registers[upperReg] = (byte) (val >> 8);
+        registers[upperReg] = (byte) (val >>> 8);
 
         System.out.println(registers[lowerReg]);
         System.out.println(registers[upperReg]);
@@ -126,55 +123,6 @@ public class Registers {
         this.PC = pc;
     }
 
-    public byte getFlag() {
-        return flag;
-    }
-
-    public void setFlag(byte flag_reg) {
-        this.flag = flag_reg;
-    }
-
-    public void clearBit(byte register, byte pos) {
-        register &= ~(1 << pos);
-    }
-
-    public void setBit(byte register, byte pos) {
-        register |= (1 << pos);
-    }
-
-    public void setZ() {
-        setBit(flag, z_pos);
-    }
-
-    public void clearZ() {
-        clearBit(flag, z_pos);
-    }
-
-    public void setN() {
-        setBit(flag, n_pos);
-    }
-
-    public void clearN() {
-        clearBit(flag, n_pos);
-    }
-
-    public void setH() {
-        setBit(flag, h_pos);
-    }
-
-    public void clearH() {
-        clearBit(flag, h_pos);
-    }
-
-    public void setC() {
-        setBit(flag, c_pos);
-    }
-
-    public void clearC() {
-        clearBit(flag, c_pos);
-    }
-
-
     public short getAF() {
         return getRegPair(registers[0], registers[5]);
     }
@@ -207,14 +155,48 @@ public class Registers {
         setRegPair(6, 7, val);
     }
 
-    public byte getZFlag() {
-        // TODO Complete function
-        return -1;
+    public byte getFlag() {
+        return flag;
     }
 
-    public byte getCFlag() {
-        // TODO Complete function
-        return -1;
+    private void clearBit(byte register, byte pos) {
+        register &= ~(1 << pos);
+    }
+
+    private void setBit(byte register, byte pos) {
+        register |= (1 << pos);
+    }
+
+    public void setZFlag() {
+        setBit(flag, z_pos);
+    }
+
+    public void clearZFlag() {
+        clearBit(flag, z_pos);
+    }
+
+    public void setNFlag() {
+        setBit(flag, n_pos);
+    }
+
+    public void clearNFlag() {
+        clearBit(flag, n_pos);
+    }
+
+    public void setHFlag() {
+        setBit(flag, h_pos);
+    }
+
+    public void clearHFlag() {
+        clearBit(flag, h_pos);
+    }
+
+    public void setCFlag() {
+        setBit(flag, c_pos);
+    }
+
+    public void clearCFlag() {
+        clearBit(flag, c_pos);
     }
 
     public String toString() {

@@ -41,12 +41,12 @@ public class Opcodes {
         setOpCode(std_opcodes, "LD A,E", 0x7B, 4, (regs, memory, args) -> regs.setA(regs.getE()));
         setOpCode(std_opcodes, "LD A,H", 0x7C, 4, (regs, memory, args) -> regs.setA(regs.getH()));
         setOpCode(std_opcodes, "LD A,L", 0x7D, 4, (regs, memory, args) -> regs.setA(regs.getL()));
-//        setOpCode(std_opcodes, "LD A,(BC)", 0x0A, 8, (regs, memory, args) -> regs.setA(regs.getBC()));
-//        setOpCode(std_opcodes, "LD A,(DE)", 0x1A, 8, (regs, memory, args) -> regs.setA(regs.getDE()));
-//        setOpCode(std_opcodes, "LD A,(HL)", 0x7E, 8, (regs, memory, args) -> regs.setA(regs.getHL()));
-//        setOpCode(std_opcodes, "LD A,(nn)", 0xFA, 16, (regs, memory, args) -> regs.setA(args[0]));
+        setOpCode(std_opcodes, "LD A,(BC)", 0x0A, 8, (regs, memory, args) -> regs.setA(memory.getMemVal(regs.getBC())));
+        setOpCode(std_opcodes, "LD A,(DE)", 0x1A, 8, (regs, memory, args) -> regs.setA(memory.getMemVal(regs.getDE())));
+        setOpCode(std_opcodes, "LD A,(HL)", 0x7E, 8, (regs, memory, args) -> regs.setA(memory.getMemVal(regs.getHL())));
+        setOpCode(std_opcodes, "LD A,(nn)", 0xFA, 16, (regs, memory, args) -> regs.setA(memory.getMemVal(args[0])));
         setOpCode(std_opcodes, "LD A,#", 0x3E, 8, (regs, memory, args) -> regs.setA((byte) args[0]));
-//        setOpCode(std_opcodes, "LD A,(C)", 0xF2, 8, (regs, memory, args) -> regs.setA(0xFF00 + regs.getC()));
+        setOpCode(std_opcodes, "LD A,(C)", 0xF2, 8, (regs, memory, args) -> regs.setA(memory.getMemVal((short) (0xFF00 + regs.getC()))));
 //        setOpCode(std_opcodes, "LDD A,(HL)", 0x3A, 8, (regs, memory, args) -> {
 //            regs.setA(regs.getHL());
 //            regs.decHL();
@@ -55,7 +55,7 @@ public class Opcodes {
 //            regs.setA(regs.getHL());
 //            regs.incHL();
 //        });
-//        setOpCode(std_opcodes, "LDD A,(n)", 0xF0, 12, (regs, memory, args) -> regs.setA(regs.getValue(0xFF00 + args[0])));
+        setOpCode(std_opcodes, "LDD A,(n)", 0xF0, 12, (regs, memory, args) -> regs.setA(memory.getMemVal((short) (0xFF00 + args[0]))));
 
         //LD INTO B
         setOpCode(std_opcodes, "LD B,A", 0x47, 4, (regs, memory, args) -> regs.setB(regs.getA()));
@@ -75,8 +75,8 @@ public class Opcodes {
         setOpCode(std_opcodes, "LD C,E", 0x4B, 4, (regs, memory, args) -> regs.setC(regs.getE()));
         setOpCode(std_opcodes, "LD C,H", 0x4C, 4, (regs, memory, args) -> regs.setC(regs.getH()));
         setOpCode(std_opcodes, "LD C,L", 0x4D, 4, (regs, memory, args) -> regs.setC(regs.getL()));
-//        setOpCode(std_opcodes, "LD C,(HL)", 0x4E, 8, (regs, memory, args) -> regs.setC(regs.getHL()));
-//        setOpCode(std_opcodes, "LD (C),A", 0xE2, 8, (regs, memory, args) -> regs.setN(args[0], regs.getA()));
+        setOpCode(std_opcodes, "LD C,(HL)", 0x4E, 8, (regs, memory, args) -> regs.setC(memory.getMemVal(regs.getHL())));
+        setOpCode(std_opcodes, "LD (C),A", 0xE2, 8, (regs, memory, args) -> memory.setMemVal(regs.getC(), regs.getA())); // Check if (C) includes adding 0xFF
 
         //LD INTO D
         setOpCode(std_opcodes, "LD L,A", 0x57, 4, (regs, memory, args) -> regs.setD(regs.getA()));
@@ -86,7 +86,7 @@ public class Opcodes {
         setOpCode(std_opcodes, "LD D,E", 0x53, 4, (regs, memory, args) -> regs.setD(regs.getE()));
         setOpCode(std_opcodes, "LD D,H", 0x54, 4, (regs, memory, args) -> regs.setD(regs.getH()));
         setOpCode(std_opcodes, "LD D,L", 0x55, 4, (regs, memory, args) -> regs.setD(regs.getL()));
-//        setOpCode(std_opcodes, "LD D,(HL)", 0x56, 8, (regs, memory, args) -> regs.setD(regs.getHL()));
+        setOpCode(std_opcodes, "LD D,(HL)", 0x56, 8, (regs, memory, args) -> regs.setD(memory.getMemVal(regs.getHL())));
 
         //LD INTO E
         setOpCode(std_opcodes, "LD E,A", 0x5F, 4, (regs, memory, args) -> regs.setE(regs.getA()));
@@ -106,7 +106,7 @@ public class Opcodes {
         setOpCode(std_opcodes, "LD H,E", 0x63, 4, (regs, memory, args) -> regs.setH(regs.getE()));
         setOpCode(std_opcodes, "LD H,H", 0x64, 4, (regs, memory, args) -> regs.setH(regs.getH()));
         setOpCode(std_opcodes, "LD H,L", 0x65, 4, (regs, memory, args) -> regs.setH(regs.getL()));
-//        setOpCode(std_opcodes, "LD H,(HL)", 0x66, 8, (regs, memory, args) -> regs.setH(regs.getHL()));
+        setOpCode(std_opcodes, "LD H,(HL)", 0x66, 8, (regs, memory, args) -> regs.setH(memory.getMemVal(regs.getHL())));
 
         //LD INTO L
         setOpCode(std_opcodes, "LD L,A", 0x6F, 4, (regs, memory, args) -> regs.setL(regs.getA()));
@@ -116,24 +116,24 @@ public class Opcodes {
         setOpCode(std_opcodes, "LD L,E", 0x6B, 4, (regs, memory, args) -> regs.setL(regs.getE()));
         setOpCode(std_opcodes, "LD L,H", 0x6C, 4, (regs, memory, args) -> regs.setL(regs.getH()));
         setOpCode(std_opcodes, "LD L,L", 0x6D, 4, (regs, memory, args) -> regs.setL(regs.getL()));
-//        setOpCode(std_opcodes, "LD L,(HL)", 0x6E, 8, (regs, memory, args) -> regs.setL(regs.getHL()));
+        setOpCode(std_opcodes, "LD L,(HL)", 0x6E, 8, (regs, memory, args) -> regs.setL(memory.getMemVal(regs.getHL())));
 
         //LD INTO address at HL
-//        setOpCode(std_opcodes, "LD (HL),A", 0x77, 8, (regs, memory, args) -> regs.setHL(regs.getA()));
-//        setOpCode(std_opcodes, "LD (HL),B", 0x70, 8, (regs, memory, args) -> regs.setHL(regs.getB()));
-//        setOpCode(std_opcodes, "LD (HL),C", 0x71, 8, (regs, memory, args) -> regs.setHL(regs.getC()));
-//        setOpCode(std_opcodes, "LD (HL),D", 0x72, 8, (regs, memory, args) -> regs.setHL(regs.getD()));
-//        setOpCode(std_opcodes, "LD (HL),E", 0x73, 8, (regs, memory, args) -> regs.setHL(regs.getE()));
-//        setOpCode(std_opcodes, "LD (HL),H", 0x74, 8, (regs, memory, args) -> regs.setHL(regs.getH()));
-//        setOpCode(std_opcodes, "LD (HL),L", 0x75, 8, (regs, memory, args) -> regs.setHL(regs.getL()));
-//        setOpCode(std_opcodes, "LD (HL),n", 0x36, 12, (regs, memory, args) -> regs.setHL(memory.getValue(args[0])));    // Maybe
+        setOpCode(std_opcodes, "LD (HL),A", 0x77, 8, (regs, memory, args) -> memory.setMemVal(regs.getHL(), regs.getA()));
+        setOpCode(std_opcodes, "LD (HL),B", 0x70, 8, (regs, memory, args) -> memory.setMemVal(regs.getHL(), regs.getB()));
+        setOpCode(std_opcodes, "LD (HL),C", 0x71, 8, (regs, memory, args) -> memory.setMemVal(regs.getHL(), regs.getC()));
+        setOpCode(std_opcodes, "LD (HL),D", 0x72, 8, (regs, memory, args) -> memory.setMemVal(regs.getHL(), regs.getD()));
+        setOpCode(std_opcodes, "LD (HL),E", 0x73, 8, (regs, memory, args) -> memory.setMemVal(regs.getHL(), regs.getE()));
+        setOpCode(std_opcodes, "LD (HL),H", 0x74, 8, (regs, memory, args) -> memory.setMemVal(regs.getHL(), regs.getH()));
+        setOpCode(std_opcodes, "LD (HL),L", 0x75, 8, (regs, memory, args) -> memory.setMemVal(regs.getHL(), regs.getL()));
+        setOpCode(std_opcodes, "LD (HL),n", 0x36, 12, (regs, memory, args) -> memory.setMemVal(regs.getHL(), (byte) args[0]));    // Maybe
 //        setOpCode(std_opcodes, "LDD (HL),A", 0x32, 8, (regs, memory, args) -> {
 //            regs.setHL(regs.getA());
-//            regs.decReg(regs.getHL());
+//            regs.dec8Bit(regs.getHL());
 //        });
 //        setOpCode(std_opcodes, "LDI (HL),A", 0x22, 8, (regs, memory, args) -> {
 //            regs.setHL(regs.getA());
-//            regs.incReg(regs.getHL());
+//            regs.inc8Bit(regs.getHL());
 //        });
 //
 
@@ -156,15 +156,15 @@ public class Opcodes {
         setOpCode(std_opcodes, "LD (BC),A", 0x02, 8, (regs, memory, args) -> regs.setBC(regs.getA()));
 //
 //        // LD INTO DE
-//        setOpCode(std_opcodes, "LD DE,nn", 0x11, 12, (regs, memory, args) -> regs.setDE(args[0]));
-//        setOpCode(std_opcodes, "LD (DE),A", 0x12, 8, (regs, memory, args) -> regs.setDE(regs.getA()));
+        setOpCode(std_opcodes, "LD DE,nn", 0x11, 12, (regs, memory, args) -> regs.setDE(args[0]));
+        setOpCode(std_opcodes, "LD (DE),A", 0x12, 8, (regs, memory, args) -> regs.setDE(regs.getA()));
 //
 //        // LD INTO SP
-//        setOpCode(std_opcodes, "LD SP,nn", 0x31, 12, (regs, memory, args) -> regs.setSP(args[0]));
-//        setOpCode(std_opcodes, "LD SP,HL", 0xF9, 8, (regs, memory, args) -> regs.setSP(regs.getHL()));
+        setOpCode(std_opcodes, "LD SP,nn", 0x31, 12, (regs, memory, args) -> regs.setSP(args[0]));
+        setOpCode(std_opcodes, "LD SP,HL", 0xF9, 8, (regs, memory, args) -> regs.setSP(regs.getHL()));
 //
-//        setOpCode(std_opcodes, "LD (NN),A", 0xEA, 8, (regs, memory, args) -> regs.setNN(regs.getA()));  // probably just use memory.setVal(adr,val)
-//        setOpCode(std_opcodes, "LD (NN),SP", 0x08, 20, (regs, memory, args) -> regs.setNN(regs.getSP()));   // probably just use memory.setVal(adr,val)
+//        setOpCode(std_opcodes, "LD (NN),A", 0xEA, 8, (regs, memory, args) -> memory.setMemVal( args[0], regs.getA()));
+//        setOpCode(std_opcodes, "LD (NN),SP", 0x08, 20, (regs, memory, args) -> memory.setMemVal(args[0], regs.getSP()));
 //
 //
 //        setOpCode(std_opcodes, "LDh (n),A", 0xE0, 12, (regs, memory, args) -> regs.setN(0xFF00 + args[0], regs.getA()));    // Double check if n is different from nn, probably just use memory.setVal(adr,val)
@@ -437,25 +437,25 @@ public class Opcodes {
 //        setOpCode(std_opcodes, "CP (HL)", 0xBE, 8, (regs, memory, args) -> regs.cp(regs.getA(), regs.getHL());
 //        setOpCode(std_opcodes, "CP #", 0xFE, 8, (regs, memory, args) -> regs.cp(regs.getA(), memory.getValue(args[0]));
 //
-//        // INCREMENT REGISTER N; FLAGS AFFECTED
-        setOpCode(std_opcodes, "INC A", 0x3C, 4, (regs, memory, args) -> regs.setA(Commands.incReg(regs.getA())));
-        setOpCode(std_opcodes, "INC B", 0x04, 4, (regs, memory, args) -> regs.setB(Commands.incReg(regs.getB())));
-        setOpCode(std_opcodes, "INC C", 0x0C, 4, (regs, memory, args) -> regs.setC(Commands.incReg(regs.getC())));
-        setOpCode(std_opcodes, "INC D", 0x14, 4, (regs, memory, args) -> regs.setD(Commands.incReg(regs.getD())));
-        setOpCode(std_opcodes, "INC E", 0x1C, 4, (regs, memory, args) -> regs.setE(Commands.incReg(regs.getE())));
-        setOpCode(std_opcodes, "INC H", 0x24, 4, (regs, memory, args) -> regs.setH(Commands.incReg(regs.getH())));
-        setOpCode(std_opcodes, "INC L", 0x2C, 4, (regs, memory, args) -> regs.setL(Commands.incReg(regs.getL())));
-//        setOpCode(std_opcodes, "INC (HL)", 0x34, 12, (regs, memory, args) -> regs.incRegPair(regs.getH(), regs.getL()));
-//
-//        // DECREMENT REGISTER N; FLAGS AFFECTED
-//        setOpCode(std_opcodes, "DEC A", 0x3D, 4, (regs, memory, args) -> regs.decReg(regs.getA()));
-//        setOpCode(std_opcodes, "DEC B", 0x05, 4, (regs, memory, args) -> regs.decReg(regs.getB()));
-//        setOpCode(std_opcodes, "DEC C", 0x0D, 4, (regs, memory, args) -> regs.decReg(regs.getC()));
-//        setOpCode(std_opcodes, "DEC D", 0x15, 4, (regs, memory, args) -> regs.decReg(regs.getD()));
-//        setOpCode(std_opcodes, "DEC E", 0x1D, 4, (regs, memory, args) -> regs.decReg(regs.getE()));
-//        setOpCode(std_opcodes, "DEC H", 0x25, 4, (regs, memory, args) -> regs.decReg(regs.getH()));
-//        setOpCode(std_opcodes, "DEC L", 0x2D, 4, (regs, memory, args) -> regs.decReg(regs.getL()));
-//        setOpCode(std_opcodes, "DEC (HL)", 0x35, 12, (regs, memory, args) -> regs.decRegPair(regs.getH(), regs.getL()));
+        // INCREMENT REGISTER N; FLAGS AFFECTED
+        setOpCode(std_opcodes, "INC A", 0x3C, 4, (regs, memory, args) -> regs.setA(Commands.inc8Bit(regs, regs.getA())));
+        setOpCode(std_opcodes, "INC B", 0x04, 4, (regs, memory, args) -> regs.setB(Commands.inc8Bit(regs, regs.getB())));
+        setOpCode(std_opcodes, "INC C", 0x0C, 4, (regs, memory, args) -> regs.setC(Commands.inc8Bit(regs, regs.getC())));
+        setOpCode(std_opcodes, "INC D", 0x14, 4, (regs, memory, args) -> regs.setD(Commands.inc8Bit(regs, regs.getD())));
+        setOpCode(std_opcodes, "INC E", 0x1C, 4, (regs, memory, args) -> regs.setE(Commands.inc8Bit(regs, regs.getE())));
+        setOpCode(std_opcodes, "INC H", 0x24, 4, (regs, memory, args) -> regs.setH(Commands.inc8Bit(regs, regs.getH())));
+        setOpCode(std_opcodes, "INC L", 0x2C, 4, (regs, memory, args) -> regs.setL(Commands.inc8Bit(regs, regs.getL())));
+        setOpCode(std_opcodes, "INC (HL)", 0x34, 12, (regs, memory, args) -> memory.setMemVal(regs.getHL(), Commands.inc8Bit(regs, memory.getMemVal(regs.getHL()))));
+
+        // DECREMENT REGISTER N; FLAGS AFFECTED
+        setOpCode(std_opcodes, "DEC A", 0x3D, 4, (regs, memory, args) -> regs.setA(Commands.dec8Bit(regs, regs.getA())));
+        setOpCode(std_opcodes, "DEC B", 0x05, 4, (regs, memory, args) -> regs.setA(Commands.dec8Bit(regs, regs.getA())));
+        setOpCode(std_opcodes, "DEC C", 0x0D, 4, (regs, memory, args) -> regs.setA(Commands.dec8Bit(regs, regs.getA())));
+        setOpCode(std_opcodes, "DEC D", 0x15, 4, (regs, memory, args) -> regs.setA(Commands.dec8Bit(regs, regs.getA())));
+        setOpCode(std_opcodes, "DEC E", 0x1D, 4, (regs, memory, args) -> regs.setA(Commands.dec8Bit(regs, regs.getA())));
+        setOpCode(std_opcodes, "DEC H", 0x25, 4, (regs, memory, args) -> regs.setA(Commands.dec8Bit(regs, regs.getA())));
+        setOpCode(std_opcodes, "DEC L", 0x2D, 4, (regs, memory, args) -> regs.setA(Commands.dec8Bit(regs, regs.getA())));
+        setOpCode(std_opcodes, "DEC (HL)", 0x35, 12, (regs, memory, args) -> memory.setMemVal(regs.getHL(), Commands.dec8Bit(regs, memory.getMemVal(regs.getHL()))));
 //
 //
 //        /**
@@ -470,32 +470,32 @@ public class Opcodes {
 //        // ADD TO STACK POINTER
 //        setOpCode(std_opcodes, "ADD SP,n", 0xE8, 16, (regs, memory, args) -> regs.addToReg(regs.getSP(), args[0]));
 //
-//        // INCREMENT REGISTER PAIR
+        // INCREMENT REGISTER PAIR
 //        setOpCode(std_opcodes, "INC BC", 0x03, 8, (regs, memory, args) -> regs.incRegPair(regs.getB(), regs.getC()));
 //        setOpCode(std_opcodes, "INC DE", 0x13, 8, (regs, memory, args) -> regs.incRegPair(regs.getD(), regs.getE()));
 //        setOpCode(std_opcodes, "INC HL", 0x23, 8, (regs, memory, args) -> regs.incRegPair(regs.getH(), regs.getL()));
-//        setOpCode(std_opcodes, "INC SP", 0x33, 8, (regs, memory, args) -> regs.incReg(regs.getSP()));
+//        setOpCode(std_opcodes, "INC SP", 0x33, 8, (regs, memory, args) -> regs.inc8Bit(regs.getSP()));
 //
-//        // DECREMENT REGISTER PAIR
+//        //  DECREMENT REGISTER PAIR
 //        setOpCode(std_opcodes, "DEC BC", 0x0B, 8, (regs, memory, args) -> regs.decRegPair(regs.getB(), regs.getC()));
 //        setOpCode(std_opcodes, "DEC DE", 0x1B, 8, (regs, memory, args) -> regs.decRegPair(regs.getD(), regs.getE());
 //        setOpCode(std_opcodes, "DEC HL", 0x2B, 8, (regs, memory, args) -> regs.decRegPair(regs.getH(), regs.getL());
-//        setOpCode(std_opcodes, "DEC SP", 0x3B, 8, (regs, memory, args) -> regs.decReg(regs.getSP()));
-//
-//
-//        /**
-//         * Misc.
-//         */
-//        // Swap upper and lower nibbles of n
-//        setOpCode(cb_opcodes, "SWAP A", 0xCB37, 8, (regs, memory, args) -> regs.swap(regs.getA()));
-//        setOpCode(cb_opcodes, "SWAP B", 0xCB30, 8, (regs, memory, args) -> regs.swap(regs.getB()));
-//        setOpCode(cb_opcodes, "SWAP C", 0xCB31, 8, (regs, memory, args) -> regs.swap(regs.getC()));
-//        setOpCode(cb_opcodes, "SWAP D", 0xCB32, 8, (regs, memory, args) -> regs.swap(regs.getD()));
-//        setOpCode(cb_opcodes, "SWAP E", 0xCB33, 8, (regs, memory, args) -> regs.swap(regs.getE()));
-//        setOpCode(cb_opcodes, "SWAP H", 0xCB34, 8, (regs, memory, args) -> regs.swap(regs.getH()));
-//        setOpCode(cb_opcodes, "SWAP L", 0xCB35, 8, (regs, memory, args) -> regs.swap(regs.getL()));
-//        setOpCode(cb_opcodes, "SWAP (HL)", 0xCB36, 16, (regs, memory, args) -> regs.swapHL());  // TODO Look up specs. to swap 16bit register
-//
+//        setOpCode(std_opcodes, "DEC SP", 0x3B, 8, (regs, memory, args) -> regs.dec8Bit(regs.getSP()));
+
+
+        /**
+         * Misc.
+         */
+        // Swap upper and lower nibbles of n
+        setOpCode(cb_opcodes, "SWAP A", 0xCB37, 8, (regs, memory, args) -> regs.setA(Commands.swap(regs.getA())));
+        setOpCode(cb_opcodes, "SWAP B", 0xCB30, 8, (regs, memory, args) -> regs.setB(Commands.swap(regs.getB())));
+        setOpCode(cb_opcodes, "SWAP C", 0xCB31, 8, (regs, memory, args) -> regs.setC(Commands.swap(regs.getC())));
+        setOpCode(cb_opcodes, "SWAP D", 0xCB32, 8, (regs, memory, args) -> regs.setD(Commands.swap(regs.getD())));
+        setOpCode(cb_opcodes, "SWAP E", 0xCB33, 8, (regs, memory, args) -> regs.setE(Commands.swap(regs.getE())));
+        setOpCode(cb_opcodes, "SWAP H", 0xCB34, 8, (regs, memory, args) -> regs.setH(Commands.swap(regs.getH())));
+        setOpCode(cb_opcodes, "SWAP L", 0xCB35, 8, (regs, memory, args) -> regs.setL(Commands.swap(regs.getL())));
+        setOpCode(cb_opcodes, "SWAP (HL)", 0xCB36, 16, (regs, memory, args) -> memory.setMemVal(regs.getHL(), Commands.swap(memory.getMemVal(regs.getHL()))));
+
 //        // Decimal adjust register A
 //        setOpCode(std_opcodes, "DAA", 27, 4, (regs, memory, args) -> regs.daa());
 //

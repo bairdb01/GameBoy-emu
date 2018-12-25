@@ -5,9 +5,8 @@ package GameBoy;
  */
 
 //TODO
-// - Create a way to pass RAM from Memory class to each use (parameter, or ...)
-// - Write load(memory_adr) function
-// - Write store(dest_adr, value) function
+//
+
 public class Commands {
     /**
      * Loads an 8 bit value from src into 8 bit register destination
@@ -28,8 +27,8 @@ public class Commands {
      * @param dest   8 bit register
      * @return dest
      */
-    public static int ld_srcPtr_dest(int srcPtr, int dest, Memory mem) {
-        int value = mem.getMemVal(srcPtr);
+    public static int ld_srcPtr_dest(short srcPtr, byte dest, Memory mem) {
+        byte value = mem.getMemVal(srcPtr);
         dest = value;
         return dest;
     }
@@ -41,7 +40,7 @@ public class Commands {
      * @param destPtr 16 bit memory location
      * @return destPtr
      */
-    public static int ld_src_destPtr(int src, int destPtr, Memory mem) {
+    public static int ld_src_destPtr(byte src, short destPtr, Memory mem) {
         mem.setMemVal(destPtr, src);
         return destPtr;
     }
@@ -53,7 +52,7 @@ public class Commands {
      * @param destPtr 16 bit memory location
      * @return
      */
-    public static int ld_srcPtr_destPtr(int srcPtr, int destPtr, Memory mem) {
+    public static int ld_srcPtr_destPtr(short srcPtr, short destPtr, Memory mem) {
         mem.setMemVal(destPtr, mem.getMemVal(srcPtr));
         return destPtr;
     }
@@ -148,10 +147,23 @@ public class Commands {
      *
      * @param reg 8bit register to increment (r, (HL))
      */
-    public static byte incReg(byte reg) {
-        System.out.println(reg);
+    public static byte inc8Bit(Registers regs, byte reg) {
+        // Half carry check
+        // Truncates register value to first nibble and then adds 1 to see if there is a carry from bit 3 to 4
+        if ((((reg & 0xf) + (0x01)) & 0x10) == 0x10) {
+            regs.setHFlag();
+        }
+
         reg += 1;
-        System.out.println(reg);
+
+        // Z and N flags
+        if (reg == 0) {
+            regs.setZFlag();
+        } else {
+            regs.clearZFlag();
+        }
+        regs.clearNFlag();
+
         return reg;
     }
 
@@ -160,8 +172,25 @@ public class Commands {
      *
      * @param reg 8bit register to increment (r, (HL))
      */
-    public static void decReg(int reg) {
+    public static byte dec8Bit(Registers regs, byte reg) {
+        // Truncates the first 4 bits and subtracts 1. If result is less than 0 (borrowed from bit 4) then it is a half carry.
+        if (((reg & 0xf) - (0x01)) < 0) {
+            regs.clearHFlag();
+        } else {
+            regs.setHFlag();
+        }
 
+        reg += 1;
+
+        // Z and N Flags
+        if (reg == 0) {
+            regs.setZFlag();
+        } else {
+            regs.clearZFlag();
+        }
+        regs.setNFlag();
+
+        return reg;
     }
 
 
@@ -212,8 +241,8 @@ public class Commands {
      *
      * @param reg an 8bit register to swap (8bit register, (HL))
      */
-    public static void swap(int reg) {
-
+    public static byte swap(byte reg) {
+        return (byte) ((reg >>> 4) | (reg << 4));
     }
 
     public static void daa() {

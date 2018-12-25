@@ -50,31 +50,21 @@ public class CPU {
         opcodes.execute(0x26, regs, memory, args);
         args[0] = 6;
         opcodes.execute(0x2E, regs, memory, args);
-        args[0] = 7;
+        args[0] = 0x4a;
         opcodes.execute(0x3E, regs, memory, args);
         String debug = regs.toString();
         System.out.println("Pre-Exe");
         System.out.println(debug);
 
-        args[0] = Byte.MIN_VALUE;
-        opcodes.execute(0x3C, regs, memory, args);
-        args[0] = 2;
-        opcodes.execute(0x04, regs, memory, args);
-        args[0] = 3;
-        opcodes.execute(0x0C, regs, memory, args);
-        args[0] = 4;
-        opcodes.execute(0x14, regs, memory, args);
-        args[0] = 5;
-        opcodes.execute(0x1C, regs, memory, args);
-        args[0] = 6;
-        opcodes.execute(0x24, regs, memory, args);
-        args[0] = 7;
-        opcodes.execute(0x2C, regs, memory, args);
+        args[0] = 0x2A;
+        opcodes.execute(0x36, regs, memory, args);
 
-
-        System.out.println("Executed");
-        debug = regs.toString();
-        System.out.println(debug);
+        byte b = memory.getMemVal(regs.getHL());
+        System.out.println();
+        System.out.println(b);
+//        System.out.println("Executed");
+//        debug = regs.toString();
+//        System.out.println(debug);
     }
 
 }
