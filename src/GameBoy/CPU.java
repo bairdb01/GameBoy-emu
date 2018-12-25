@@ -19,6 +19,10 @@ package GameBoy;
  * Vert Sync: 59.73Hz
  * Sound: 4 channels
  */
+
+// TODO Increment CPU clock after each opcode execution
+//
+//
 public class CPU {
     Registers regs = new Registers();
     Flags flags = new Flags();
@@ -27,7 +31,7 @@ public class CPU {
     private int program_counter = regs.getPC();
     private Memory memory = new Memory();    // Memory stack
     short[] args = new short[3];
-
+    int cpu_clock = 0;
 
     /**
      * Main loop for the CPU
@@ -39,19 +43,19 @@ public class CPU {
 
         // Loading something into registers A - L
         args[0] = 0x0;
-        opcodes.execute(0x3E, regs, memory, args);
+        cpu_clock += opcodes.execute(0x3E, regs, memory, args);
         args[0] = 1;
-        opcodes.execute(0x06, regs, memory, args);
+        cpu_clock += opcodes.execute(0x06, regs, memory, args);
         args[0] = 2;
-        opcodes.execute(0x0E, regs, memory, args);
+        cpu_clock += opcodes.execute(0x0E, regs, memory, args);
         args[0] = 3;
-        opcodes.execute(0x16, regs, memory, args);
+        cpu_clock += opcodes.execute(0x16, regs, memory, args);
         args[0] = 4;
-        opcodes.execute(0x1E, regs, memory, args);
+        cpu_clock += opcodes.execute(0x1E, regs, memory, args);
         args[0] = 5;
-        opcodes.execute(0x26, regs, memory, args);
+        cpu_clock += opcodes.execute(0x26, regs, memory, args);
         args[0] = 6;
-        opcodes.execute(0x2E, regs, memory, args);
+        cpu_clock += opcodes.execute(0x2E, regs, memory, args);
 
         String debug = regs.toString();
         System.out.println("Pre-Exe");
@@ -59,6 +63,7 @@ public class CPU {
 
         args[0] = 0x2A;
         opcodes.execute(0xD6, regs, memory, args);
+
 
         System.out.println("Executed");
         debug = regs.toString();

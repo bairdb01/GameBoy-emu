@@ -163,7 +163,7 @@ public class Opcodes {
         setOpCode(std_opcodes, "LD SP,nn", 0x31, 12, (regs, memory, args) -> regs.setSP(args[0]));
         setOpCode(std_opcodes, "LD SP,HL", 0xF9, 8, (regs, memory, args) -> regs.setSP(regs.getHL()));
 //
-//        setOpCode(std_opcodes, "LD (NN),A", 0xEA, 8, (regs, memory, args) -> memory.setMemVal( args[0], regs.getA()));
+        setOpCode(std_opcodes, "LD (NN),A", 0xEA, 8, (regs, memory, args) -> memory.setMemVal(args[0], regs.getA()));
 //        setOpCode(std_opcodes, "LD (NN),SP", 0x08, 20, (regs, memory, args) -> memory.setMemVal(args[0], regs.getSP()));
 //
 //
@@ -717,8 +717,9 @@ public class Opcodes {
         opcodes[opcode] = new Instructions(label, opcode, clocks, op);
     }
 
-    public void execute(int opcode, Registers regs, Memory memory, short[] args) {
+    public int execute(int opcode, Registers regs, Memory memory, short[] args) {
         std_opcodes[opcode].op.cmd(regs, memory, args);
+        return std_opcodes[opcode].cycles;
 
     }
 }

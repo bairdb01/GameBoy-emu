@@ -85,7 +85,6 @@ public class Commands {
     /**
      * Subtract val from a
      *
-     * @param a   register a
      * @param val value to subtract
      */
     public static byte sub(byte val, Registers regs) {
