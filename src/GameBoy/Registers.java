@@ -3,7 +3,7 @@ package GameBoy;
 /**
  * Author: Benjamin Baird
  * Created on: 2018-08-28
- * Last Updated on: 2018-08-28
+ * Last Updated on: 2018-12-25
  * Filename: GameBoy.Registers
  * Description: GameBoy registers (excluding flags) and functions to manage them.
  * TODO: Register F should be the flag register

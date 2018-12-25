@@ -1,11 +1,11 @@
 package GameBoy;
 
 /**
- * All commands for the GB GameBoy.CPU
+ * Created on: 2018-12-23
+ * Last Updated on: 2018-12-25
+ * Filename: Commands
+ * Description: Operations for various opcodes. These may be broken down into ALU, Bit Operations, etc. in the future.
  */
-
-//TODO
-//
 
 public class Commands {
     /**
@@ -85,9 +85,10 @@ public class Commands {
     /**
      * Subtract val from a
      *
+     * @param regs All registers
      * @param val value to subtract
      */
-    public static byte sub(byte val, Registers regs) {
+    public static byte sub(Registers regs, byte val) {
         byte a = regs.getA();
         byte result = (byte) (a - val);
 
@@ -132,47 +133,64 @@ public class Commands {
     /**
      * Logical AND A and S and store in register A
      *
-     * @param a register A
+     * @param regs Registers
      * @param s 8bit value
      */
-    public static void AND(int a, int s) {
+    public static void AND(Registers regs, byte s) {
+        regs.setA((byte) (regs.getA() & s));
+
+        if (regs.getA() == 0) regs.setZFlag();
+        regs.clearNFlag();
+        regs.setHFlag();
+        regs.clearCFlag();
 
     }
 
     /**
      * Logical OR register A and 8 bit value
      *
-     * @param a register a
+     * @param regs All registers
      * @param s 8bit value
      */
-    public static void OR(int a, int s) {
-
+    public static void OR(Registers regs, byte s) {
+        regs.setA((byte) (regs.getA() | s));
+        if (regs.getA() == 0) regs.setZFlag();
+        regs.clearNFlag();
+        regs.clearHFlag();
+        regs.clearCFlag();
     }
 
     /**
      * Logical XOR register A and s
      *
-     * @param a register A
+     * @param regs All registers
      * @param s 8 bit value
      */
-    public static void XOR(int a, int s) {
-
+    public static void XOR(Registers regs, byte s) {
+        regs.setA((byte) (regs.getA() ^ s));
+        if (regs.getA() == 0) regs.setZFlag();
+        regs.clearNFlag();
+        regs.clearHFlag();
+        regs.clearCFlag();
     }
 
     /**
      * Compare 8bit value with register A (Same as subtract, but results thrown away)
      *
+     * @param regs All registers
      * @param s 8bit value
      */
-    public static void cp(byte s, Registers regs) {
+    public static void cp(Registers regs, byte s) {
         byte a = regs.getA();
-        sub(s, regs);
+        sub(regs, s);
         regs.setA(a);
     }
 
     /**
      * Increment register
      * Z-Flag affected, N-Flag reset, H-Flag set if carry from bit 3, C-Flag not affected
+     *
+     * @param regs All registers
      * @param val 8bit register to increment (r, (HL))
      */
     public static byte inc8Bit(Registers regs, byte val) {
@@ -198,6 +216,8 @@ public class Commands {
     /**
      * Decrement value
      * Z-Flag set if 0, N-Flag set, H-Flag set if no borrow from bit 4, C-Flag not affected
+     *
+     * @param regs All registers
      * @param val 8bit register to increment (r, (HL))
      */
     public static byte dec8Bit(Registers regs, byte val) {
