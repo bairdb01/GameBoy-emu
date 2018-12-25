@@ -160,13 +160,14 @@ public class Commands {
     }
 
     /**
-     * Compare 8bit value with register A
+     * Compare 8bit value with register A (Same as subtract, but results thrown away)
      *
-     * @param a register a
      * @param s 8bit value
      */
-    public static void CP(int a, int s) {
-
+    public static void cp(byte s, Registers regs) {
+        byte a = regs.getA();
+        sub(s, regs);
+        regs.setA(a);
     }
 
     /**
