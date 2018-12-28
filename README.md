@@ -54,6 +54,15 @@ The CB prefix notifies the GameBoy.CPU that there will be an additonal byte whic
 ### How to modify register values if they are primitive data types? (ints, bytes, shorts, etc. are pass by value in Java)
 The use of functional interface and lambda to store instructions in a variable allows for more than just one instruction to be performed. I simply return the value the register/memory should be and assign it in the same lambda. Of course this means that I need to return the proper values from each method.
 
+### Emulating a 16 bit register with two 8 bit registers
+The idea of the emulation is not tricky. Just use one register for one half of the 16bits and another register for the other half. A silly problem I ran into was forgetting that the `byte` data type in Java is signed. This means that the MSB is only used to determine if a number is positive or negative.
+When creating the 16 bit addition method, I ran into a bug which would produce the incorrect sums. As you may have guessed it was because I forgot that Java uses the signed numerical value of the bits. Additionally, when Java performs math with `bytes` or `shorts` it interprets them as an `int`. This means that the two's complement of a negative number is different (more leading 1's). Due to this I had to apply a bitmask to each value to "ignore" or set unwanted bits to 0.
+
+E.g. 0xFF00 and 0xFF are the bitmasks
+```
+short regPair = (short) ( ((registers[upperReg] << 8) & 0xFF00) + (registers[lowerReg] & 0xFF) );
+```
+
 ## Resources:
 
 [Coffee-gb](https://blog.rekawek.eu/2017/02/09/coffee-gb/) - Looking at other people's emulators can help get you started

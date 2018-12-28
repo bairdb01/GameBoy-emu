@@ -1,16 +1,24 @@
 package GameBoy;
 
+import org.jetbrains.annotations.Contract;
+
 /**
  * Author: Benjamin Baird
  * Created on: 2018-08-28
- * Last Updated on: 2018-12-25
  * Filename: GameBoy.Registers
  * Description: GameBoy registers (excluding flags) and functions to manage them.
  * TODO: Register F should be the flag register
  */
 public class Registers {
     private Byte[] registers = new Byte[8]; // GameBoy.Registers A, B, C, D, E, F, H, L (8 bit)
-
+    final private int A = 0;
+    final private int B = 1;
+    final private int C = 2;
+    final private int D = 3;
+    final private int E = 4;
+    final private int F = 5;
+    final private int H = 6;
+    final private int L = 7;
 
     // AF, BC, DE, HL pairings enable 16bit registers (Note: Bitshift to combine)
     private short SP, PC;          // SP (stack pointer), PC (program counter) (16 bit) registers
@@ -26,84 +34,87 @@ public class Registers {
             registers[i] = 0x0;
     }
 
-    public void setRegPair(int upperReg, int lowerReg, short val) {
-        registers[lowerReg] = (byte) (val);
-        registers[upperReg] = (byte) (val >>> 8);
-
-        System.out.println(registers[lowerReg]);
-        System.out.println(registers[upperReg]);
-        System.out.println("L: " + Integer.toBinaryString(registers[lowerReg]));
-        System.out.println("H: " + Integer.toBinaryString(registers[upperReg]));
-    }
-
-    public short getRegPair(byte upperReg, byte lowerReg) {
-        short regPair = (short) (upperReg << 8);
-        regPair += lowerReg;
-        return regPair;
-    }
+    /*
+     * 8 Bit Getters/setters
+     */
 
     public byte getA() {
-        return this.registers[0];
+        return this.registers[A];
     }
 
     public void setA(byte a) {
-        this.registers[0] = a;
+        this.registers[A] = a;
     }
 
     public byte getB() {
-        return this.registers[1];
+        return this.registers[B];
     }
 
     public void setB(byte b) {
-        this.registers[1] = b;
+        this.registers[B] = b;
     }
 
     public byte getC() {
-        return this.registers[2];
+        return this.registers[C];
     }
 
     public void setC(byte c) {
-        this.registers[2] = c;
+        this.registers[C] = c;
     }
 
     public byte getD() {
-        return registers[3];
+        return registers[D];
     }
 
     public void setD(byte d) {
-        this.registers[3] = d;
+        this.registers[D] = d;
     }
 
     public byte getE() {
-        return registers[4];
+        return registers[E];
     }
 
     public void setE(byte e) {
-        this.registers[4] = e;
+        this.registers[E] = e;
     }
 
     public byte getF() {
-        return registers[5];
+        return registers[F];
     }
 
     public void setF(byte f) {
-        this.registers[5] = f;
+        this.registers[F] = f;
     }
 
     public byte getH() {
-        return registers[6];
+        return registers[H];
     }
 
     public void setH(byte h) {
-        this.registers[6] = h;
+        this.registers[H] = h;
     }
 
     public byte getL() {
-        return registers[7];
+        return registers[L];
     }
 
     public void setL(byte l) {
-        this.registers[7] = l;
+        this.registers[L] = l;
+    }
+
+
+    /*
+     * 16-bit Getters/Setters
+     */
+
+    public void setRegPair(int upperReg, int lowerReg, short val) {
+        registers[lowerReg] = (byte) (val); // Cast lower half to a byte to remove upper bits
+        registers[upperReg] = (byte) (val >> 8); // Shift upper bits to lower half and fill upper half with 0's.
+    }
+
+    public short getRegPair(int upperReg, int lowerReg) {
+        short regPair = (short) (((registers[upperReg] << 8) & 0xFF00) + (registers[lowerReg] & 0xFF));
+        return regPair;
     }
 
 
@@ -124,40 +135,44 @@ public class Registers {
     }
 
     public short getAF() {
-        return getRegPair(registers[0], registers[5]);
+        return getRegPair(0, 5);
     }
 
     public void setAF(short val) {
-        setRegPair(0, 5, val);
+        setRegPair(A, F, val);
     }
 
     public short getBC() {
-        return getRegPair(registers[1], registers[2]);
+        return getRegPair(B, C);
     }
 
     public void setBC(short val) {
-        setRegPair(1, 2, val);
+        setRegPair(B, C, val);
     }
 
     public short getDE() {
-        return getRegPair(registers[3], registers[4]);
+        return getRegPair(D, E);
     }
 
     public void setDE(short val) {
-        setRegPair(3, 4, val);
+        setRegPair(D, E, val);
     }
 
     public short getHL() {
-        return getRegPair(registers[6], registers[7]);
+        return getRegPair(H, L);
     }
 
     public void setHL(short val) {
-        setRegPair(6, 7, val);
+        setRegPair(H, L, val);
     }
 
     public byte getFlag() {
         return flag;
     }
+
+    /*
+     * Flag set/clear methods
+     */
 
     private byte clearBit(byte register, byte pos) {
         register &= ~(1 << pos);
@@ -200,6 +215,7 @@ public class Registers {
     public void clearCFlag() {
         flag = clearBit(flag, c_pos);
     }
+
 
     public String toString() {
         String s = "";

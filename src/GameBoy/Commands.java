@@ -1,10 +1,14 @@
 package GameBoy;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Created on: 2018-12-23
- * Last Updated on: 2018-12-25
  * Filename: Commands
  * Description: Operations for various opcodes. These may be broken down into ALU, Bit Operations, etc. in the future.
+ *
+ * Flag decriptors: - means unaffected, 0/1 clears/sets the flag, and * means affected accordingly
  */
 
 public class Commands {
@@ -187,13 +191,14 @@ public class Commands {
     }
 
     /**
-     * Increment register
+     * Performs val+1 and modifies flags. Does not change val only returns the sum.
      * Z-Flag affected, N-Flag reset, H-Flag set if carry from bit 3, C-Flag not affected
      *
      * @param regs All registers
      * @param val 8bit register to increment (r, (HL))
+     * @return val + 1
      */
-    public static byte inc8Bit(Registers regs, byte val) {
+    public static byte inc(Registers regs, byte val) {
         // Half carry check
         // Truncates register value to first nibble and then adds 1 to see if there is a carry from bit 3 to 4
         if ((((val & 0xf) + (0x01 & 0xF)) & 0x10) == 0x10) {
@@ -214,13 +219,14 @@ public class Commands {
     }
 
     /**
-     * Decrement value
+     * Decrement value and returns the decremented value, modifying flags. Does not store result.
      * Z-Flag set if 0, N-Flag set, H-Flag set if no borrow from bit 4, C-Flag not affected
      *
      * @param regs All registers
      * @param val 8bit register to increment (r, (HL))
+     * @return val - 1
      */
-    public static byte dec8Bit(Registers regs, byte val) {
+    public static byte dec(Registers regs, byte val) {
         // Truncates the first 4 bits and subtracts 1. If result is less than 0 (borrowed from bit 4) then it is a half carry.
         if (((val & 0xf) - (0x01)) < 0) {
             regs.clearHFlag();
@@ -248,38 +254,51 @@ public class Commands {
 
     /**
      * Adds val to the value stored at reg
+     * Flags: Z=-,N=0, H=*,C=*
      *
-     * @param reg 16bit register (HL, SP)
-     * @param val a value to add stored in a 16bit register (BC, DE,HL,SP)
+     * @param regs List of all the registers
+     * @param a first number to add
+     * @param b second number to add
      * @return the register
      */
-    public static int add16(int reg, int val) {
+    public static short add(Registers regs, short a, short b) {
+        short sum = 0;
 
-        return reg;
+        // Setting flags
+        regs.clearNFlag();
+        if ((((a & 0xf) + (b & 0xF)) & 0x10) == 0x10) {
+            regs.setHFlag();
+        }
+        if ((a + b) > Short.MAX_VALUE) {
+            regs.setCFlag();
+        }
+
+        sum = (short) (a + b);
+        return sum;
     }
 
     /**
-     * Increments the value stored at a 16bit register
+     * Increments val and changes flags. Does not store results, only returns them.
      *
-     * @param reg 16bit register (BC, DE, HL, SP)
-     * @return reg
+     * @param regs All registers register
+     * @param val 16bit value
+     * @return val + 1
      */
-    public static int inc16Bit(int reg) {
+    public static short inc(Registers regs, short val) {
 
-        return reg;
+        return val;
     }
 
     /**
-     * Decrements the value stored at a 16bit register
-     *
-     * @param reg 16bit register (BC, DE, HL, SP)
-     * @return reg
+     * Decrement value and returns the decremented value, modifying flags. Does not store result.
+     * @param regs All registers
+     * @param val 16bit value to decrease
+     * @return val - 1
      */
-    public static int dec16Bit(int reg) {
+    public static short dec(Registers regs, short val) {
 
-        return reg;
+        return val;
     }
-
 
     /**
      * Misc.

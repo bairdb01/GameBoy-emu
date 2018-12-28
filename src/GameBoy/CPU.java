@@ -1,9 +1,10 @@
 package GameBoy;
 
+import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
+
 /**
  * Author: Benjamin Baird
  * Created on: 2018-08-28
- * Last Updated on: 2018-08-28
  * Filename: GameBoy.CPU
  * Description: An emulation of a GameBoy GameBoy.CPU
  * 8-bit GameBoy.CPU
@@ -57,17 +58,29 @@ public class CPU {
         args[0] = 6;
         cpu_clock += opcodes.execute(0x2E, regs, memory, args);
 
+        args[0] = 123;
+        opcodes.execute(0x01, regs, memory, args); // LD BC, nn
+        args[0] = Short.MAX_VALUE;
+        opcodes.execute(0x11, regs, memory, args); // LD DE, nn
+        args[0] = 3000;
+        opcodes.execute(0x21, regs, memory, args); // LD HL, nn
+
+
         String debug = regs.toString();
         System.out.println("Pre-Exe");
         System.out.println(debug);
 
+//        System.out.println("BC: " + regs.getBC());
+//        System.out.println("DE: " + regs.getDE());
+//        System.out.println("HL: " + regs.getHL());
         args[0] = 0x2A;
-        opcodes.execute(0xD6, regs, memory, args);
+//
+        opcodes.execute(0x09, regs, memory, args);
 
 
-        System.out.println("Executed");
-        debug = regs.toString();
-        System.out.println(debug);
+//        System.out.println("Executed");
+//        debug = regs.toString();
+//        System.out.println(debug);
     }
 
 }
