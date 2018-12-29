@@ -63,6 +63,23 @@ E.g. 0xFF00 and 0xFF are the bitmasks
 short regPair = (short) ( ((registers[upperReg] << 8) & 0xFF00) + (registers[lowerReg] & 0xFF) );
 ```
 
+### Stack Pointer
+Just a note. The stack pointer grows downwards and follows these commands.
+```
+PUSH HL
+dec sp
+ld (sp), h
+dec sp
+ld (sp), l
+```
+
+```
+POP HL
+ld l, (sp)
+inc sp
+ld h, (sp)
+inc sp
+```
 ## Resources:
 
 [Coffee-gb](https://blog.rekawek.eu/2017/02/09/coffee-gb/) - Looking at other people's emulators can help get you started

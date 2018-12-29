@@ -70,9 +70,9 @@ public class CPU {
         System.out.println("Pre-Exe");
         System.out.println(debug);
 
-//        System.out.println("BC: " + regs.getBC());
-//        System.out.println("DE: " + regs.getDE());
-//        System.out.println("HL: " + regs.getHL());
+        System.out.println("BC: " + regs.getBC());
+        System.out.println("DE: " + regs.getDE());
+        System.out.println("HL: " + regs.getHL());
         args[0] = 0x2A;
 //
         opcodes.execute(0x09, regs, memory, args);

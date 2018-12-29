@@ -21,7 +21,7 @@ public class Registers {
     final private int L = 7;
 
     // AF, BC, DE, HL pairings enable 16bit registers (Note: Bitshift to combine)
-    private short SP, PC;          // SP (stack pointer), PC (program counter) (16 bit) registers
+    private short SP = (short) (0xFFFE), PC = 0;          // SP (stack pointer), PC (program counter) (16 bit) registers
     private byte flag = 0x0;    // Flag register reference to make things easier Z=7, N=6, H=5, C=4, Other=0-3
 
     private byte z_pos = 7; // Zero
@@ -170,6 +170,13 @@ public class Registers {
         return flag;
     }
 
+    public byte getCFlag() {
+        return (byte) ((this.flag >> this.c_pos) & 0x1);
+    }
+
+    public byte getZFlag() {
+        return (byte) ((this.flag >> this.z_pos) & 0x1);
+    }
     /*
      * Flag set/clear methods
      */

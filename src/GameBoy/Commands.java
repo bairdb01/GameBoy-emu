@@ -1,14 +1,12 @@
 package GameBoy;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * Created on: 2018-12-23
  * Filename: Commands
  * Description: Operations for various opcodes. These may be broken down into ALU, Bit Operations, etc. in the future.
  *
  * Flag decriptors: - means unaffected, 0/1 clears/sets the flag, and * means affected accordingly
+ * TODO: Test subc, adc, PUSH, POP, swap, cpl, ccf
  */
 
 public class Commands {
@@ -61,6 +59,23 @@ public class Commands {
         return destPtr;
     }
 
+    public static void ldhl(Registers regs, short offset) {
+        regs.setHL((short) (regs.getSP() + offset));
+        regs.clearZFlag();
+        regs.clearNFlag();
+
+        if (((regs.getSP() & 0xF) + (offset & 0xF)) > 0xF) {
+            regs.setHFlag();
+        } else {
+            regs.setHFlag();
+        }
+
+        if (((regs.getSP() & 0xFF) + (offset & 0xFF)) > 0xFF) {
+            regs.setCFlag();
+        } else {
+            regs.clearCFlag();
+        }
+    }
 
     /******************************************
      * 8 bit ALU
@@ -68,22 +83,36 @@ public class Commands {
 
     /**
      * Add val to the value at a
-     *
-     * @param a   Register a
+     * Flags: Z=*, N=0, H=*,C=*
+     * @param regs All registers, used to access register A
      * @param val Value to add to register a
      */
-    public static void addToA(int a, int val) {
+    public static byte addToA(Registers regs, byte val) {
+        byte aVal = regs.getA();
+        byte sum = (byte) (regs.getA() + val);
+        regs.clearNFlag();
 
-    }
+        // Set if carry from bit 3
+        if (((aVal & 0xF) + (val & 0xF)) > 0xF) {
+            regs.setHFlag();
+        } else {
+            regs.clearHFlag();
+        }
 
-    /**
-     * Add value to register a and set carry flag
-     *
-     * @param a   register a
-     * @param val value to add
-     */
-    public static void adcToA(int a, int val) {
+        // Set if carry from bit 7
+        if (((aVal & 0xFF) + (val & 0xFF)) > 0xFF) {
+            regs.setCFlag();
+        } else {
+            regs.clearCFlag();
+        }
 
+        if (sum == 0) {
+            regs.setZFlag();
+        } else {
+            regs.clearZFlag();
+        }
+        regs.setA(sum);
+        return sum;
     }
 
     /**
@@ -223,7 +252,7 @@ public class Commands {
      * Z-Flag set if 0, N-Flag set, H-Flag set if no borrow from bit 4, C-Flag not affected
      *
      * @param regs All registers
-     * @param val 8bit register to increment (r, (HL))
+     * @param val 8bit register to decrement (r, (HL))
      * @return val - 1
      */
     public static byte dec(Registers regs, byte val) {
@@ -280,24 +309,20 @@ public class Commands {
     /**
      * Increments val and changes flags. Does not store results, only returns them.
      *
-     * @param regs All registers register
      * @param val 16bit value
      * @return val + 1
      */
-    public static short inc(Registers regs, short val) {
-
-        return val;
+    public static short inc(short val) {
+        return (short) (val + 1);
     }
 
     /**
      * Decrement value and returns the decremented value, modifying flags. Does not store result.
-     * @param regs All registers
      * @param val 16bit value to decrease
      * @return val - 1
      */
-    public static short dec(Registers regs, short val) {
-
-        return val;
+    public static short dec(short val) {
+        return (short) (val - 1);
     }
 
     /**
@@ -309,19 +334,38 @@ public class Commands {
      * @param reg an 8bit register to swap (8bit register, (HL))
      */
     public static byte swap(byte reg) {
-        return (byte) ((reg >>> 4) | (reg << 4));
+        return (byte) ((reg << 4) | (reg >>> 4));
     }
 
     public static void daa() {
 
     }
 
-    public static void cpl() {
-
+    /**
+     * Sets register A to the complement of itself
+     * Flags: Z=-, N=1, H=1, C=-
+     *
+     * @param regs All registers
+     */
+    public static void cpl(Registers regs) {
+        regs.setA((byte) (~regs.getA()));
+        regs.setNFlag();
+        regs.setHFlag();
     }
 
-    public static void ccf() {
-
+    /**
+     * Flips the Carry flag bit
+     *
+     * @param regs All registers
+     */
+    public static void ccf(Registers regs) {
+        if (regs.getCFlag() == 1) {
+            regs.setCFlag();
+        } else {
+            regs.clearCFlag();
+        }
+        regs.clearNFlag();
+        regs.clearHFlag();
     }
 
     // Literally nothing
@@ -411,22 +455,83 @@ public class Commands {
     /*******************************************************
      *  Jumps
      ******************************************************/
-    public static void jp(int adr) {
-
+    /**
+     * Jumps to adr if flag condition is met
+     *
+     * @param regs          All registers including the Flag register
+     * @param adr           16bit Address to jump to
+     * @param flagCondition String notation of the flag condition to meet
+     */
+    public static void jpIf(Registers regs, short adr, String flagCondition) {
+        switch (flagCondition) {
+            case ("Z"):
+                if (regs.getZFlag() == 1) {
+                    regs.setPC((short) (regs.getPC() + adr));
+                }
+                break;
+            case ("NZ"):
+                if (regs.getZFlag() == 0) {
+                    regs.setPC((short) (regs.getPC() + adr));
+                }
+                break;
+            case ("C"):
+                if (regs.getCFlag() == 1) {
+                    regs.setPC((short) (regs.getPC() + adr));
+                }
+                break;
+            case ("NC"):
+                if (regs.getCFlag() == 0) {
+                    regs.setPC((short) (regs.getPC() + adr));
+                }
+                break;
+            default:
+                break;
+        }
     }
 
-    public static void jpIf(int flag, int adr) {
-
+    /**
+     * Adds offset to program counter
+     *
+     * @param regs   All registers
+     * @param offset 8bit number to inc/dec the PC
+     */
+    public static void jr(Registers regs, byte offset) {
+        regs.setPC((short) (regs.getPC() + offset));
     }
 
-    public static void jr(int adr) {
-
+    /**
+     * Moves the program counter up by an 8bit adr if Flag condition is met
+     *
+     * @param regs          Registers containing the flags
+     * @param offset        8bit number
+     * @param flagCondition String to choose a condition to be met
+     */
+    public static void jrif(Registers regs, byte offset, String flagCondition) {
+        switch (flagCondition) {
+            case ("Z"):
+                if (regs.getZFlag() == 1) {
+                    regs.setPC((short) (regs.getPC() + offset));
+                }
+                break;
+            case ("NZ"):
+                if (regs.getZFlag() == 0) {
+                    regs.setPC((short) (regs.getPC() + offset));
+                }
+                break;
+            case ("C"):
+                if (regs.getCFlag() == 1) {
+                    regs.setPC((short) (regs.getPC() + offset));
+                }
+                break;
+            case ("NC"):
+                if (regs.getCFlag() == 0) {
+                    regs.setPC((short) (regs.getPC() + offset));
+                }
+                break;
+            default:
+                break;
+        }
     }
-
-    public static void jrIf(int num) {
-
-    }
-
 
     /*******************************************************
      * Calls
