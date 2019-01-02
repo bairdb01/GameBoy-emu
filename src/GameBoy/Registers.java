@@ -181,12 +181,12 @@ public class Registers {
      * Flag set/clear methods
      */
 
-    private byte clearBit(byte register, byte pos) {
+    public byte clearBit(byte register, byte pos) {
         register &= ~(1 << pos);
         return register;
     }
 
-    private byte setBit(byte register, byte pos) {
+    public byte setBit(byte register, byte pos) {
         register |= (1 << pos);
         return register;
     }

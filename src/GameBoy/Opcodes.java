@@ -9,7 +9,9 @@ package GameBoy;
  * TODO: MISSING FUNCTIONS
  * TODO: Figure out how to handle CB prefix opcode. (Solution? - Bitclear the CB out OPCODE &= ~(CB << 2) and use as index)
  * TODO: Lookup how results are stored for opcodes. Probably in the stack.
- * TODO: Bitmask all additions of bytes(0xFF) and shorts(0xFFFF) and their results
+ * TODO: Check if Bitmask of all additions of bytes(0xFF) and shorts(0xFFFF) and their results is needed
+ * TODO: Change all op codes to return the number of clocks required (pass regs/mem/args) as arguments to change values inside? or change ones with multiple clocks
+ * TODO: Clock cycles from GBCPUman may be inaccurate. Double check with other sources.
  */
 public class Opcodes {
 
@@ -319,14 +321,14 @@ public class Opcodes {
          * Misc.
          */
         // Swap upper and lower nibbles of n
-        setOpCode(cb_opcodes, "SWAP A", 0xCB37, 8, (regs, memory, args) -> regs.setA(Commands.swap(regs.getA())));
-        setOpCode(cb_opcodes, "SWAP B", 0xCB30, 8, (regs, memory, args) -> regs.setB(Commands.swap(regs.getB())));
-        setOpCode(cb_opcodes, "SWAP C", 0xCB31, 8, (regs, memory, args) -> regs.setC(Commands.swap(regs.getC())));
-        setOpCode(cb_opcodes, "SWAP D", 0xCB32, 8, (regs, memory, args) -> regs.setD(Commands.swap(regs.getD())));
-        setOpCode(cb_opcodes, "SWAP E", 0xCB33, 8, (regs, memory, args) -> regs.setE(Commands.swap(regs.getE())));
-        setOpCode(cb_opcodes, "SWAP H", 0xCB34, 8, (regs, memory, args) -> regs.setH(Commands.swap(regs.getH())));
-        setOpCode(cb_opcodes, "SWAP L", 0xCB35, 8, (regs, memory, args) -> regs.setL(Commands.swap(regs.getL())));
-        setOpCode(cb_opcodes, "SWAP (HL)", 0xCB36, 16, (regs, memory, args) -> memory.setMemVal(regs.getHL(), Commands.swap(memory.getMemVal(regs.getHL()))));
+        setOpCode(cb_opcodes, "SWAP A", 0x37, 8, (regs, memory, args) -> regs.setA(Commands.swap(regs.getA())));
+        setOpCode(cb_opcodes, "SWAP B", 0x30, 8, (regs, memory, args) -> regs.setB(Commands.swap(regs.getB())));
+        setOpCode(cb_opcodes, "SWAP C", 0x31, 8, (regs, memory, args) -> regs.setC(Commands.swap(regs.getC())));
+        setOpCode(cb_opcodes, "SWAP D", 0x32, 8, (regs, memory, args) -> regs.setD(Commands.swap(regs.getD())));
+        setOpCode(cb_opcodes, "SWAP E", 0x33, 8, (regs, memory, args) -> regs.setE(Commands.swap(regs.getE())));
+        setOpCode(cb_opcodes, "SWAP H", 0x34, 8, (regs, memory, args) -> regs.setH(Commands.swap(regs.getH())));
+        setOpCode(cb_opcodes, "SWAP L", 0x35, 8, (regs, memory, args) -> regs.setL(Commands.swap(regs.getL())));
+        setOpCode(cb_opcodes, "SWAP (HL)", 0x36, 16, (regs, memory, args) -> memory.setMemVal(regs.getHL(), Commands.swap(memory.getMemVal(regs.getHL()))));
 
         // Decimal adjust register A
 //        setOpCode(std_opcodes, "DAA", 27, 4, (regs, memory, args) -> regs.daa());
@@ -344,7 +346,6 @@ public class Opcodes {
             regs.clearHFlag();
             regs.setCFlag();
         });
-
 
         setOpCode(std_opcodes, "NOP", 00, 4, (regs, memory, args) -> Commands.nop());
 //        setOpCode(std_opcodes, "HALT", 76, 4, (regs, memory, args) -> regs.halt());
@@ -443,38 +444,38 @@ public class Opcodes {
 //        setOpCode(cb_opcodes, "SRL (HL)", 0xCB3E, 16, (regs, memory, args) -> regs.srlRegPair(regs.getH(), regs.getL(), regs.getFlag()));
 //
 //
-//        /**
-//         * Bit GameBoy.Opcodes
-//         */
-//        // Test bit b in register r. GameBoy.Flags affected
-//        setOpCode(cb_opcodes, "BIT b,A", 0xCB47, 8, (regs, memory, args) -> regs.testBit(regs.getA(), args[0], regs.getFlag()));
-//        setOpCode(cb_opcodes, "BIT b,B", 0xCB40, 8, (regs, memory, args) -> regs.testBit(regs.getB(), args[0], regs.getFlag()));
-//        setOpCode(cb_opcodes, "BIT b,C", 0xCB41, 8, (regs, memory, args) -> regs.testBit(regs.getC(), args[0], regs.getFlag()));
-//        setOpCode(cb_opcodes, "BIT b,D", 0xCB42, 8, (regs, memory, args) -> regs.testBit(regs.getD(), args[0], regs.getFlag()));
-//        setOpCode(cb_opcodes, "BIT b,E", 0xCB43, 8, (regs, memory, args) -> regs.testBit(regs.getE(), args[0], regs.getFlag()));
-//        setOpCode(cb_opcodes, "BIT b,H", 0xCB44, 8, (regs, memory, args) -> regs.testBit(regs.getH(), args[0], regs.getFlag()));
-//        setOpCode(cb_opcodes, "BIT b,L", 0xCB45, 8, (regs, memory, args) -> regs.testBit(regs.getL(), args[0], regs.getFlag()));
-//        setOpCode(cb_opcodes, "BIT b,(HL)", 0xCB46, 16, (regs, memory, args) -> regs.testBit(regs.getHL(), args[0], regs.getFlag()));
-//
-//        // Set bit b in register r.
-//        setOpCode(cb_opcodes, "SET b,A", 0xCBC7, 8, (regs, memory, args) -> regs.setBit(regs.getA(), args[0]));
-//        setOpCode(cb_opcodes, "SET b,B", 0xCBC0, 8, (regs, memory, args) -> regs.setBit(regs.getB(), args[0]));
-//        setOpCode(cb_opcodes, "SET b,C", 0xCBC1, 8, (regs, memory, args) -> regs.setBit(regs.getC(), args[0]));
-//        setOpCode(cb_opcodes, "SET b,D", 0xCBC2, 8, (regs, memory, args) -> regs.setBit(regs.getD(), args[0]));
-//        setOpCode(cb_opcodes, "SET b,E", 0xCBC3, 8, (regs, memory, args) -> regs.setBit(regs.getE(), args[0]));
-//        setOpCode(cb_opcodes, "SET b,H", 0xCBC4, 8, (regs, memory, args) -> regs.setBit(regs.getH(), args[0]));
-//        setOpCode(cb_opcodes, "SET b,L", 0xCBC5, 8, (regs, memory, args) -> regs.setBit(regs.getL(), args[0]));
-//        setOpCode(cb_opcodes, "SET b,(HL)", 0xCBC6, 16, (regs, memory, args) -> regs.setBit(regs.getHL(), args[0]));
-//
-//        // RESET BIT B IN REGISTER r
-//        setOpCode(cb_opcodes, "RES b,A", 0xCB87, 8, (regs, memory, args) -> regs.clearBit(regs.getA(), args[0]));
-//        setOpCode(cb_opcodes, "RES b,B", 0xCB80, 8, (regs, memory, args) -> regs.clearBit(regs.getB(), args[0]));
-//        setOpCode(cb_opcodes, "RES b,C", 0xCB81, 8, (regs, memory, args) -> regs.clearBit(regs.getC(), args[0]));
-//        setOpCode(cb_opcodes, "RES b,D", 0xCB82, 8, (regs, memory, args) -> regs.clearBit(regs.getD(), args[0]));
-//        setOpCode(cb_opcodes, "RES b,E", 0xCB83, 8, (regs, memory, args) -> regs.clearBit(regs.getE(), args[0]));
-//        setOpCode(cb_opcodes, "RES b,H", 0xCB84, 8, (regs, memory, args) -> regs.clearBit(regs.getH(), args[0]));
-//        setOpCode(cb_opcodes, "RES b,L", 0xCB85, 8, (regs, memory, args) -> regs.clearBit(regs.getL(), args[0]));
-//        setOpCode(cb_opcodes, "RES b,(HL)", 0xCB86, 16, (regs, memory, args) -> regs.clearBit(regs.getHL(), args[0]));
+        /**
+         * Bit GameBoy.Opcodes
+         */
+        // Test bit b in register r. GameBoy.Flags affected
+        setOpCode(cb_opcodes, "BIT b,A", 0x47, 8, (regs, memory, args) -> Commands.testBit(regs, regs.getA(), (byte) args[0]));
+        setOpCode(cb_opcodes, "BIT b,B", 0x40, 8, (regs, memory, args) -> Commands.testBit(regs, regs.getB(), (byte) args[0]));
+        setOpCode(cb_opcodes, "BIT b,C", 0x41, 8, (regs, memory, args) -> Commands.testBit(regs, regs.getC(), (byte) args[0]));
+        setOpCode(cb_opcodes, "BIT b,D", 0x42, 8, (regs, memory, args) -> Commands.testBit(regs, regs.getD(), (byte) args[0]));
+        setOpCode(cb_opcodes, "BIT b,E", 0x43, 8, (regs, memory, args) -> Commands.testBit(regs, regs.getE(), (byte) args[0]));
+        setOpCode(cb_opcodes, "BIT b,H", 0x44, 8, (regs, memory, args) -> Commands.testBit(regs, regs.getH(), (byte) args[0]));
+        setOpCode(cb_opcodes, "BIT b,L", 0x45, 8, (regs, memory, args) -> Commands.testBit(regs, regs.getL(), (byte) args[0]));
+        setOpCode(cb_opcodes, "BIT b,(HL)", 0x46, 16, (regs, memory, args) -> Commands.testBit(regs, memory.getMemVal(regs.getHL()), (byte) args[0]));
+
+        // Set bit b in register r.
+        setOpCode(cb_opcodes, "SET b,A", 0xC7, 8, (regs, memory, args) -> regs.setA(regs.setBit(regs.getA(), (byte) args[0])));
+        setOpCode(cb_opcodes, "SET b,B", 0xC0, 8, (regs, memory, args) -> regs.setB(regs.setBit(regs.getB(), (byte) args[0])));
+        setOpCode(cb_opcodes, "SET b,C", 0xC1, 8, (regs, memory, args) -> regs.setC(regs.setBit(regs.getC(), (byte) args[0])));
+        setOpCode(cb_opcodes, "SET b,D", 0xC2, 8, (regs, memory, args) -> regs.setD(regs.setBit(regs.getD(), (byte) args[0])));
+        setOpCode(cb_opcodes, "SET b,E", 0xC3, 8, (regs, memory, args) -> regs.setE(regs.setBit(regs.getE(), (byte) args[0])));
+        setOpCode(cb_opcodes, "SET b,H", 0xC4, 8, (regs, memory, args) -> regs.setH(regs.setBit(regs.getH(), (byte) args[0])));
+        setOpCode(cb_opcodes, "SET b,L", 0xC5, 8, (regs, memory, args) -> regs.setL(regs.setBit(regs.getL(), (byte) args[0])));
+        setOpCode(cb_opcodes, "SET b,(HL)", 0xC6, 16, (regs, memory, args) -> memory.setMemVal(regs.getHL(), regs.setBit(memory.getMemVal(regs.getHL()), (byte) args[0])));
+
+        // RESET BIT B IN REGISTER r
+        setOpCode(cb_opcodes, "RES b,A", 0x87, 8, (regs, memory, args) -> regs.setA(regs.clearBit(regs.getA(), (byte) args[0])));
+        setOpCode(cb_opcodes, "RES b,B", 0x80, 8, (regs, memory, args) -> regs.setB(regs.clearBit(regs.getB(), (byte) args[0])));
+        setOpCode(cb_opcodes, "RES b,C", 0x81, 8, (regs, memory, args) -> regs.setC(regs.clearBit(regs.getC(), (byte) args[0])));
+        setOpCode(cb_opcodes, "RES b,D", 0x82, 8, (regs, memory, args) -> regs.setD(regs.clearBit(regs.getD(), (byte) args[0])));
+        setOpCode(cb_opcodes, "RES b,E", 0x83, 8, (regs, memory, args) -> regs.setE(regs.clearBit(regs.getE(), (byte) args[0])));
+        setOpCode(cb_opcodes, "RES b,H", 0x84, 8, (regs, memory, args) -> regs.setH(regs.clearBit(regs.getH(), (byte) args[0])));
+        setOpCode(cb_opcodes, "RES b,L", 0x85, 8, (regs, memory, args) -> regs.setL(regs.clearBit(regs.getL(), (byte) args[0])));
+        setOpCode(cb_opcodes, "RES b,(HL)", 0x86, 16, (regs, memory, args) -> memory.setMemVal(regs.getHL(), regs.clearBit(memory.getMemVal(regs.getHL()), (byte) args[0])));
 
 
 
@@ -508,7 +509,7 @@ public class Opcodes {
          * Calls
          */
         // Push address of next instruction onto stack and then jump to address nn
-//        setOpCode(std_opcodes, "CALL nn", 0xCD, 12, (regs, memory, args) -> regs.call(args[0]));
+        setOpCode(std_opcodes, "CALL nn", 0xCD, 12, (regs, memory, args) -> Commands.call(regs, memory, args[0]));
 //
 //        // Call adr if
 //        setOpCode(std_opcodes, "CALL NZ,nn", 0xC4, 12, (regs, memory, args) -> regs.callIf(args[0]));
@@ -521,21 +522,21 @@ public class Opcodes {
 //         * Restarts
 //         */
 //        // Jump to address $0000 + n. 0x00, 0x08, ...
-//        setOpCode(std_opcodes, "RST 00H", 0xC7, 32, (regs, memory, args) -> Commands.restart(args[0]));
-//        setOpCode(std_opcodes, "RST 08H", 0xCF, 32, (regs, memory, args) -> regs.restart(args[0]));
-//        setOpCode(std_opcodes, "RST 10H", 0xD7, 32, (regs, memory, args) -> regs.restart(args[0]));
-//        setOpCode(std_opcodes, "RST 18H", 0xDF, 32, (regs, memory, args) -> regs.restart(args[0]));
-//        setOpCode(std_opcodes, "RST 20H", 0xE7, 32, (regs, memory, args) -> regs.restart(args[0]));
-//        setOpCode(std_opcodes, "RST 28H", 0xEF, 32, (regs, memory, args) -> regs.restart(args[0]));
-//        setOpCode(std_opcodes, "RST 30H", 0xF7, 32, (regs, memory, args) -> regs.restart(args[0]));
-//        setOpCode(std_opcodes, "RST 38H", 0xFF, 32, (regs, memory, args) -> regs.restart(args[0]));
-//
-//
-//        /**
-//         * Returns
-//         */
-//        // Pop two bytes from stack and jump to that address
-//        setOpCode(std_opcodes, "RET", 0xC9, 8, (regs, memory, args) -> regs.popJmp());
+        setOpCode(std_opcodes, "RST 0x00", 0xC7, 32, (regs, memory, args) -> Commands.restart(regs, memory, (short) 0x00));
+        setOpCode(std_opcodes, "RST 0x08", 0xCF, 32, (regs, memory, args) -> Commands.restart(regs, memory, (short) 0x08));
+        setOpCode(std_opcodes, "RST 0x10", 0xD7, 32, (regs, memory, args) -> Commands.restart(regs, memory, (short) 0x10));
+        setOpCode(std_opcodes, "RST 0x18", 0xDF, 32, (regs, memory, args) -> Commands.restart(regs, memory, (short) 0x18));
+        setOpCode(std_opcodes, "RST 0x20", 0xE7, 32, (regs, memory, args) -> Commands.restart(regs, memory, (short) 0x20));
+        setOpCode(std_opcodes, "RST 0x28", 0xEF, 32, (regs, memory, args) -> Commands.restart(regs, memory, (short) 0x28));
+        setOpCode(std_opcodes, "RST 0x30", 0xF7, 32, (regs, memory, args) -> Commands.restart(regs, memory, (short) 0x30));
+        setOpCode(std_opcodes, "RST 0x38", 0xFF, 32, (regs, memory, args) -> Commands.restart(regs, memory, (short) 0x38));
+
+
+        /**
+         * Returns
+         */
+        // Pop two bytes from stack and jump to that address
+        setOpCode(std_opcodes, "RET", 0xC9, 8, (regs, memory, args) -> Commands.ret(regs, memory));
 //
 //        // Return if following condition is true
 //        setOpCode(std_opcodes, "RET NZ", 0xC0, 8, (regs, memory, args) -> regs.popJmpIf(regs.getZFlag()));

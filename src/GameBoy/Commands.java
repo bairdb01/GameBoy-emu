@@ -537,8 +537,17 @@ public class Commands {
      * Calls
      * *****************************************************/
 
-    public static void call(int adr) {
-
+    /**
+     * Push address of next instruction onto stack and then jump to address
+     *
+     * @param regs All registers
+     * @param mem  Location of memory (RAM)
+     * @param adr  address to jump to
+     * @return new address of PC
+     */
+    public static void call(Registers regs, Memory mem, short adr) {
+        regs.setSP(mem.push(regs, regs.getSP(), regs.getPC()));
+        regs.setPC(adr);
     }
 
     public static void callIf(int adr) {
@@ -549,7 +558,29 @@ public class Commands {
         reg = val;
     }
 
-    public static void restart(int reg) {
+    public static void restart(Registers regs, Memory mem, short offset) {
+        regs.setSP(mem.push(regs, regs.getSP(), regs.getPC()));
+        regs.setPC(offset);
+    }
+
+    public static void ret(Registers regs, Memory mem) {
+        regs.setPC(mem.pop(regs, regs.getSP()));
+    }
+
+    public static void ret(Registers regs, Memory mem, String cc) {
+
+    }
+
+
+    public static void testBit(Registers regs, byte reg, byte bitPos) {
+        if ((byte) (reg >>> bitPos) == 0) {
+            regs.setZFlag();
+        } else {
+            regs.clearZFlag();
+        }
+        regs.clearNFlag();
+        regs.setHFlag();
+
 
     }
 }

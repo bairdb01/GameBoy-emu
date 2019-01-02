@@ -33,18 +33,18 @@ public class Memory {
         return memory[adr - 2];
     }
 
-    /**
-     * Writes a 8bit to memory. Stores LSB in lower memory adress, MSB in higher address
-     *
-     * @param SP  Stack pointer
-     * @param val 8 bit value
-     * @return SP+1 to indicate new Stack pointer location.
-     */
-    public short push(Registers regs, short SP, byte val) {
-        memory[SP - 1] = val;
-        regs.setSP(SP);
-        return (short) (SP - 1);
-    }
+//    /**
+//     * Writes a 8bit to memory. Stores LSB in lower memory adress, MSB in higher address
+//     *
+//     * @param SP  Stack pointer
+//     * @param val 8 bit value
+//     * @return SP+1 to indicate new Stack pointer location.
+//     */
+//    public short push(Registers regs, short SP, byte val) {
+//        memory[SP - 1] = val;
+//        regs.setSP(SP);
+//        return (short) (SP - 1);
+//    }
 
     /**
      * Writes a 16bit to memory. Stores LSB in lower memory adress, MSB in higher address
@@ -56,6 +56,7 @@ public class Memory {
     public short push(Registers regs, short SP, short val) {
         memory[SP - 1] = (byte) (val >> 8);
         memory[SP - 2] = (byte) (val);
+        regs.setSP((short) (SP - 2));
         return (short) (SP - 2);
     }
 
