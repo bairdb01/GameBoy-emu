@@ -81,6 +81,7 @@ ld h, (sp)
 inc sp
 ```
 ## Resources:
+[GameBoy Development Lessons](http://gameboy.mongenel.com/asmschool.html) - I haven't used this site yet, but it looks very informative. I might use this for verifying functions.
 
 [Coffee-gb](https://blog.rekawek.eu/2017/02/09/coffee-gb/) - Looking at other people's emulators can help get you started
 

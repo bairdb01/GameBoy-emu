@@ -6,7 +6,7 @@ package GameBoy;
  * Description: Operations for various opcodes. These may be broken down into ALU, Bit Operations, etc. in the future.
  *
  * Flag decriptors: - means unaffected, 0/1 clears/sets the flag, and * means affected accordingly
- * TODO: Test subc, adc, PUSH, POP, swap, cpl, ccf
+ * TODO: Test subc, adc, PUSH, POP, swap, cpl, ccf, rotate and shift operations
  */
 
 public class Commands {
@@ -393,62 +393,230 @@ public class Commands {
     /**
      * Rotates and  Shifts
      */
-    public static void rlc(int reg, int flag) {
+    /**
+     * Rotates LEFT a byte through the carry flag and returns the new byte. The MSB is shifted into the carry flag and the LSB.
+     * Flags: Z=*, N=0, H=0, C=*
+     *
+     * @param regs Registers containing the flags
+     * @param reg  the value of a byte
+     * @return The shifted value of reg. The C flag is set.
+     */
+    public static byte rlc(Registers regs, byte reg) {
+        byte msb = (byte) (reg >>> 7);
+        byte shiftedByte = (byte) (reg << 1);
+
+        // Put MSB into LSB and C Flag
+        shiftedByte += msb;
+        if (msb == 0) {
+            regs.clearCFlag();
+        } else {
+            regs.setCFlag();
+        }
+
+        // ZFlag updates
+        if (shiftedByte == 0) {
+            regs.clearZFlag();
+        } else {
+            regs.setZFlag();
+        }
+
+        regs.clearHFlag();
+        regs.clearNFlag();
+        return shiftedByte;
+    }
+
+    /**
+     * Rotates LEFT and returns a byte. The MSB is shifted into the carry flag. The carry flag is shifted into the LSB.
+     * Flags: Z=*, N=0, H=0, C=*
+     *
+     * @param regs  Registers containing the flags
+     * @param value the value of a byte
+     * @return The shifted value of reg. The C flag is set.
+     */
+    public static byte rl(Registers regs, byte value) {
+        byte msb = (byte) ((value >> 7) & 0x1);
+        byte cFlag = regs.getCFlag();
+        byte shiftedByte = (byte) (value << 1);
+
+        // Put old CFlag into LSB
+        shiftedByte += cFlag;
+
+        // Put MSB into CFlag
+        if (msb == 0) {
+            regs.clearCFlag();
+        } else {
+            regs.setCFlag();
+        }
+
+        // Z Flag updates
+        if (msb == 0) {
+            regs.clearZFlag();
+        } else {
+            regs.setZFlag();
+        }
+
+        regs.clearHFlag();
+        regs.clearNFlag();
+        return shiftedByte;
 
     }
 
-    public static void rlcRegPair(int upperReg, int lowerReg, int flag) {
+    /**
+     * Rotates RIGHT through carry. LSB is sent to MSB and C Flag.
+     * Flags: Z=*, N=0, H=0, C=*
+     *
+     * @param regs  Registers containing the flags
+     * @param value Byte value to rotate
+     * @return The rotated byte with flags set
+     */
+    public static byte rrc(Registers regs, byte value) {
+        byte lsb = (byte) (value & 0x1);
+        byte shiftedByte = (byte) (value >>> 1);
 
+        // Put LSB into MSB and C Flag
+        shiftedByte += (byte) (lsb << 7);
+        if (lsb == 0) {
+            regs.clearCFlag();
+        } else {
+            regs.setCFlag();
+        }
+
+        // ZFlag updates
+        if (shiftedByte == 0) {
+            regs.clearZFlag();
+        } else {
+            regs.setZFlag();
+        }
+
+        regs.clearHFlag();
+        regs.clearNFlag();
+        return shiftedByte;
     }
 
-    public static void rl(int reg, int flag) {
+    /**
+     * Rotates right a byte. Rotates a byte placing LSB into carry flag. C Flag into MSB.
+     * Flags: Z=*, N=0, H=0, C=*
+     *
+     * @param regs  Registers containing the flags
+     * @param value A byte value to rotate
+     * @return The rotated byte with flags set.
+     */
+    public static byte rr(Registers regs, byte value) {
+        byte lsb = (byte) (value & 0x1);
+        byte cFlag = regs.getCFlag();
+        byte shiftedByte = (byte) (value >>> 1);
 
+        // Put LSB into MSB and C Flag
+        shiftedByte += (byte) (cFlag << 7);
+        if (lsb == 0) {
+            regs.clearCFlag();
+        } else {
+            regs.setCFlag();
+        }
+
+        // ZFlag updates
+        if (shiftedByte == 0) {
+            regs.clearZFlag();
+        } else {
+            regs.setZFlag();
+        }
+
+        regs.clearHFlag();
+        regs.clearNFlag();
+        return shiftedByte;
     }
 
+    /**
+     * Shift left arithmetically. Places a 0 in LSB. Places MSB into C flag.
+     * Flags: Z=*, N=0, H=0, C=*
+     *
+     * @param regs
+     * @param value
+     * @return value shifted left. Flags set.
+     */
+    public static byte sla(Registers regs, byte value) {
+        byte msb = (byte) ((value >> 7) & 0x1);
+        byte shiftedByte = (byte) (value << 1);
 
-    public static void rlRegPair(int upperReg, int lowerReg, int flag) {
+        // Shift MSB into C Flag
+        if (msb == 0) {
+            regs.clearCFlag();
+        } else {
+            regs.setCFlag();
+        }
 
+        // Setting remaining flags
+        if (shiftedByte == 0) {
+            regs.clearZFlag();
+        } else {
+            regs.setZFlag();
+        }
+        regs.clearHFlag();
+        regs.clearNFlag();
+
+        return shiftedByte;
     }
 
-    public static void rrc(int reg, int flag) {
+    /**
+     * Shift right arithmetically. Shift bits right. (Signed shift) Duplicate MSB before shift and place into MSB after shift. LSB shifted into C flag.
+     * Flags: Z=*, N=0, H=0, C=*
+     *
+     * @param regs
+     * @param value
+     * @return value shifted right. Flags set.
+     */
+    public static byte sra(Registers regs, byte value) {
+        byte lsb = (byte) (value & 0x1);
+        byte shiftedByte = (byte) (value >> 1);
 
+        // Shift LSB into C Flag
+        if (lsb == 0) {
+            regs.clearCFlag();
+        } else {
+            regs.setCFlag();
+        }
+
+        // Setting remaining flags
+        if (shiftedByte == 0) {
+            regs.clearZFlag();
+        } else {
+            regs.setZFlag();
+        }
+        regs.clearHFlag();
+        regs.clearNFlag();
+
+        return shiftedByte;
     }
 
-    public static void rrcRegPair(int upperReg, int lowerReg, int flag) {
+    /**
+     * Shift right logically. Shift all bits right. Place 0 into MSB. LSB into C Flag.
+     * Flags: Z=*, N=0, H=0, C=*
+     *
+     * @param regs
+     * @param value
+     * @return value is shifted. Flags in regs set.
+     */
+    public static byte srl(Registers regs, byte value) {
+        byte lsb = (byte) (value & 0x1);
+        byte shiftedByte = (byte) (value >>> 1);
 
-    }
+        // Shift LSB into C Flag
+        if (lsb == 0) {
+            regs.clearCFlag();
+        } else {
+            regs.setCFlag();
+        }
 
-    public static void rr(int reg, int flag) {
+        // Setting remaining flags
+        if (shiftedByte == 0) {
+            regs.clearZFlag();
+        } else {
+            regs.setZFlag();
+        }
+        regs.clearHFlag();
+        regs.clearNFlag();
 
-    }
-
-
-    public static void rrRegPair(int upperReg, int lowerReg, int flag) {
-
-    }
-
-    public static void sla(int reg, int flag) {
-
-    }
-
-    public static void slaRegPair(int upperReg, int lowerReg, int flag) {
-
-    }
-
-    public static void sra(int reg, int flag) {
-
-    }
-
-    public static void sraRegPair(int upperReg, int lowerReg, int flag) {
-
-    }
-
-    public static void srl(int reg, int flag) {
-
-    }
-
-    public static void srlRegPair(int upperReg, int lowerReg, int flag) {
-
+        return shiftedByte;
     }
 
 
