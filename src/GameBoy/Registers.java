@@ -7,10 +7,9 @@ import org.jetbrains.annotations.Contract;
  * Created on: 2018-08-28
  * Filename: GameBoy.Registers
  * Description: GameBoy registers (excluding flags) and functions to manage them.
- * TODO: Register F should be the flag register
  */
 public class Registers {
-    private Byte[] registers = new Byte[8]; // GameBoy.Registers A, B, C, D, E, F, H, L (8 bit)
+    private Byte[] registers = new Byte[8]; // GameBoy.Registers A, B, C, D, E, F (FLAGS), H, L (8 bit)
     final private int A = 0;
     final private int B = 1;
     final private int C = 2;
@@ -22,7 +21,6 @@ public class Registers {
 
     // AF, BC, DE, HL pairings enable 16bit registers (Note: Bitshift to combine)
     private short SP = (short) (0xFFFE), PC = 0;          // SP (stack pointer), PC (program counter) (16 bit) registers
-    private byte flag = 0x0;    // Flag register reference to make things easier Z=7, N=6, H=5, C=4, Other=0-3
 
     private byte z_pos = 7; // Zero
     private byte n_pos = 6; // Subtraction
@@ -30,8 +28,12 @@ public class Registers {
     private byte c_pos = 4; // Carry
 
     public Registers() {
-        for (int i = 0; i < 8; i++)
-            registers[i] = 0x0;
+        setAF((short) 0x01B0);
+        setBC((short) 0x0013);
+        setDE((short) 0x00D8);
+        setHL((short) (014D));
+        setSP((short) 0xFFFE);
+
     }
 
     /*
@@ -167,15 +169,15 @@ public class Registers {
     }
 
     public byte getFlag() {
-        return flag;
+        return getF();
     }
 
     public byte getCFlag() {
-        return (byte) ((this.flag >> this.c_pos) & 0x1);
+        return (byte) ((this.registers[F] >> this.c_pos) & 0x1);
     }
 
     public byte getZFlag() {
-        return (byte) ((this.flag >> this.z_pos) & 0x1);
+        return (byte) ((this.registers[F] >> this.z_pos) & 0x1);
     }
     /*
      * Flag set/clear methods
@@ -192,35 +194,35 @@ public class Registers {
     }
 
     public void setZFlag() {
-        flag = setBit(flag, z_pos);
+        registers[F] = setBit(registers[F], z_pos);
     }
 
     public void clearZFlag() {
-        flag = clearBit(flag, z_pos);
+        registers[F] = clearBit(registers[F], z_pos);
     }
 
     public void setNFlag() {
-        flag = setBit(flag, n_pos);
+        registers[F] = setBit(registers[F], n_pos);
     }
 
     public void clearNFlag() {
-        flag = clearBit(flag, n_pos);
+        registers[F] = clearBit(registers[F], n_pos);
     }
 
     public void setHFlag() {
-        flag = setBit(flag, h_pos);
+        registers[F] = setBit(registers[F], h_pos);
     }
 
     public void clearHFlag() {
-        flag = clearBit(flag, h_pos);
+        registers[F] = clearBit(registers[F], h_pos);
     }
 
     public void setCFlag() {
-        flag = setBit(flag, c_pos);
+        registers[F] = setBit(registers[F], c_pos);
     }
 
     public void clearCFlag() {
-        flag = clearBit(flag, c_pos);
+        registers[F] = clearBit(registers[F], c_pos);
     }
 
 

@@ -368,27 +368,6 @@ public class Commands {
         regs.clearHFlag();
     }
 
-    // Literally nothing
-    public static void nop() {
-        return;
-    }
-
-    public static void halt() {
-
-    }
-
-    public static void stop() {
-
-    }
-
-    public static void disableInterrupts() {
-
-    }
-
-    public static void enableInterrupts() {
-
-    }
-
 
     /**
      * Rotates and  Shifts
@@ -748,7 +727,31 @@ public class Commands {
         }
         regs.clearNFlag();
         regs.setHFlag();
+    }
 
+    // Literally nothing
+    public static void nop() {
+        return;
+    }
+
+    // Stops CPU until an interrupt occurs
+    public static void halt() {
+
+        // Two nop's for GameBoy hardware bug
+        nop();
+        nop();
+    }
+
+    public static void stop() {
 
     }
+
+    public static void disableInterrupts() {
+
+    }
+
+    public static void enableInterrupts() {
+
+    }
+
 }
