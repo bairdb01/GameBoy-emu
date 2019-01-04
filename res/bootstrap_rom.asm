@@ -10,6 +10,7 @@ Addr_0007:
 
 	LD HL,$ff26		; $000c  Setup Audio
 	LD C,$11		; $000f
+
 	LD A,$80		; $0011
 	LD (HL-),A		; $0013
 	LD ($FF00+C),A	; $0014

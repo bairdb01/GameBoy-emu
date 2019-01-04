@@ -1,7 +1,5 @@
 package GameBoy;
 
-import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
-
 /**
  * Author: Benjamin Baird
  * Created on: 2018-08-28
@@ -37,7 +35,8 @@ public class CPU {
     /**
      * Main loop for the CPU
      */
-    public void run() {
+    public void run(GPU gpu) {
+
         // E.g. Execute a command with opcode 0x04
         //opcodes.execute(0x04, regs, memory, args);
 
