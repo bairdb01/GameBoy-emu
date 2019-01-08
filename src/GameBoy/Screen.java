@@ -14,11 +14,8 @@ public class Screen extends JPanel {
         BufferedImage bufferedImage = new BufferedImage(200, 200, BufferedImage.TYPE_INT_RGB);
         Graphics g = bufferedImage.getGraphics();
 
-        g.drawString("www.tutorialspoint.com", 20, 20);
-        g.drawString("www.tutorialspoint.com", 20, 40);
-        g.drawString("www.tutorialspoint.com", 20, 60);
-        g.drawString("www.tutorialspoint.com", 20, 80);
-        g.drawString("www.tutorialspoint.com", 20, 100);
+        g.drawString("Hello World", 20, 20);
+
 
 //        bufferedImage.setRGB(20, 10, 0xFF0000); // Sets a pixel at location to red
         return bufferedImage;
