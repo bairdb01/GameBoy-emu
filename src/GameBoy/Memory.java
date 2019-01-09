@@ -248,9 +248,8 @@ public class Memory {
 
         // ADDR_00A8
         // Nintendo Logo
-
         for (int i = 0xA8; i < 0xD8; i++) {
-            memory[0xA8] = nintendoGraphic[i - 0xA8];
+            memory[i] = nintendoGraphic[i - 0xA8];
         }
 
 
@@ -346,7 +345,7 @@ public class Memory {
     }
 
 
-    public byte setMemVal(short adr, byte val) {
+    public byte setMemVal(int adr, byte val) {
         memory[adr] = val;
         return memory[adr];
     }
@@ -358,7 +357,7 @@ public class Memory {
      * @param val 16bit value to store
      * @return upper 8 bits of val stored in memory.
      */
-    public byte setMemVal(short adr, short val) {
+    public byte setMemVal(int adr, short val) {
         memory[adr] = (byte) (val & 0xFF);
         memory[adr - 1] = (byte) ((val & 0xFF) >> 8);
         return memory[adr - 2];
@@ -385,8 +384,8 @@ public class Memory {
      * @return SP+1 to indicate new Stack pointer location.
      */
     public short push(Registers regs, short SP, short val) {
-        memory[SP - 1] = (byte) (val >> 8);
-        memory[SP - 2] = (byte) (val);
+        memory[0xFF & (SP - 1)] = (byte) (val >> 8);
+        memory[0xFF & (SP - 2)] = (byte) (val);
         regs.setSP((short) (SP - 2));
         return (short) (SP - 2);
     }

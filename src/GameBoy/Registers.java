@@ -1,14 +1,12 @@
 package GameBoy;
 
-import org.jetbrains.annotations.Contract;
-
 /**
  * Author: Benjamin Baird
  * Created on: 2018-08-28
  * Filename: GameBoy.Registers
  * Description: GameBoy registers (excluding flags) and functions to manage them.
  */
-public class Registers {
+class Registers {
     private Byte[] registers = new Byte[8]; // GameBoy.Registers A, B, C, D, E, F (FLAGS), H, L (8 bit)
     final private int A = 0;
     final private int B = 1;
@@ -27,80 +25,85 @@ public class Registers {
     private byte h_pos = 5; // Half-carry
     private byte c_pos = 4; // Carry
 
-    public Registers() {
-        setAF((short) 0x01B0);
-        setBC((short) 0x0013);
-        setDE((short) 0x00D8);
-        setHL((short) (014D));
-        setSP((short) 0xFFFE);
-
+    Registers() {
+        setAF((short) 0);
+        setBC((short) 0);
+        setDE((short) 0);
+        setHL((short) 0);
+        setSP((short) 0);
+        setPC((short) 0);
+//        setAF((short) 0x01B0);
+//        setBC((short) 0x0013);
+//        setDE((short) 0x00D8);
+//        setHL((short) (014D));
+//        setSP((short) 0xFFFE);
     }
 
     /*
      * 8 Bit Getters/setters
      */
 
-    public byte getA() {
+    byte getA() {
         return this.registers[A];
     }
 
-    public void setA(byte a) {
+    void setA(byte a) {
         this.registers[A] = a;
     }
 
-    public byte getB() {
+    byte getB() {
         return this.registers[B];
     }
 
-    public void setB(byte b) {
+    void setB(byte b) {
         this.registers[B] = b;
     }
 
-    public byte getC() {
+    byte getC() {
         return this.registers[C];
     }
 
-    public void setC(byte c) {
+    void setC(byte c) {
         this.registers[C] = c;
     }
 
-    public byte getD() {
+    byte getD() {
         return registers[D];
     }
 
-    public void setD(byte d) {
+    void setD(byte d) {
         this.registers[D] = d;
     }
 
-    public byte getE() {
+    byte getE() {
         return registers[E];
     }
 
-    public void setE(byte e) {
+    void setE(byte e) {
         this.registers[E] = e;
     }
 
-    public byte getF() {
+    byte getF() {
         return registers[F];
     }
 
-    public void setF(byte f) {
+    void setF(byte f) {
         this.registers[F] = f;
     }
 
-    public byte getH() {
+    byte getH() {
         return registers[H];
     }
 
-    public void setH(byte h) {
+    void setH(byte h) {
         this.registers[H] = h;
     }
 
-    public byte getL() {
+    byte getL() {
         return registers[L];
     }
 
-    public void setL(byte l) {
+    void setL(byte l) {
         this.registers[L] = l;
     }
 
@@ -109,122 +112,124 @@ public class Registers {
      * 16-bit Getters/Setters
      */
 
-    public void setRegPair(int upperReg, int lowerReg, short val) {
+    void setRegPair(int upperReg, int lowerReg, short val) {
         registers[lowerReg] = (byte) (val); // Cast lower half to a byte to remove upper bits
         registers[upperReg] = (byte) (val >> 8); // Shift upper bits to lower half and fill upper half with 0's.
     }
 
-    public short getRegPair(int upperReg, int lowerReg) {
-        short regPair = (short) (((registers[upperReg] << 8) & 0xFF00) + (registers[lowerReg] & 0xFF));
-        return regPair;
+    short getRegPair(int upperReg, int lowerReg) {
+        return (short) (((registers[upperReg] << 8) & 0xFF00) + (registers[lowerReg] & 0xFF));
     }
 
 
-    public short getSP() {
+    short getSP() {
         return SP;
     }
 
-    public void setSP(short sp) {
+    void setSP(short sp) {
         this.SP = sp;
     }
 
-    public short getPC() {
+    short getPC() {
         return PC;
     }
 
-    public void setPC(short pc) {
+    void setPC(short pc) {
         this.PC = pc;
     }
 
-    public short getAF() {
+    short getAF() {
         return getRegPair(0, 5);
     }
 
-    public void setAF(short val) {
+    void setAF(short val) {
         setRegPair(A, F, val);
     }
 
-    public short getBC() {
+    short getBC() {
         return getRegPair(B, C);
     }
 
-    public void setBC(short val) {
+    void setBC(short val) {
         setRegPair(B, C, val);
     }
 
-    public short getDE() {
+    short getDE() {
         return getRegPair(D, E);
     }
 
-    public void setDE(short val) {
+    void setDE(short val) {
         setRegPair(D, E, val);
     }
 
-    public short getHL() {
+    short getHL() {
         return getRegPair(H, L);
     }
 
-    public void setHL(short val) {
+    void setHL(short val) {
         setRegPair(H, L, val);
     }
 
-    public byte getFlag() {
+    byte getFlag() {
         return getF();
     }
 
-    public byte getCFlag() {
+    byte getCFlag() {
         return (byte) ((this.registers[F] >> this.c_pos) & 0x1);
     }
 
-    public byte getZFlag() {
+    byte getZFlag() {
         return (byte) ((this.registers[F] >> this.z_pos) & 0x1);
     }
     /*
      * Flag set/clear methods
      */
 
-    public byte clearBit(byte register, byte pos) {
+    byte clearBit(byte register, byte pos) {
         register &= ~(1 << pos);
         return register;
     }
 
-    public byte setBit(byte register, byte pos) {
+    byte setBit(byte register, byte pos) {
         register |= (1 << pos);
         return register;
     }
 
-    public void setZFlag() {
+    void setZFlag() {
         registers[F] = setBit(registers[F], z_pos);
     }
 
-    public void clearZFlag() {
+    void clearZFlag() {
         registers[F] = clearBit(registers[F], z_pos);
     }
 
-    public void setNFlag() {
+    void setNFlag() {
         registers[F] = setBit(registers[F], n_pos);
     }
 
-    public void clearNFlag() {
+    void clearNFlag() {
         registers[F] = clearBit(registers[F], n_pos);
     }
 
-    public void setHFlag() {
+    void setHFlag() {
         registers[F] = setBit(registers[F], h_pos);
     }
 
-    public void clearHFlag() {
+    void clearHFlag() {
         registers[F] = clearBit(registers[F], h_pos);
     }
 
-    public void setCFlag() {
+    void setCFlag() {
         registers[F] = setBit(registers[F], c_pos);
     }
 
-    public void clearCFlag() {
+    void clearCFlag() {
         registers[F] = clearBit(registers[F], c_pos);
     }
 
+    void incPC() {
+        this.PC++;
+    }
 
     public String toString() {
         String s = "";
@@ -236,10 +241,10 @@ public class Registers {
         s += "Register H: " + getH() + "\n";
         s += "Register L: " + getL() + "\n\n";
 
-        s += "SP = " + getSP() + "\n\n";
+        s += "PC = " + String.format("0x%04X", getPC()) + "\n\n";
+        s += "SP = " + String.format("0x%04X", getSP()) + "\n\n";
         s += "Flags (ZNHCXXXX): " + getFlag() + "\n";
         return s;
-
-
     }
+
 }

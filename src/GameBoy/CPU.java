@@ -19,67 +19,57 @@ package GameBoy;
  * Sound: 4 channels
  */
 
-// TODO Increment CPU clock after each opcode execution
-//
-//
+// TODO: After loading an opcode/arg it could be considered a negative number by Java. Need to mask or convert to int when using with arrays. Might as well just use ints for everything?
+// TODO: Interrupts
+
 public class CPU {
     Registers regs = new Registers();
     Flags flags = new Flags();
     Opcodes opcodes = new Opcodes();
-    private int stack_pointer = regs.getSP();     // Initialized on startup, but should explicity set its value
-    private int program_counter = regs.getPC();
     private Memory memory = new Memory();    // Memory stack
-    short[] args = new short[3];
+    byte[] args = new byte[2];
     int cpu_clock = 0;
 
     /**
      * Main loop for the CPU
+     * To execute an opcode:
+     *      opcodes.execute(0x3E, regs, memory, args);
      */
     public void run(GPU gpu) {
-
-        // E.g. Execute a command with opcode 0x04
-        //opcodes.execute(0x04, regs, memory, args);
-
-
-        // Loading something into registers A - L
-        args[0] = 0x0;
-        cpu_clock += opcodes.execute(0x3E, regs, memory, args);
+        boolean exit = false;
         args[0] = 1;
-        cpu_clock += opcodes.execute(0x06, regs, memory, args);
-        args[0] = 2;
-        cpu_clock += opcodes.execute(0x0E, regs, memory, args);
-        args[0] = 3;
-        cpu_clock += opcodes.execute(0x16, regs, memory, args);
-        args[0] = 4;
-        cpu_clock += opcodes.execute(0x1E, regs, memory, args);
-        args[0] = 5;
-        cpu_clock += opcodes.execute(0x26, regs, memory, args);
-        args[0] = 6;
-        cpu_clock += opcodes.execute(0x2E, regs, memory, args);
-
-        args[0] = 123;
-        opcodes.execute(0x01, regs, memory, args); // LD BC, nn
-        args[0] = Short.MAX_VALUE;
-        opcodes.execute(0x11, regs, memory, args); // LD DE, nn
-        args[0] = 3000;
-        opcodes.execute(0x21, regs, memory, args); // LD HL, nn
+        while (!exit) {
 
 
-        String debug = regs.toString();
-        System.out.println("Pre-Exe");
-        System.out.println(debug);
+            // Load an opcode and it's arguments from memory
+            args[0] = 0;
+            args[1] = 0;
+            int opcode = 0xFF & memory.getMemVal(regs.getPC());
+            regs.incPC();
+            int numArgs = opcodes.getNumArgs(opcode);
+            for (int i = 0; i < numArgs; i++) {
+                args[i] = (byte) (0xFF & memory.getMemVal(regs.getPC()));
+                regs.incPC();
+            }
 
-        System.out.println("BC: " + regs.getBC());
-        System.out.println("DE: " + regs.getDE());
-        System.out.println("HL: " + regs.getHL());
-        args[0] = 0x2A;
-//
-        opcodes.execute(0x09, regs, memory, args);
+            // E.g. Execute a command with opcode 0x3E (LD A,n)
+            cpu_clock += runOpCode(opcode, regs, memory, args);
+
+            gpu.screen.displayText("This is the main screen");
+            gpu.debug.displayText(regs.toString());
+
+            System.out.println("Executed");
+            String debug = "CPU Clock: " + cpu_clock + "\n" + regs.toString();
+            System.out.println(debug);
 
 
-//        System.out.println("Executed");
-//        debug = regs.toString();
-//        System.out.println(debug);
+//            exit = true;
+        }
+
+    }
+
+    private int runOpCode(int opcode, Registers regs, Memory memory, byte[] args) {
+        return opcodes.execute(opcode, regs, memory, args);
     }
 
 }

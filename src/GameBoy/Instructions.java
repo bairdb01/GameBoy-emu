@@ -10,15 +10,23 @@ public class Instructions {
     String label;
     int Opcode;
     int cycles;
+    int numArgs = 0;    // Number of additional bytes of memory needed to be read for arguments
     Operation op;
 
     public Instructions(String label, int Opcode, int clocks, Operation op) {
         this.label = label;
         this.Opcode = Opcode;
-        this.cycles = cycles;
+        this.cycles = clocks;
         this.op = op;
     }
 
+    public Instructions(String label, int Opcode, int clocks, int numArgs, Operation op) {
+        this.label = label;
+        this.Opcode = Opcode;
+        this.cycles = clocks;
+        this.numArgs = numArgs;
+        this.op = op;
+    }
 }
 
 
@@ -34,6 +42,6 @@ interface Operation {
      * @param memory Memory(RAM+ROM) to read/write from
      * @param args   additional arguments for any operations
      */
-    void cmd(Registers regs, Memory memory, short[] args);
+    void cmd(Registers regs, Memory memory, byte[] args);
 
 }
