@@ -1,4 +1,4 @@
-# GameBoy-emu
+# SwoleBoy
 A WIP GameBoy emulator.
 
 ## Some of my troubles and thoughts
