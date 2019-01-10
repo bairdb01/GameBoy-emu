@@ -720,7 +720,7 @@ public class Commands {
 
 
     public static void testBit(Registers regs, byte reg, byte bitPos) {
-        if ((byte) (reg >>> bitPos) == 0) {
+        if ((0x1 & (byte) (reg >>> bitPos)) == 0) {
             regs.setZFlag();
         } else {
             regs.clearZFlag();

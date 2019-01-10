@@ -8,6 +8,7 @@ import java.util.Arrays;
  * Filename: Memory
  * Description: Holds memory and methods required by the opcodes.
  *  Any access to an array is masked with 0xFFFF so the array can be access with signed shorts without being considered a negative number
+ *  TODO: Double check boot sequence memory. Need to change all JR cc, n. The n should be offset not absolute address.
  */
 public class Memory {
 
@@ -56,7 +57,7 @@ public class Memory {
         memory[0x08] = (byte) 0xCB;
         memory[0x09] = (byte) 0x7C;
         memory[0x0A] = (byte) 0x20;
-        memory[0x0B] = (byte) 0x07;
+        memory[0x0B] = (byte) 0xFB;
 
         memory[0x0C] = (byte) 0x21; // Setup Audio
         memory[0x0D] = (byte) 0x26;
@@ -231,12 +232,12 @@ public class Memory {
 
         // ADDR_0098
         memory[0x98] = (byte) 0xC5;
-        memory[0x99] = (byte) 0x11;
-        memory[0x9A] = (byte) 0xCB;
+        memory[0x99] = (byte) 0xCB;
+        memory[0x9A] = (byte) 0x11;
         memory[0x9B] = (byte) 0x17;
         memory[0x9C] = (byte) 0xC1;
-        memory[0x9D] = (byte) 0x11;
-        memory[0x9E] = (byte) 0xCB;
+        memory[0x9D] = (byte) 0xCB;
+        memory[0x9E] = (byte) 0x11;
         memory[0x9F] = (byte) 0x17;
         memory[0xA0] = (byte) 0x05;
         memory[0xA1] = (byte) 0x20;

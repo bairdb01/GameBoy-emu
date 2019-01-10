@@ -9,7 +9,6 @@ package GameBoy;
  * TODO: MISSING FUNCTIONS
  * TODO: Clock cycles from GBCPUman may be inaccurate. Double check with other sources.
  * TODO: Some opcodes have varying clock cycles. To fix have an if-else to check which path was taken.
- * TODO: CB prefixed opcodes need to be filled up according to http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html can be done with loops (B - H ->(HL) -> A)
  */
 public class Opcodes {
 
@@ -455,35 +454,43 @@ public class Opcodes {
          * Bit GameBoy.Opcodes
          */
         // Test bit b in register r. GameBoy.Flags affected
-        setOpCode(cb_opcodes, "BIT b,A", 0x47, 8, 1, (regs, memory, args) -> Commands.testBit(regs, regs.getA(), args[0]));
-        setOpCode(cb_opcodes, "BIT b,B", 0x40, 8, 1, (regs, memory, args) -> Commands.testBit(regs, regs.getB(), args[0]));
-        setOpCode(cb_opcodes, "BIT b,C", 0x41, 8, 1, (regs, memory, args) -> Commands.testBit(regs, regs.getC(), args[0]));
-        setOpCode(cb_opcodes, "BIT b,D", 0x42, 8, 1, (regs, memory, args) -> Commands.testBit(regs, regs.getD(), args[0]));
-        setOpCode(cb_opcodes, "BIT b,E", 0x43, 8, 1, (regs, memory, args) -> Commands.testBit(regs, regs.getE(), args[0]));
-        setOpCode(cb_opcodes, "BIT b,H", 0x44, 8, 1, (regs, memory, args) -> Commands.testBit(regs, regs.getH(), args[0]));
-        setOpCode(cb_opcodes, "BIT b,L", 0x45, 8, 1, (regs, memory, args) -> Commands.testBit(regs, regs.getL(), args[0]));
-        setOpCode(cb_opcodes, "BIT b,(HL)", 0x46, 16, 1, (regs, memory, args) -> Commands.testBit(regs, memory.getMemVal(regs.getHL()), args[0]));
+        for (byte b = 0; b < 8; b++) {
+            final byte bit = b;
+            setOpCode(cb_opcodes, "BIT " + b + ",A", 0x47 + (8 * b), 8, (regs, memory, args) -> Commands.testBit(regs, regs.getA(), bit));
+            setOpCode(cb_opcodes, "BIT " + b + ",B", 0x40 + (8 * b), 8, (regs, memory, args) -> Commands.testBit(regs, regs.getB(), bit));
+            setOpCode(cb_opcodes, "BIT " + b + ",C", 0x41 + (8 * b), 8, (regs, memory, args) -> Commands.testBit(regs, regs.getC(), bit));
+            setOpCode(cb_opcodes, "BIT " + b + ",D", 0x42 + (8 * b), 8, (regs, memory, args) -> Commands.testBit(regs, regs.getD(), bit));
+            setOpCode(cb_opcodes, "BIT " + b + ",E", 0x43 + (8 * b), 8, (regs, memory, args) -> Commands.testBit(regs, regs.getE(), bit));
+            setOpCode(cb_opcodes, "BIT " + b + ",H", 0x44 + (8 * b), 8, (regs, memory, args) -> Commands.testBit(regs, regs.getH(), bit));
+            setOpCode(cb_opcodes, "BIT " + b + ",L", 0x45 + (8 * b), 8, (regs, memory, args) -> Commands.testBit(regs, regs.getL(), bit));
+            setOpCode(cb_opcodes, "BIT " + b + ",(HL)", 0x46 + (8 * b), 16, (regs, memory, args) -> Commands.testBit(regs, memory.getMemVal(regs.getHL()), bit));
+        }
 
         // Set bit b in register r.
-        setOpCode(cb_opcodes, "SET b,A", 0xC7, 8, 1, (regs, memory, args) -> regs.setA(regs.setBit(regs.getA(), (byte) args[0])));
-        setOpCode(cb_opcodes, "SET b,B", 0xC0, 8, 1, (regs, memory, args) -> regs.setB(regs.setBit(regs.getB(), (byte) args[0])));
-        setOpCode(cb_opcodes, "SET b,C", 0xC1, 8, 1, (regs, memory, args) -> regs.setC(regs.setBit(regs.getC(), (byte) args[0])));
-        setOpCode(cb_opcodes, "SET b,D", 0xC2, 8, 1, (regs, memory, args) -> regs.setD(regs.setBit(regs.getD(), (byte) args[0])));
-        setOpCode(cb_opcodes, "SET b,E", 0xC3, 8, 1, (regs, memory, args) -> regs.setE(regs.setBit(regs.getE(), (byte) args[0])));
-        setOpCode(cb_opcodes, "SET b,H", 0xC4, 8, 1, (regs, memory, args) -> regs.setH(regs.setBit(regs.getH(), (byte) args[0])));
-        setOpCode(cb_opcodes, "SET b,L", 0xC5, 8, 1, (regs, memory, args) -> regs.setL(regs.setBit(regs.getL(), (byte) args[0])));
-        setOpCode(cb_opcodes, "SET b,(HL)", 0xC6, 16, 1, (regs, memory, args) -> memory.setMemVal(regs.getHL(), regs.setBit(memory.getMemVal(regs.getHL()), (byte) args[0])));
+        for (byte b = 0; b < 8; b++) {
+            final byte bit = b;
+            setOpCode(cb_opcodes, "SET " + b + ",A", 0xC7 + (8 * b), 8, 1, (regs, memory, args) -> regs.setA(regs.setBit(regs.getA(), bit)));
+            setOpCode(cb_opcodes, "SET " + b + ",B", 0xC0 + (8 * b), 8, 1, (regs, memory, args) -> regs.setB(regs.setBit(regs.getB(), bit)));
+            setOpCode(cb_opcodes, "SET " + b + ",C", 0xC1 + (8 * b), 8, 1, (regs, memory, args) -> regs.setC(regs.setBit(regs.getC(), bit)));
+            setOpCode(cb_opcodes, "SET " + b + ",D", 0xC2 + (8 * b), 8, 1, (regs, memory, args) -> regs.setD(regs.setBit(regs.getD(), bit)));
+            setOpCode(cb_opcodes, "SET " + b + ",E", 0xC3 + (8 * b), 8, 1, (regs, memory, args) -> regs.setE(regs.setBit(regs.getE(), bit)));
+            setOpCode(cb_opcodes, "SET " + b + ",H", 0xC4 + (8 * b), 8, 1, (regs, memory, args) -> regs.setH(regs.setBit(regs.getH(), bit)));
+            setOpCode(cb_opcodes, "SET " + b + ",L", 0xC5 + (8 * b), 8, 1, (regs, memory, args) -> regs.setL(regs.setBit(regs.getL(), bit)));
+            setOpCode(cb_opcodes, "SET " + b + ",(HL)", 0xC6 + (8 * b), 16, 1, (regs, memory, args) -> memory.setMemVal(regs.getHL(), regs.setBit(memory.getMemVal(regs.getHL()), bit)));
+        }
 
         // RESET BIT B IN REGISTER r
-        setOpCode(cb_opcodes, "RES b,A", 0x87, 8, 1, (regs, memory, args) -> regs.setA(regs.clearBit(regs.getA(), (byte) args[0])));
-        setOpCode(cb_opcodes, "RES b,B", 0x80, 8, 1, (regs, memory, args) -> regs.setB(regs.clearBit(regs.getB(), (byte) args[0])));
-        setOpCode(cb_opcodes, "RES b,C", 0x81, 8, 1, (regs, memory, args) -> regs.setC(regs.clearBit(regs.getC(), (byte) args[0])));
-        setOpCode(cb_opcodes, "RES b,D", 0x82, 8, 1, (regs, memory, args) -> regs.setD(regs.clearBit(regs.getD(), (byte) args[0])));
-        setOpCode(cb_opcodes, "RES b,E", 0x83, 8, 1, (regs, memory, args) -> regs.setE(regs.clearBit(regs.getE(), (byte) args[0])));
-        setOpCode(cb_opcodes, "RES b,H", 0x84, 8, 1, (regs, memory, args) -> regs.setH(regs.clearBit(regs.getH(), (byte) args[0])));
-        setOpCode(cb_opcodes, "RES b,L", 0x85, 8, 1, (regs, memory, args) -> regs.setL(regs.clearBit(regs.getL(), (byte) args[0])));
-        setOpCode(cb_opcodes, "RES b,(HL)", 0x86, 16, 1, (regs, memory, args) -> memory.setMemVal(regs.getHL(), regs.clearBit(memory.getMemVal(regs.getHL()), (byte) args[0])));
-
+        for (byte b = 0; b < 8; b++) {
+            final byte bit = b;
+            setOpCode(cb_opcodes, "RES " + b + ",A", 0x87 + (8 * b), 8, 1, (regs, memory, args) -> regs.setA(regs.clearBit(regs.getA(), bit)));
+            setOpCode(cb_opcodes, "RES " + b + ",B", 0x80 + (8 * b), 8, 1, (regs, memory, args) -> regs.setB(regs.clearBit(regs.getB(), bit)));
+            setOpCode(cb_opcodes, "RES " + b + ",C", 0x81 + (8 * b), 8, 1, (regs, memory, args) -> regs.setC(regs.clearBit(regs.getC(), bit)));
+            setOpCode(cb_opcodes, "RES " + b + ",D", 0x82 + (8 * b), 8, 1, (regs, memory, args) -> regs.setD(regs.clearBit(regs.getD(), bit)));
+            setOpCode(cb_opcodes, "RES " + b + ",E", 0x83 + (8 * b), 8, 1, (regs, memory, args) -> regs.setE(regs.clearBit(regs.getE(), bit)));
+            setOpCode(cb_opcodes, "RES " + b + ",H", 0x84 + (8 * b), 8, 1, (regs, memory, args) -> regs.setH(regs.clearBit(regs.getH(), bit)));
+            setOpCode(cb_opcodes, "RES " + b + ",L", 0x85 + (8 * b), 8, 1, (regs, memory, args) -> regs.setL(regs.clearBit(regs.getL(), bit)));
+            setOpCode(cb_opcodes, "RES b,(HL)", 0x86 + (8 * b), 16, 1, (regs, memory, args) -> memory.setMemVal(regs.getHL(), regs.clearBit(memory.getMemVal(regs.getHL()), bit)));
+        }
 
 
         /*
