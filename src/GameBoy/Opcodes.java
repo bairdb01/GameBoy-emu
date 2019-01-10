@@ -7,10 +7,9 @@ package GameBoy;
  * Description: Various GameBoy.Commands and their related OPCODES
  * Each Opcode corresponds to a specific instruction.
  * TODO: MISSING FUNCTIONS
- * TODO: Check if Bitmask of all additions of bytes(0xFF) and shorts(0xFFFF) and their results is needed
- * TODO: Change all op codes to return the number of clocks required (pass regs/mem/args) as arguments to change values inside? or change ones with multiple clocks
  * TODO: Clock cycles from GBCPUman may be inaccurate. Double check with other sources.
  * TODO: Some opcodes have varying clock cycles. To fix have an if-else to check which path was taken.
+ * TODO: CB prefixed opcodes need to be filled up according to http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html can be done with loops (B - H ->(HL) -> A)
  */
 public class Opcodes {
 
@@ -153,22 +152,22 @@ public class Opcodes {
         // See GameBoy.CPU book for flags
         // Put SP + n effective address into HL
         setOpCode(std_opcodes, "LDHL SP,n", 0xF8, 12, 1, (regs, memory, args) -> Commands.ldhl(regs, args[0]));
-        setOpCode(std_opcodes, "LD HL,nn", 0x21, 12, 2, (regs, memory, args) -> regs.setHL((short) (((args[1] << 8) & 0xFF00) & ((0xFF & args[0])))));
+        setOpCode(std_opcodes, "LD HL,nn", 0x21, 12, 2, (regs, memory, args) -> regs.setHL((short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0])))));
 
         // LD INTO BC
-        setOpCode(std_opcodes, "LD BC,nn", 0x01, 12, 2, (regs, memory, args) -> regs.setBC((short) (((args[1] << 8) & 0xFF00) & ((0xFF & args[0])))));
+        setOpCode(std_opcodes, "LD BC,nn", 0x01, 12, 2, (regs, memory, args) -> regs.setBC((short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0])))));
         setOpCode(std_opcodes, "LD BC,A", 0x02, 8, (regs, memory, args) -> regs.setBC(regs.getA()));
 
         // LD INTO DE
-        setOpCode(std_opcodes, "LD DE,nn", 0x11, 12, 2, (regs, memory, args) -> regs.setDE((short) (((args[1] << 8) & 0xFF00) & ((0xFF & args[0])))));
+        setOpCode(std_opcodes, "LD DE,nn", 0x11, 12, 2, (regs, memory, args) -> regs.setDE((short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0])))));
         setOpCode(std_opcodes, "LD DE,A", 0x12, 8, (regs, memory, args) -> regs.setDE(regs.getA()));
 
         // LD INTO SP
-        setOpCode(std_opcodes, "LD SP,nn", 0x31, 12, 2, (regs, memory, args) -> regs.setSP((short) (((args[1] << 8) & 0xFF00) & ((0xFF & args[0])))));
+        setOpCode(std_opcodes, "LD SP,nn", 0x31, 12, 2, (regs, memory, args) -> regs.setSP((short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0])))));
         setOpCode(std_opcodes, "LD SP,HL", 0xF9, 8, (regs, memory, args) -> regs.setSP(regs.getHL()));
 
-        setOpCode(std_opcodes, "LD (NN),A", 0xEA, 8, 2, (regs, memory, args) -> memory.setMemVal((short) (((args[1] << 8) & 0xFF00) & ((0xFF & args[0]))), regs.getA()));
-        setOpCode(std_opcodes, "LD (NN),SP", 0x08, 20, 2, (regs, memory, args) -> memory.setMemVal((short) (((args[1] << 8) & 0xFF00) & ((0xFF & args[0]))), regs.getSP()));
+        setOpCode(std_opcodes, "LD (NN),A", 0xEA, 8, 2, (regs, memory, args) -> memory.setMemVal((short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0]))), regs.getA()));
+        setOpCode(std_opcodes, "LD (NN),SP", 0x08, 20, 2, (regs, memory, args) -> memory.setMemVal((short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0]))), regs.getSP()));
 
         // Put A into $FF00 + n
         setOpCode(std_opcodes, "LD ($FF00+n),A", 0xE0, 12, 1, (regs, memory, args) -> memory.setMemVal((short) (0xFF00 + args[0]), regs.getA()));
@@ -491,14 +490,14 @@ public class Opcodes {
          * Jumps
          */
         //  Jump to address nn
-        setOpCode(std_opcodes, "JP NN", 0xC3, 12, (regs, memory, args) -> regs.setPC((short) (((args[1] << 8) & 0xFF00) & ((0xFF & args[0])))));
+        setOpCode(std_opcodes, "JP NN", 0xC3, 12, (regs, memory, args) -> regs.setPC((short) (((args[1] << 8) & 0xFF00) + (0xFF & args[0]))));
 
 
         // Jump to address n if following condition is true
-        setOpCode(std_opcodes, "JP NZ,NN", 0xC2, 12, 2, (regs, memory, args) -> Commands.jpIf(regs, (short) (((args[1] << 8) & 0xFF00) & ((0xFF & args[0]))), "NZ"));
-        setOpCode(std_opcodes, "JP Z,NN", 0xCA, 12, 2, (regs, memory, args) -> Commands.jpIf(regs, (short) (((args[1] << 8) & 0xFF00) & ((0xFF & args[0]))), "Z"));
-        setOpCode(std_opcodes, "JP NC,NN", 0xD2, 12, 2, (regs, memory, args) -> Commands.jpIf(regs, (short) (((args[1] << 8) & 0xFF00) & ((0xFF & args[0]))), "NC"));
-        setOpCode(std_opcodes, "JP C,NN", 0xDA, 12, 2, (regs, memory, args) -> Commands.jpIf(regs, (short) (((args[1] << 8) & 0xFF00) & ((0xFF & args[0]))), "C"));
+        setOpCode(std_opcodes, "JP NZ,NN", 0xC2, 12, 2, (regs, memory, args) -> Commands.jpIf(regs, (short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0]))), "NZ"));
+        setOpCode(std_opcodes, "JP Z,NN", 0xCA, 12, 2, (regs, memory, args) -> Commands.jpIf(regs, (short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0]))), "Z"));
+        setOpCode(std_opcodes, "JP NC,NN", 0xD2, 12, 2, (regs, memory, args) -> Commands.jpIf(regs, (short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0]))), "NC"));
+        setOpCode(std_opcodes, "JP C,NN", 0xDA, 12, 2, (regs, memory, args) -> Commands.jpIf(regs, (short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0]))), "C"));
 
 
         // JUMP TO ADDRESS HL
@@ -518,13 +517,13 @@ public class Opcodes {
          * Calls
          */
         // Push address of next instruction onto stack and then jump to address nn
-        setOpCode(std_opcodes, "CALL nn", 0xCD, 12, (regs, memory, args) -> Commands.call(regs, memory, (short) (((args[1] << 8) & 0xFF00) & ((0xFF & args[0])))));
+        setOpCode(std_opcodes, "CALL nn", 0xCD, 12, (regs, memory, args) -> Commands.call(regs, memory, (short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0])))));
 //
 //        // Call adr if
-//        setOpCode(std_opcodes, "CALL NZ,nn", 0xC4, 12, (regs, memory, args) -> regs.callIf((short)(((args[1] << 8) & 0xFF00) & ((0xFF & args[0])))));
-//        setOpCode(std_opcodes, "CALL Z,nn", 0xCC, 12, (regs, memory, args) -> regs.callIf((short)(((args[1] << 8) & 0xFF00) & ((0xFF & args[0])))));
-//        setOpCode(std_opcodes, "CALL NC,nn", 0xD4, 12, (regs, memory, args) -> regs.callIf((short)(((args[1] << 8) & 0xFF00) & ((0xFF & args[0])))));
-//        setOpCode(std_opcodes, "CALL C,nn", 0xDC, 12, (regs, memory, args) -> regs.callIf((short)(((args[1] << 8) & 0xFF00) & ((0xFF & args[0])))));
+//        setOpCode(std_opcodes, "CALL NZ,nn", 0xC4, 12, (regs, memory, args) -> regs.callIf((short)(((args[1] << 8) & 0xFF00) + ((0xFF & args[0])));
+//        setOpCode(std_opcodes, "CALL Z,nn", 0xCC, 12, (regs, memory, args) -> regs.callIf((short)(((args[1] << 8) & 0xFF00) + ((0xFF & args[0])));
+//        setOpCode(std_opcodes, "CALL NC,nn", 0xD4, 12, (regs, memory, args) -> regs.callIf((short)(((args[1] << 8) & 0xFF00) + ((0xFF & args[0])));
+//        setOpCode(std_opcodes, "CALL C,nn", 0xDC, 12, (regs, memory, args) -> regs.callIf((short)(((args[1] << 8) & 0xFF00) + ((0xFF & args[0])));
 //
 //
 //        /**

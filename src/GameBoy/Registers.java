@@ -233,13 +233,13 @@ class Registers {
 
     public String toString() {
         String s = "";
-        s += "Register A: " + getA() + "\n";
-        s += "Register B: " + getB() + "\n";
-        s += "Register C: " + getC() + "\n";
-        s += "Register D: " + getD() + "\n";
-        s += "Register E: " + getE() + "\n";
-        s += "Register H: " + getH() + "\n";
-        s += "Register L: " + getL() + "\n\n";
+        s += "Register A: " + String.format("0x%02X", getA()) + "\n";
+        s += "Register B: " + String.format("0x%02X", getB()) + "\n";
+        s += "Register C: " + String.format("0x%02X", getC()) + "\n";
+        s += "Register D: " + String.format("0x%02X", getD()) + "\n";
+        s += "Register E: " + String.format("0x%02X", getE()) + "\n";
+        s += "Register H: " + String.format("0x%02X", getH()) + "\n";
+        s += "Register L: " + String.format("0x%02X", getL()) + "\n\n";
 
         s += "PC = " + String.format("0x%04X", getPC()) + "\n\n";
         s += "SP = " + String.format("0x%04X", getSP()) + "\n\n";

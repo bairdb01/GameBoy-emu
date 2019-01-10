@@ -53,8 +53,8 @@ public class Memory {
 
         // ADDR_0007
         memory[0x07] = (byte) 0x32;
-        memory[0x08] = (byte) 0x44;
-        memory[0x09] = (byte) 0x07;
+        memory[0x08] = (byte) 0xCB;
+        memory[0x09] = (byte) 0x7C;
         memory[0x0A] = (byte) 0x20;
         memory[0x0B] = (byte) 0x07;
 
