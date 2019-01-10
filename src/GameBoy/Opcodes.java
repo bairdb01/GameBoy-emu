@@ -23,10 +23,10 @@ public class Opcodes {
 
     int getNumArgs(int opcode) {
         if (opcode < 0x100)
-            return std_opcodes[opcode].numArgs;
+            return std_opcodes[0xFF & opcode].numArgs;
         else {
             opcode &= 0xFF;
-            return cb_opcodes[opcode].numArgs;
+            return cb_opcodes[0xFF & opcode].numArgs;
         }
     }
 
@@ -569,12 +569,12 @@ public class Opcodes {
 
     int execute(int opcode, Registers regs, Memory memory, byte[] args) {
         if (opcode < 0x100) {
-            std_opcodes[opcode].op.cmd(regs, memory, args);
-            return std_opcodes[opcode].cycles;
+            std_opcodes[0xFF & opcode].op.cmd(regs, memory, args);
+            return std_opcodes[0xFF & opcode].cycles;
         } else {
             opcode &= 0xFF; // Remove the CB prefix
-            cb_opcodes[opcode].op.cmd(regs, memory, args);
-            return cb_opcodes[opcode].cycles;
+            cb_opcodes[0xFF & opcode].op.cmd(regs, memory, args);
+            return cb_opcodes[0xFF & opcode].cycles;
         }
     }
 }

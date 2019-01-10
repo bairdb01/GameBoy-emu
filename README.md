@@ -84,7 +84,8 @@ inc sp
 ### Noting the order of progression:
 1. Extract CPU opcodes from manuals
 2. Implement each opcode to specification (testing as much as you can along the way)
-3. (Current step) Implement the LCD controller / GPU. This is a hefty step, which includes many memory controllers and the reading of the GameBoy programming Manual.
+3. (Current step) Loading opcodes and programs from memory.
+4. Implement the LCD controller / GPU. This is a hefty step, which includes many memory controllers and the reading of the GameBoy programming Manual.
 
 ## Resources:
 [GameBoy Development Lessons](http://gameboy.mongenel.com/asmschool.html) - I haven't used this site yet, but it looks very informative. I might use this for verifying functions.

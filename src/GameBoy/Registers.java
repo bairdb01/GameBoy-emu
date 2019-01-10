@@ -113,12 +113,12 @@ class Registers {
      */
 
     void setRegPair(int upperReg, int lowerReg, short val) {
-        registers[lowerReg] = (byte) (val); // Cast lower half to a byte to remove upper bits
-        registers[upperReg] = (byte) (val >> 8); // Shift upper bits to lower half and fill upper half with 0's.
+        registers[0xFF & lowerReg] = (byte) (val); // Cast lower half to a byte to remove upper bits
+        registers[0xFF & upperReg] = (byte) (val >> 8); // Shift upper bits to lower half and fill upper half with 0's.
     }
 
     short getRegPair(int upperReg, int lowerReg) {
-        return (short) (((registers[upperReg] << 8) & 0xFF00) + (registers[lowerReg] & 0xFF));
+        return (short) (((registers[0xFF & upperReg] << 8) & 0xFF00) + (registers[0xFF & lowerReg] & 0xFF));
     }
 
 

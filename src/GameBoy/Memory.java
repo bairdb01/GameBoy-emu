@@ -7,6 +7,7 @@ import java.util.Arrays;
  * Created on: 2018-08-30
  * Filename: Memory
  * Description: Holds memory and methods required by the opcodes.
+ *  Any access to an array is masked with 0xFFFF so the array can be access with signed shorts without being considered a negative number
  */
 public class Memory {
 
@@ -316,7 +317,6 @@ public class Memory {
         memory[0xFF17] = (byte) 0x00;
         memory[0xFF19] = (byte) 0xBF;
         memory[0xFF1A] = (byte) 0x7F;
-        memory[0xFF1A] = (byte) 0x7F;
         memory[0xFF1B] = (byte) 0xFF;
         memory[0xFF1C] = (byte) 0x9F;
         memory[0xFF1E] = (byte) 0xBF;
@@ -341,13 +341,13 @@ public class Memory {
     }
 
     public byte getMemVal(short adr) {
-        return memory[adr];
+        return memory[0xFFFF & adr];
     }
 
 
-    public byte setMemVal(int adr, byte val) {
-        memory[adr] = val;
-        return memory[adr];
+    public byte setMemVal(short adr, byte val) {
+        memory[0xFFFF & adr] = val;
+        return memory[0xFFFF & adr];
     }
 
     /**
@@ -357,10 +357,10 @@ public class Memory {
      * @param val 16bit value to store
      * @return upper 8 bits of val stored in memory.
      */
-    public byte setMemVal(int adr, short val) {
-        memory[adr] = (byte) (val & 0xFF);
-        memory[adr - 1] = (byte) ((val & 0xFF) >> 8);
-        return memory[adr - 2];
+    public byte setMemVal(short adr, short val) {
+        memory[0xFFFF & adr] = (byte) (val & 0xFF);
+        memory[(0xFFFF & adr) - 1] = (byte) ((val & 0xFF) >> 8);
+        return memory[(0xFFFF & adr) - 2];
     }
 
 //    /**
@@ -384,8 +384,8 @@ public class Memory {
      * @return SP+1 to indicate new Stack pointer location.
      */
     public short push(Registers regs, short SP, short val) {
-        memory[0xFF & (SP - 1)] = (byte) (val >> 8);
-        memory[0xFF & (SP - 2)] = (byte) (val);
+        memory[0xFFFF & (SP - 1)] = (byte) (val >> 8);
+        memory[0xFFFF & (SP - 2)] = (byte) (val);
         regs.setSP((short) (SP - 2));
         return (short) (SP - 2);
     }
@@ -398,8 +398,8 @@ public class Memory {
      * @return The popped 16 bit value.
      */
     public short pop(Registers regs, short SP) {
-        short valLower = memory[SP];
-        short valUpper = memory[SP + 1];
+        short valLower = memory[0xFFFF & SP];
+        short valUpper = memory[(0xFFFF & SP) + 1];
         regs.setSP((short) (SP + 2));
         return (short) (((valUpper << 8) & 0xFF00) + (valLower & 0xFF) );
     }

@@ -19,7 +19,6 @@ package GameBoy;
  * Sound: 4 channels
  */
 
-// TODO: After loading an opcode/arg it could be considered a negative number by Java. Need to mask or convert to int when using with arrays. Might as well just use ints for everything?
 // TODO: Interrupts
 
 public class CPU {
