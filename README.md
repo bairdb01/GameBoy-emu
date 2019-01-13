@@ -81,11 +81,18 @@ ld h, (sp)
 inc sp
 ```
 
+### Boot-up Sequence or Boot Rom
+This is the step where the GameBoy boots up and has to initialize some of it's registers and memory to specific values. This can be a useful step to see if you're opcode functions work and if your CPU can load operations and arguments from memory. 
+This step can be done by mimicing the dissassembled boot ROM or by initializing the registers/memory to specific values. I have chosen to do the later for legal purposes, however the former should be at least attempted for debugging purposes.  
+
+### Memory (RAM) 
+The memory of the GameBoy is quite large. However, it is broken up into different segments. I recommend coding it in a similar manner because it will be much easier to maintain the code and to understand.
+
 ### Noting the order of progression:
 1. Extract CPU opcodes from manuals
 2. Implement each opcode to specification (testing as much as you can along the way)
-3. (Current step) Loading opcodes and programs from memory.
-4. Implement the LCD controller / GPU. This is a hefty step, which includes many memory controllers and the reading of the GameBoy programming Manual.
+3. Loading opcodes and programs from memory.
+4. (Current step) Implement the LCD controller / GPU. This is a hefty step, which includes many memory controllers and the reading of the GameBoy programming Manual.
 
 ## Resources:
 [GameBoy Development Lessons](http://gameboy.mongenel.com/asmschool.html) - I haven't used this site yet, but it looks very informative. I might use this for verifying functions.

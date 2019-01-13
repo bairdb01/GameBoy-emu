@@ -172,17 +172,41 @@ public class Opcodes {
         setOpCode(std_opcodes, "LD ($FF00+n),A", 0xE0, 12, 1, (regs, memory, args) -> memory.setMemVal((short) (0xFF00 + args[0]), regs.getA()));
 
 
-        // PUSH REGISTER PAIR ONTO STACK; DECREMENT SP
-        setOpCode(std_opcodes, "PUSH AF", 0xF5, 16, (regs, memory, args) -> regs.setSP(memory.push(regs, regs.getSP(), regs.getAF())));
-        setOpCode(std_opcodes, "PUSH BC", 0xC5, 16, (regs, memory, args) -> regs.setSP(memory.push(regs, regs.getSP(), regs.getBC())));
-        setOpCode(std_opcodes, "PUSH DE", 0xD5, 16, (regs, memory, args) -> regs.setSP(memory.push(regs, regs.getSP(), regs.getDE())));
-        setOpCode(std_opcodes, "PUSH HL", 0xE5, 16, (regs, memory, args) -> regs.setSP(memory.push(regs, regs.getSP(), regs.getHL())));
+        // PUSH REGISTER PAIR ONTO STACK; DECREMENT SP - 2
+        setOpCode(std_opcodes, "PUSH AF", 0xF5, 16, (regs, memory, args) -> {
+            memory.push(regs.getSP(), regs.getAF());
+            regs.setSP((short) (regs.getSP() - 2));
+        });
+        setOpCode(std_opcodes, "PUSH BC", 0xC5, 16, (regs, memory, args) -> {
+            memory.push(regs.getSP(), regs.getBC());
+            regs.setSP((short) (regs.getSP() - 2));
+        });
+        setOpCode(std_opcodes, "PUSH DE", 0xD5, 16, (regs, memory, args) -> {
+            memory.push(regs.getSP(), regs.getDE());
+            regs.setSP((short) (regs.getSP() - 2));
+        });
+        setOpCode(std_opcodes, "PUSH HL", 0xE5, 16, (regs, memory, args) -> {
+            memory.push(regs.getSP(), regs.getHL());
+            regs.setSP((short) (regs.getSP() - 2));
+        });
 
-        // POP OFF STACK AND STORE IN REGISTER PAIR ; INCREMENT SP
-        setOpCode(std_opcodes, "POP AF", 0xF1, 12, (regs, memory, args) -> regs.setAF(memory.pop(regs, regs.getSP())));
-        setOpCode(std_opcodes, "POP BC", 0xC1, 12, (regs, memory, args) -> regs.setBC(memory.pop(regs, regs.getSP())));
-        setOpCode(std_opcodes, "POP DE", 0xD1, 12, (regs, memory, args) -> regs.setDE(memory.pop(regs, regs.getSP())));
-        setOpCode(std_opcodes, "POP HL", 0xE1, 12, (regs, memory, args) -> regs.setHL(memory.pop(regs, regs.getSP())));
+        // POP OFF STACK AND STORE IN REGISTER PAIR ; INCREMENT SP + 2
+        setOpCode(std_opcodes, "POP AF", 0xF1, 12, (regs, memory, args) -> {
+            memory.pop(regs.getSP());
+            regs.setSP((short) (regs.getSP() + 2));
+        });
+        setOpCode(std_opcodes, "POP BC", 0xC1, 12, (regs, memory, args) -> {
+            memory.pop(regs.getSP());
+            regs.setSP((short) (regs.getSP() + 2));
+        });
+        setOpCode(std_opcodes, "POP DE", 0xD1, 12, (regs, memory, args) -> {
+            memory.pop(regs.getSP());
+            regs.setSP((short) (regs.getSP() + 2));
+        });
+        setOpCode(std_opcodes, "POP HL", 0xE1, 12, (regs, memory, args) -> {
+            memory.pop(regs.getSP());
+            regs.setSP((short) (regs.getSP() + 2));
+        });
 
 
         /*

@@ -680,9 +680,10 @@ public class Commands {
         }
     }
 
-    /*******************************************************
+    /*
+     *****************************************************
      * Calls
-     * *****************************************************/
+     ******************************************************/
 
     /**
      * Push address of next instruction onto stack and then jump to address
@@ -690,10 +691,10 @@ public class Commands {
      * @param regs All registers
      * @param mem  Location of memory (RAM)
      * @param adr  address to jump to
-     * @return new address of PC
      */
     public static void call(Registers regs, Memory mem, short adr) {
-        regs.setSP(mem.push(regs, regs.getSP(), regs.getPC()));
+        mem.push(regs.getSP(), regs.getPC());
+        regs.setSP((short) (regs.getSP() - 2));
         regs.setPC(adr);
     }
 
@@ -706,12 +707,14 @@ public class Commands {
     }
 
     public static void restart(Registers regs, Memory mem, short offset) {
-        regs.setSP(mem.push(regs, regs.getSP(), regs.getPC()));
+        mem.push(regs.getSP(), regs.getPC());
+        regs.setSP((short) (regs.getSP() - 2));
         regs.setPC(offset);
     }
 
     public static void ret(Registers regs, Memory mem) {
-        regs.setPC(mem.pop(regs, regs.getSP()));
+        mem.pop(regs.getSP());
+        regs.setPC((short) (regs.getSP() + 2));
     }
 
     public static void ret(Registers regs, Memory mem, String cc) {
