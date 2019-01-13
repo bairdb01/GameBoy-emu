@@ -60,7 +60,9 @@ public class CPU {
 
             // E.g. Execute a command with opcode 0x3E (LD A,n)
             cpu_clock += runOpCode(opcode, regs, memory, args);
-
+            if (regs.getH() == 0) {
+                System.out.println("Finished Clearing VRAM");
+            }
             gpu.screen.displayText("This is the main screen");
             gpu.debug.displayText(regs.toString());
 

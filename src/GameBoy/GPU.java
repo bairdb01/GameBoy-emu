@@ -6,7 +6,7 @@ public class GPU {
     JFrame window = new JFrame("SwoleBoy");
     JFrame debugWindow = new JFrame("Debug");
     Screen screen = new Screen(160, 144);
-    Screen debug = new Screen(300, 300);
+    Screen debug = new Screen(300, 400);
 
     short lcdc = (short) 0xFF40; /* LCD control register
                     Byte 0:
@@ -100,12 +100,12 @@ public class GPU {
 
         window.getContentPane().add(screen);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setSize(180, 180);
+        window.setSize(200, 200);
         window.setVisible(true);
 
         debugWindow.getContentPane().add(debug);
         debugWindow.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        debugWindow.setSize(305, 305);
+        debugWindow.setSize(320, 400);
         debugWindow.setVisible(true);
     }
 }
