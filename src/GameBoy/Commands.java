@@ -29,8 +29,8 @@ public class Commands {
      * @param dest   8 bit register
      * @return dest
      */
-    public static int ld_srcPtr_dest(short srcPtr, byte dest, Memory mem) {
-        byte value = mem.getMemVal(srcPtr);
+    public static int ld_srcPtr_dest(short srcPtr, byte dest, MMU mmu) {
+        byte value = mmu.getMemVal(srcPtr);
         dest = value;
         return dest;
     }
@@ -42,8 +42,8 @@ public class Commands {
      * @param destPtr 16 bit memory location
      * @return destPtr
      */
-    public static int ld_src_destPtr(byte src, short destPtr, Memory mem) {
-        mem.setMemVal(destPtr, src);
+    public static int ld_src_destPtr(byte src, short destPtr, MMU mmu) {
+        mmu.setMemVal(destPtr, src);
         return destPtr;
     }
 
@@ -54,8 +54,8 @@ public class Commands {
      * @param destPtr 16 bit memory location
      * @return
      */
-    public static int ld_srcPtr_destPtr(short srcPtr, short destPtr, Memory mem) {
-        mem.setMemVal(destPtr, mem.getMemVal(srcPtr));
+    public static int ld_srcPtr_destPtr(short srcPtr, short destPtr, MMU mmu) {
+        mmu.setMemVal(destPtr, mmu.getMemVal(srcPtr));
         return destPtr;
     }
 
@@ -599,7 +599,8 @@ public class Commands {
     }
 
 
-    /*******************************************************
+    /*
+     ******************************************************
      *  Jumps
      ******************************************************/
     /**
@@ -689,11 +690,11 @@ public class Commands {
      * Push address of next instruction onto stack and then jump to address
      *
      * @param regs All registers
-     * @param mem  Location of memory (RAM)
+     * @param mmu  memory management unit
      * @param adr  address to jump to
      */
-    public static void call(Registers regs, Memory mem, short adr) {
-        mem.push(regs.getSP(), regs.getPC());
+    public static void call(Registers regs, MMU mmu, short adr) {
+        mmu.push(regs.getSP(), regs.getPC());
         regs.setSP((short) (regs.getSP() - 2));
         regs.setPC(adr);
     }
@@ -706,18 +707,18 @@ public class Commands {
         reg = val;
     }
 
-    public static void restart(Registers regs, Memory mem, short offset) {
-        mem.push(regs.getSP(), regs.getPC());
+    public static void restart(Registers regs, MMU mmu, short offset) {
+        mmu.push(regs.getSP(), regs.getPC());
         regs.setSP((short) (regs.getSP() - 2));
         regs.setPC(offset);
     }
 
-    public static void ret(Registers regs, Memory mem) {
-        mem.pop(regs.getSP());
+    public static void ret(Registers regs, MMU mmu) {
+        mmu.pop(regs.getSP());
         regs.setPC((short) (regs.getSP() + 2));
     }
 
-    public static void ret(Registers regs, Memory mem, String cc) {
+    public static void ret(Registers regs, MMU mmu, String cc) {
 
     }
 

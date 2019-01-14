@@ -1,7 +1,7 @@
 Addr_0000:
 	LD SP,$fffe		; $0000  Setup Stack
 
-	XOR A			; $0003  Zero the memory from $8000-$9FFF (VRAM)
+	XOR A			; $0003  Zero the MMU from $8000-$9FFF (VRAM)
 	LD HL,$9fff		; $0004
 Addr_0007:
 	LD (HL-),A		; $0007

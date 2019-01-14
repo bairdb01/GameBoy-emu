@@ -1,24 +1,25 @@
 package GameBoy;
 
+
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Author: Benjamin Baird
  * Created on: 2018-08-30
- * Filename: Memory
+ * Filename: MMU
  * Description: Holds memory and methods required by the opcodes.
  *  Any access to an array is masked with 0xFFFF so the array can be access with signed shorts without being considered a negative number
- *  TODO: Double check boot sequence memory. Need to change all JR cc, n. The n should be offset not absolute address.
+ *  TODO: Check the memory arrays to see if they are being allocated properly.
  */
-public class Memory {
+public class MMU {
 
-    /* Memory is split up into the following:
+    /* MMU is split up into the following:
      * $0000 - $7FFF stores pages from a GameBoy cartridge
      *               ($0000 - $3FFF) first 16k bank of cartridge (HOME BANK). Is always accessible here.
      *               ($0100) Stores the games HEADER
-     * $8000 - $9FFF is video RAM
+     * $8000 - $9FFF is video RAM. ($8000 - 97FF is for Character Data bank 0 + 1, split evenly) ($9800 - $9FFF is for background (BG) data)
      * $A000 - $BFFF is cartridge/external RAM, if a cartridge HAS any RAM on it. NULL and VOID if no RAM on cartridge.
      * $C000 - $DFFF is internal work RAM (WRAM) for most runtime variables. Other variables will be saved on the cartridge's RAM
      * $E000 - $FDFF specified to copy contents of #C000 - $DDFF, but DO NOT USE FOR ANYTHING.
@@ -27,13 +28,22 @@ public class Memory {
      * $FF00 - $FFFE is the ZERO page. Lower 64bytes is memory-mapped I/O. Upper 63 bytes is High RAM (HRAM).
      * $FFFF is a single memory-mapped I/O register.
      */
-    byte[] rom = new byte[0x4000];
+    byte[] cartridge;
+    byte[] rom = new byte[8000];
     byte[] vram = new byte[0x2000];
     byte[] eram = new byte[0x2000];
     byte[] wram = new byte[0x2000];
 
     byte[] zram = new byte[0x80];
     byte[] oam = new byte[0xA0];
+
+    // GPU specific registers
+    byte[] hram = new byte[0x81];
+
+    boolean usesMBC1 = false;
+    boolean usesMBC2 = false;
+    byte currentRomBank = 1;    // Which ROM bank is currently loaded
+
 
     byte[] nintendoGraphic = {(byte) 0xCE, (byte) 0xED, (byte) 0x66, (byte) 0x66, (byte) 0xCC, (byte) 0x0D,
             (byte) 0x00, (byte) 0x0B, (byte) 0x03, (byte) 0x73, (byte) 0x00, (byte) 0x83,
@@ -43,6 +53,49 @@ public class Memory {
             (byte) 0xD9, (byte) 0x99, (byte) 0xBB, (byte) 0xBB, (byte) 0x67, (byte) 0x63,
             (byte) 0x6E, (byte) 0x0E, (byte) 0xEC, (byte) 0xCC, (byte) 0xDD, (byte) 0xDC,
             (byte) 0x99, (byte) 0x9F, (byte) 0xBB, (byte) 0xB9, (byte) 0x33, (byte) 0x3E};
+
+
+    public MMU() {
+        // Setting up registers post boot up sequence
+
+//        // Nintendo Logo. May have to remove.
+//        for (int i = 0xA8; i < 0xD8; i++) {
+//            setMemVal((byte)i, nintendoGraphic[i - 0xA8]);
+//        }
+
+        setMemVal((short) (0xFF05), (byte) 0);
+        setMemVal((short) (0xFF06), (byte) 0);
+        setMemVal((short) (0xFF07), (byte) 0);
+        setMemVal((short) (0xFF10), (byte) 0x80);
+        setMemVal((short) (0xFF11), (byte) 0xBF);
+        setMemVal((short) (0xFF12), (byte) 0xF3);
+        setMemVal((short) (0xFF14), (byte) 0xBF);
+        setMemVal((short) (0xFF16), (byte) 0x3F);
+        setMemVal((short) (0xFF17), (byte) 0x00);
+        setMemVal((short) (0xFF19), (byte) 0xBF);
+        setMemVal((short) (0xFF1A), (byte) 0x7F);
+        setMemVal((short) (0xFF1B), (byte) 0xFF);
+        setMemVal((short) (0xFF1C), (byte) 0x9F);
+        setMemVal((short) (0xFF1E), (byte) 0xBF);
+        setMemVal((short) (0xFF20), (byte) 0xFF);
+        setMemVal((short) (0xFF21), (byte) 0x00);
+        setMemVal((short) (0xFF22), (byte) 0x00);
+        setMemVal((short) (0xFF23), (byte) 0xBF);
+        setMemVal((short) (0xFF24), (byte) 0x77);
+        setMemVal((short) (0xFF25), (byte) 0xF3);
+        setMemVal((short) (0xFF26), (byte) 0xF1);
+        setMemVal((short) (0xFF26), (byte) 0xF1);
+        setMemVal((short) (0xFF40), (byte) 0x91);
+        setMemVal((short) (0xFF42), (byte) 0x00);
+        setMemVal((short) (0xFF43), (byte) 0x00);
+        setMemVal((short) (0xFF45), (byte) 0x00);
+        setMemVal((short) (0xFF47), (byte) 0xFC);
+        setMemVal((short) (0xFF48), (byte) 0xFF);
+        setMemVal((short) (0xFF49), (byte) 0xFF);
+        setMemVal((short) (0xFF4A), (byte) 0x00);
+        setMemVal((short) (0xFF4B), (byte) 0x00);
+        setMemVal((short) (0xFFFF), (byte) 0x00);
+    }
 
     /**
      * Gets a byte from memory
@@ -112,7 +165,7 @@ public class Memory {
 
                     // Graphics: Object attribute memory (160byte, remaining bytes are 0)
                     case 0xE00:
-                        if (adr < 0xFEA0) {
+                        if (adr < (short) 0xFEA0) {
                             return oam[adr & 0xFF];
                         } else {
                             return 0;
@@ -120,11 +173,13 @@ public class Memory {
 
                         // Zero-page
                     case 0xF00:
-                        if (adr >= 0xFF80) {
+                        if (adr >= (short) 0xFF80) {
                             return zram[adr & 0x7F];
                         } else {
                             // TODO: I/O handling
-                            return 0;
+                            // TODO GPU memory
+                            // I/O, GPU
+                            return hram[adr & 0x80];
                         }
                 }
         }
@@ -140,7 +195,6 @@ public class Memory {
     public void setMemVal(short adr, byte val) {
         // Split up to handle the varying types memory blocks
         switch (adr & 0xF000) {
-
             // BIOS(256b)/ROM0
             case 0x0000:
                 rom[adr] = val;
@@ -210,6 +264,10 @@ public class Memory {
                             zram[adr & 0x7F] = val;
                         } else {
                             // TODO: I/O handling
+                            // I/O, GPU
+                            int b = adr & 0x80;
+                            hram[adr & 0x80] = val;
+
                         }
                 }
         }
@@ -257,16 +315,43 @@ public class Memory {
      */
     public void load(String filename) {
         FileInputStream fis = null;
+        ArrayList<Byte> byteList = new ArrayList();
         try {
             fis = new FileInputStream(filename);
             System.out.println("Loading ROM: " + filename);
 
             // Read next byte from file
-            int i = 0;
-            int loadedByte = fis.read();
-            while ((loadedByte = fis.read()) != -1) {
-                rom[i++] = (byte) loadedByte;
+            int b;
+            while ((b = fis.read()) != -1) {
+                byteList.add((byte) (0xFF & b));
             }
+            cartridge = new byte[byteList.size()];
+            for (int i = 0; i < byteList.size(); i++) {
+                cartridge[i] = (byte) (0xFF & byteList.remove(0));
+
+                // Debug
+                System.out.print(cartridge[i] + " ");
+                if ((i % 160) == 0 && i != 0)
+                    System.out.println("NEWLINE");
+
+            }
+
+            // State the type of MBC used
+            switch (cartridge[0x147]) {
+                case 1:
+                case 2:
+                case 3:
+                    usesMBC1 = true;
+                    break;
+                case 5:
+                case 6:
+                    usesMBC2 = true;
+                    break;
+                default:
+                    break;
+            }
+
+            //
         } catch (IOException ioErr) {
             ioErr.printStackTrace();
         } finally {

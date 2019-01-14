@@ -27,7 +27,7 @@ public class GameBoy.Instructions {
 
 @FunctionalInterface
 interface GameBoy.Operation {
-    void cmd(GameBoy.Registers regs, int[] memory, int[] args);
+    void cmd(GameBoy.Registers regs, int[] MMU, int[] args);
 }
 
 public Opcode{
@@ -37,8 +37,8 @@ public Opcode{
     }
 
     public int main(){
-        setOpcode("LD B,n", 0x06, 8, (regs, memory, args) -> regs.setB(args[0]));
-        setOpcode("INC D", 0x14, 4, (regs, memory, args) -> regs.decD());
+        setOpcode("LD B,n", 0x06, 8, (regs, MMU, args) -> regs.setB(args[0]));
+        setOpcode("INC D", 0x14, 4, (regs, MMU, args) -> regs.decD());
     }
 }
 ```
@@ -46,13 +46,13 @@ public Opcode{
 This will probably be one of the most time consuming parts and can be quite tedious. Don't make it any more tedious than you have too! A lot of the functions perform similar actions, so it would be smart to keep things modular.
 
 ### Understanding the bootrom
-It took me longer than I it should've to understand the Bootrom and how it is stored in the GameBoy's memory. Simply put, the opcode is first stored in memory followed by any of the required arguments. E.g. The first instruction (LD SP,$FFFE) takes up 3 bytes of memory ($31 $FF $FE). This is because LD SP,nn is an instruction which can be compressed into a single byte known as the opcode ($31). The following two bytes ($FF and $FE) are then used by the LD instruction and loaded into the SP register.
+It took me longer than I it should've to understand the Bootrom and how it is stored in the GameBoy's MMU. Simply put, the opcode is first stored in MMU followed by any of the required arguments. E.g. The first instruction (LD SP,$FFFE) takes up 3 bytes of MMU ($31 $FF $FE). This is because LD SP,nn is an instruction which can be compressed into a single byte known as the opcode ($31). The following two bytes ($FF and $FE) are then used by the LD instruction and loaded into the SP register.
 
 ### The CB prefixed opcode
 The CB prefix notifies the GameBoy.CPU that there will be an additonal byte which must be read (uninterruptable). These two bytes form the opcode for the instruction. Two opcode lists is a solution. One for standard codes and another for CB-prefixed codes. Use second byte as index to the CB-code array.
 
 ### How to modify register values if they are primitive data types? (ints, bytes, shorts, etc. are pass by value in Java)
-The use of functional interface and lambda to store instructions in a variable allows for more than just one instruction to be performed. I simply return the value the register/memory should be and assign it in the same lambda. Of course this means that I need to return the proper values from each method.
+The use of functional interface and lambda to store instructions in a variable allows for more than just one instruction to be performed. I simply return the value the register/MMU should be and assign it in the same lambda. Of course this means that I need to return the proper values from each method.
 
 ### Emulating a 16 bit register with two 8 bit registers
 The idea of the emulation is not tricky. Just use one register for one half of the 16bits and another register for the other half. A silly problem I ran into was forgetting that the `byte` data type in Java is signed. This means that the MSB is only used to determine if a number is positive or negative.
@@ -82,17 +82,24 @@ inc sp
 ```
 
 ### Boot-up Sequence or Boot Rom
-This is the step where the GameBoy boots up and has to initialize some of it's registers and memory to specific values. This can be a useful step to see if you're opcode functions work and if your CPU can load operations and arguments from memory. 
-This step can be done by mimicing the dissassembled boot ROM or by initializing the registers/memory to specific values. I have chosen to do the later for legal purposes, however the former should be at least attempted for debugging purposes.  
+This is the step where the GameBoy boots up and has to initialize some of it's registers and MMU to specific values. This can be a useful step to see if you're opcode functions work and if your CPU can load operations and arguments from MMU. 
+This step can be done by mimicing the dissassembled boot ROM or by initializing the registers/MMU to specific values. I have chosen to do the later for legal purposes, however the former should be at least attempted for debugging purposes.  
 
 ### Memory (RAM) 
-The memory of the GameBoy is quite large. However, it is broken up into different segments. I recommend coding it in a similar manner because it will be much easier to maintain the code and to understand.
+The MMU of the GameBoy is quite large. However, it is broken up into different segments. I recommend coding it in a similar manner because it will be much easier to maintain the code and to understand.
+
+### Moving onto the GPU
+After completing the CPU and the memory management, you will want to move onto the GPU implementation. In this step you must load data from specific registers
+and draw images to the screen. In this step you should work on the following:
+1. Understand how the GameBoy loads/draws things to the screen.
+2. Implement a basic way to load objects to draw to the screen.
+3. Figure out a way to switch between the four LCD modes.
 
 ### Noting the order of progression:
 1. Extract CPU opcodes from manuals
 2. Implement each opcode to specification (testing as much as you can along the way)
-3. Loading opcodes and programs from memory.
-4. (Current step) Implement the LCD controller / GPU. This is a hefty step, which includes many memory controllers and the reading of the GameBoy programming Manual.
+3. Loading opcodes and programs from MMU.
+4. (Current step) Implement the LCD controller / GPU. This is a hefty step, which includes many MMU controllers and the reading of the GameBoy programming Manual.
 
 ## Resources:
 [GameBoy Development Lessons](http://gameboy.mongenel.com/asmschool.html) - I haven't used this site yet, but it looks very informative. I might use this for verifying functions.

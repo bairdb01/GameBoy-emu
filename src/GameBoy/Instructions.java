@@ -39,9 +39,9 @@ interface Operation {
      * Performs a command. To be used via an Opcode
      *
      * @param regs   An object which contains all the registers operable on
-     * @param memory Memory(RAM+ROM) to read/write from
+     * @param mmu    memory management unit
      * @param args   additional arguments for any operations
      */
-    void cmd(Registers regs, Memory memory, byte[] args);
+    void cmd(Registers regs, MMU mmu, byte[] args);
 
 }
