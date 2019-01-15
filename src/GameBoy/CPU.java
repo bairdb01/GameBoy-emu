@@ -76,15 +76,20 @@ public class CPU {
 //            gpu.step(mmu);
             // Might need to keep track of the time spent in each lcdc period
 
-            gpu.renderRow(mmu);
-            gpu.draw(regs, mmu);
+//            gpu.renderRow(mmu);
+//            gpu.draw(regs, mmu);
 
 //            System.out.println("Executed");
 //            String debug = "CPU Clock: " + clock_cycles + "\n" + regs.toString();
 //            System.out.println(debug);
 
+            // Testing new mmu
+            short adr = (short) 0xFFFF;
+            byte val = 0x26;
+            mmu.setMemVal(adr, val);
+            System.out.println("memory[" + (adr & 0xFFFF) + "]:" + mmu.getMemVal(adr));
 
-//            exit = true;
+            exit = true;
         }
 
     }

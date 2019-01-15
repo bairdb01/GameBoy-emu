@@ -29,7 +29,7 @@ public class MMU {
      * $FFFF is a single memory-mapped I/O register.
      */
     byte[] cartridge;
-    byte[] rom = new byte[8000];
+    byte[] rom = new byte[0x8000];
     byte[] vram = new byte[0x2000];
     byte[] eram = new byte[0x2000];
     byte[] wram = new byte[0x2000];
@@ -254,13 +254,13 @@ public class MMU {
 
                         // Graphics: Object attribute memory (160byte, remaining bytes are 0)
                     case 0xE00:
-                        if (adr < 0xFEA0) {
+                        if (adr < (short) 0xFEA0) {
                             oam[adr & 0xFF] = val;
                         }
 
                         // Zero-page
                     case 0xF00:
-                        if (adr >= 0xFF80) {
+                        if (adr >= (short) 0xFF80) {
                             zram[adr & 0x7F] = val;
                         } else {
                             // TODO: I/O handling
