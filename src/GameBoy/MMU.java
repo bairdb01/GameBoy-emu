@@ -12,6 +12,7 @@ import java.util.ArrayList;
  * Description: Holds memory and methods required by the opcodes.
  *  Any access to an array is masked with 0xFFFF so the array can be access with signed shorts without being considered a negative number
  *  TODO: Check the memory arrays to see if they are being allocated properly.
+ *  TODO: Handle read only and write only memory addresses
  */
 public class MMU {
 
@@ -28,22 +29,24 @@ public class MMU {
      * $FF00 - $FFFE is the ZERO page. Lower 64bytes is memory-mapped I/O. Upper 63 bytes is High RAM (HRAM).
      * $FFFF is a single memory-mapped I/O register.
      */
-    byte[] cartridge;
-    byte[] rom = new byte[0x8000];
-    byte[] vram = new byte[0x2000];
-    byte[] eram = new byte[0x2000];
-    byte[] wram = new byte[0x2000];
+    private byte[] cartridge = new byte[0x200000];  // Maximum cartridge size
+    private byte[] rom = new byte[0x8000];
+    private byte[] vram = new byte[0x2000];
+    private byte[] eram = new byte[0x2000];
+    private byte[] wram = new byte[0x2000];
 
-    byte[] zram = new byte[0x80];
-    byte[] oam = new byte[0xA0];
+    private byte[] zram = new byte[0x80];
+    private byte[] oam = new byte[0xA0];
 
     // GPU specific registers
-    byte[] hram = new byte[0x81];
+    private byte[] hram = new byte[0x81];
 
-    boolean usesMBC1 = false;
-    boolean usesMBC2 = false;
-    byte currentRomBank = 1;    // Which ROM bank is currently loaded
-
+    private boolean enableERAM = false;
+    private boolean usesMBC1 = false;
+    private boolean usesMBC2 = false;
+    private byte currentRomBank = 1;    // Which ROM bank is currently loaded
+    private int currentRAMBank = 0;
+    private boolean romBanking = true;
 
     byte[] nintendoGraphic = {(byte) 0xCE, (byte) 0xED, (byte) 0x66, (byte) 0x66, (byte) 0xCC, (byte) 0x0D,
             (byte) 0x00, (byte) 0x0B, (byte) 0x03, (byte) 0x73, (byte) 0x00, (byte) 0x83,
@@ -57,12 +60,6 @@ public class MMU {
 
     public MMU() {
         // Setting up registers post boot up sequence
-
-//        // Nintendo Logo. May have to remove.
-//        for (int i = 0xA8; i < 0xD8; i++) {
-//            setMemVal((byte)i, nintendoGraphic[i - 0xA8]);
-//        }
-
         setMemVal((short) (0xFF05), (byte) 0);
         setMemVal((short) (0xFF06), (byte) 0);
         setMemVal((short) (0xFF07), (byte) 0);
@@ -132,7 +129,10 @@ public class MMU {
             // External RAM (8k)
             case 0xA000:
             case 0xB000:
-                return eram[adr & 0x1FFF]; // Size of ERAM is 0xBFFF - 0xA000 = 0x1FFF
+                // Only useable if mode is selected
+                if (enableERAM) {
+                    return eram[adr & 0x1FFF]; // Size of ERAM is 0xBFFF - 0xA000 = 0x1FFF
+                }
 
             // Working RAM (8k)
             case 0xC000:
@@ -193,7 +193,33 @@ public class MMU {
      * @param val 8bit value to store
      */
     public void setMemVal(short adr, byte val) {
-        // Split up to handle the varying types memory blocks
+        // Handles RAM/ROM bank selections
+
+        if (adr >= (short) 0 && adr < (short) 0x2000) {
+            if (usesMBC2 || usesMBC1) {
+                enableERAMCheck(adr, val);
+            }
+            return;
+        } else if (adr >= (short) 0x2000 && adr < (short) 0x4000) {
+            if (usesMBC2 || usesMBC1) {
+                romBankChange(adr, val);
+            }
+            return;
+        } else if (adr >= (short) 0x4000 && adr < (short) 0x6000) {
+            // No RAM bank in mbc2, so always use ram bank 0
+            if (usesMBC1) {
+                if (romBanking) {
+                    romBankChange(adr, val);
+                } else {
+                    ramBankChange(val);
+                }
+            }
+            return;
+        } else if (adr >= (short) 0x6000 && adr <= (short) 0x8000) {
+            romRamModeSwitch(val);
+        }
+
+        // Handles writing data to memory addresses
         switch (adr & 0xF000) {
             // BIOS(256b)/ROM0
             case 0x0000:
@@ -205,32 +231,43 @@ public class MMU {
             case 0x2000:
             case 0x3000:
                 rom[adr] = val;
+                break;
 
                 // ROM1 (Unbanked)(16k)
             case 0x4000:
             case 0x5000:
+                if (usesMBC2) {
+                    return;
+                }
             case 0x6000:
             case 0x7000:
                 rom[adr] = val;
+                break;
 
                 // Graphics (VRAM)(8k)
             case 0x8000:
             case 0x9000:
                 vram[adr & 0x1FFF] = val; // Size of VRAM is 0x9FFF - 0x8000 = 0x1FFF = 8k
+                break;
 
                 // External RAM (8k)
             case 0xA000:
             case 0xB000:
-                eram[adr & 0x1FFF] = val; // Size of ERAM is 0xBFFF - 0xA000 = 0x1FFF
-
+                // Only useable if mode is selected
+                if (enableERAM) {
+                    eram[adr & 0x1FFF] = val; // Size of ERAM is 0xBFFF - 0xA000 = 0x1FFF
+                }
+                break;
                 // Working RAM (8k)
             case 0xC000:
             case 0xD000:
                 wram[adr & 0x1FFF] = val; // Size of VRAM is 0xDFFF - 0xC000 = 0x1FFF
+                break;
 
                 // Working RAM duplicate (first half)
             case 0xE000:
                 wram[adr & 0x1FFF] = val;
+                break;
 
                 // Working RAM duplicate (2nd half), I/O, Zeo-page RAM
             case 0xF000:
@@ -251,12 +288,14 @@ public class MMU {
                     case 0xC00:
                     case 0xD00:
                         wram[adr & 0x1FFF] = val;
+                        break;
 
                         // Graphics: Object attribute memory (160byte, remaining bytes are 0)
                     case 0xE00:
                         if (adr < (short) 0xFEA0) {
                             oam[adr & 0xFF] = val;
                         }
+                        break;
 
                         // Zero-page
                     case 0xF00:
@@ -269,7 +308,9 @@ public class MMU {
                             hram[adr & 0x80] = val;
 
                         }
+                        break;
                 }
+                break;
         }
     }
 
@@ -315,29 +356,32 @@ public class MMU {
      */
     public void load(String filename) {
         FileInputStream fis = null;
-        ArrayList<Byte> byteList = new ArrayList();
         try {
             fis = new FileInputStream(filename);
             System.out.println("Loading ROM: " + filename);
 
             // Read next byte from file
             int b;
+            int i = 0;
             while ((b = fis.read()) != -1) {
-                byteList.add((byte) (0xFF & b));
-            }
-            cartridge = new byte[byteList.size()];
-            for (int i = 0; i < byteList.size(); i++) {
-                cartridge[i] = (byte) (0xFF & byteList.remove(0));
-
+                cartridge[i] = ((byte) (0xFF & b));
                 // Debug
                 System.out.print(cartridge[i] + " ");
-                if ((i % 160) == 0 && i != 0)
-                    System.out.println("NEWLINE");
+                if (((i + 1) % 160) == 0 && i != 0) {
+                    System.out.println();
+                }
 
+
+                i++;
+            }
+
+            // First 16k is always stored in memory $0000 - $3FFF
+            for (i = 0; i < cartridge.length && i < 0x4000; i++) {
+                rom[i] = cartridge[i];
             }
 
             // State the type of MBC used
-            switch (cartridge[0x147]) {
+            switch (rom[0x147]) {
                 case 1:
                 case 2:
                 case 3:
@@ -350,8 +394,6 @@ public class MMU {
                 default:
                     break;
             }
-
-            //
         } catch (IOException ioErr) {
             ioErr.printStackTrace();
         } finally {
@@ -366,4 +408,76 @@ public class MMU {
         System.out.println("Loaded ROM: " + filename);
     }
 
+    private void enableERAMCheck(short adr, byte val) {
+        if (usesMBC2) {
+            // When using mbc2, bit 4 of address must be 0
+            if ((adr >> 4 & 0x1) == 1) return;
+        }
+
+        // Data must be 0xA to enable ERAM
+        switch (val & 0xF) {
+            case 0xA:
+                enableERAM = true;
+                break;
+            case 0x0:
+                enableERAM = false;
+        }
+    }
+
+    /**
+     * Handles ROM bank changing for when the game writes data to address 0x2000 - 0x3FFF and 0x4000 - 0x5FFF
+     *
+     * @param val Byte value of data to be written to an address
+     */
+    private void romBankChange(short adr, byte val) {
+        if (adr >= (short) 0x2000 || adr < (short) 0x4000) {
+            if (usesMBC2) {
+                currentRomBank = (byte) (val & 0xF);
+                if (currentRomBank == 0) {
+                    // Bank 0 never changes, trying to change it results in changing bank 1
+                    currentRomBank++;
+                }
+            } else if (usesMBC1) {
+
+                // mbc1 means the lower 5bits of current rom bank is set to lower 5 bits of val
+                byte lowerFiveBits = (byte) (val & 0x1F);
+                currentRomBank = (byte) ((currentRomBank & 0xE0) + lowerFiveBits);
+                if (currentRomBank == 0) {
+                    currentRomBank++;
+                }
+            }
+        } else if (adr >= (short) 0x4000 || adr < (short) 0x6000) {
+            if (usesMBC1 || usesMBC2) {
+                // Turn off lower 5 bits of data and combine with upper 3 bits of current ROM bank
+                currentRomBank = 0x1F;
+                currentRomBank += (short) (val & 0xE0);
+            }
+        }
+    }
+
+    /**
+     * Changes the RAM bank. Only mbc1 can change RAM banks. The game must write to address 0x4000 - 0x5FFF, romBanking must be false.
+     *
+     * @param val A byte value of data to be written to address 0x4000 - 0x5FFF
+     */
+    private void ramBankChange(byte val) {
+        // currentRAMBank gets set to the lower 2 bits of val
+        if (!usesMBC2 && usesMBC1) {
+            currentRAMBank = val & 0x3;
+        }
+    }
+
+
+    /**
+     * Changes between ROM/RAM modes
+     *
+     * @param val A byte value written to an address in memory
+     */
+    private void romRamModeSwitch(byte val) {
+        val &= (byte) 0x1;
+        if (val == 0) {
+            romBanking = true;
+            currentRAMBank = 0;
+        }
+    }
 }

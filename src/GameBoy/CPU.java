@@ -22,11 +22,14 @@ package GameBoy;
 // TODO: Interrupts. Interrupts can't happen during a CB opcode.
 
 public class CPU {
+    final int MAXCYCLES = 69905;
+
     Registers regs = new Registers();
     Flags flags = new Flags();
     Opcodes opcodes = new Opcodes();
     private MMU mmu = new MMU();    // memory management unit
     byte[] args = new byte[2];
+
     int clock_cycles = 0;   // Number of cycles performed
     int machine_cycles = 0; // clock_cycles / 4
 
