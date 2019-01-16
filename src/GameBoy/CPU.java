@@ -22,22 +22,15 @@ package GameBoy;
 // TODO: Interrupts. Interrupts can't happen during a CB opcode.
 
 public class CPU {
-    final int MAXCYCLES = 69905;
 
-    Registers regs = new Registers();
-    Flags flags = new Flags();
-    Opcodes opcodes = new Opcodes();
+    private Registers regs = new Registers();
+    private Flags flags = new Flags();
+    private Opcodes opcodes = new Opcodes();
     private MMU mmu = new MMU();    // memory management unit
-    byte[] args = new byte[2];
 
-    int clock_cycles = 0;   // Number of cycles performed
-    int machine_cycles = 0; // clock_cycles / 4
-
-    String filename;
 
     public CPU(String filename) {
-        this.filename = filename;
-        mmu.load(this.filename);
+        mmu.load(filename);
     }
     /**
      * Main loop for the CPU
@@ -46,46 +39,9 @@ public class CPU {
      */
     public void run(GPU gpu) {
         boolean exit = false;
-        args[0] = 1;
-
+        final int maxCycles = 69905;
         while (!exit) {
-//            // Load an opcode and it's arguments from MMU
-//            args[0] = 0;
-//            args[1] = 0;
-//            int opcode = 0xFF & mmu.getMemVal(regs.getPC());
-//            regs.incPC();
-//
-//            // If CB prefix, need to load instruction
-//            if (opcode == 0xCB) {
-//                opcode = 0xFF & mmu.getMemVal(regs.getPC());
-//                regs.incPC();
-//                opcode = 0xCB00 + opcode;   // 0xCBnn
-//            }
-//
-//            // Execute Instruction
-//            int numArgs = opcodes.getNumArgs(opcode);
-//            for (int i = 0; i < numArgs; i++) {
-//                args[i] = (byte) (0xFF & mmu.getMemVal(regs.getPC()));
-//                regs.incPC();
-//            }
-//
-//            // E.g. Execute a command with opcode 0x3E (LD A,n)
-//            int executionTime = runOpCode(opcode, regs, mmu, args);
-//            clock_cycles += executionTime;
-//            if (regs.getH() == 0) {
-//                System.out.println("Finished Clearing VRAM");
-//            }
-//
-//            gpu.step(mmu);
-            // Might need to keep track of the time spent in each lcdc period
-
-//            gpu.renderRow(mmu);
-//            gpu.draw(regs, mmu);
-
-//            System.out.println("Executed");
-//            String debug = "CPU Clock: " + clock_cycles + "\n" + regs.toString();
-//            System.out.println(debug);
-
+            update();
             // Testing new mmu
             short adr = (short) 0xFFFF;
             byte val = 0x26;
@@ -97,7 +53,57 @@ public class CPU {
 
     }
 
-    private int runOpCode(int opcode, Registers regs, MMU mmu, byte[] args) {
+    private void update() {
+        final int maxCycles = 69905;
+        int clock_cycles = 0;   // Number of cycles performed during this update
+
+        while (clock_cycles < maxCycles) {
+            // CPU Operates
+            int cycles = runNextOpCode(regs, mmu);
+            clock_cycles += cycles;
+
+            // Timer updates
+            mmu.updateTimers(cycles);
+
+            // GPU Operates/Updates
+//            gpu.step(mmu);
+
+            // Handle Interrupts
+
+
+//            System.out.println("Executed");
+//            String debug = "CPU Clock: " + clock_cycles + "\n" + regs.toString();
+//            System.out.println(debug);
+
+
+        }
+//        gpu.render();
+    }
+
+
+    private int runNextOpCode(Registers regs, MMU mmu) {
+        byte[] args = new byte[2];
+
+        // Load an opcode
+        int opcode = 0xFF & mmu.getMemVal(regs.getPC());
+        regs.incPC();
+
+        // If CB prefix in opcode, need to load instruction suffix
+        if (opcode == 0xCB) {
+            opcode = 0xFF & mmu.getMemVal(regs.getPC());
+            regs.incPC();
+            opcode = 0xCB00 + opcode;   // 0xCBnn
+        }
+
+
+        // Load arguments for opcode
+        int numArgs = opcodes.getNumArgs(opcode);
+        for (int i = 0; i < numArgs; i++) {
+            args[i] = (byte) (0xFF & mmu.getMemVal(regs.getPC()));
+            regs.incPC();
+        }
+
+        // Execute Instruction
         return opcodes.execute(opcode, regs, mmu, args);
     }
 

@@ -3,7 +3,7 @@ package GameBoy;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+
 
 /**
  * Author: Benjamin Baird
@@ -11,7 +11,6 @@ import java.util.ArrayList;
  * Filename: MMU
  * Description: Holds memory and methods required by the opcodes.
  *  Any access to an array is masked with 0xFFFF so the array can be access with signed shorts without being considered a negative number
- *  TODO: Check the memory arrays to see if they are being allocated properly.
  *  TODO: Handle read only and write only memory addresses
  */
 public class MMU {
@@ -41,6 +40,9 @@ public class MMU {
     // GPU specific registers
     private byte[] hram = new byte[0x81];
 
+    /*
+        RAM/ROM banking
+     */
     private boolean enableERAM = false;
     private boolean usesMBC1 = false;
     private boolean usesMBC2 = false;
@@ -48,14 +50,17 @@ public class MMU {
     private int currentRAMBank = 0;
     private boolean romBanking = true;
 
-    byte[] nintendoGraphic = {(byte) 0xCE, (byte) 0xED, (byte) 0x66, (byte) 0x66, (byte) 0xCC, (byte) 0x0D,
-            (byte) 0x00, (byte) 0x0B, (byte) 0x03, (byte) 0x73, (byte) 0x00, (byte) 0x83,
-            (byte) 0x00, (byte) 0x0C, (byte) 0x00, (byte) 0x0D, (byte) 0x00, (byte) 0x08,
-            (byte) 0x11, (byte) 0x1F, (byte) 0x88, (byte) 0x89, (byte) 0x00, (byte) 0x0E,
-            (byte) 0xDC, (byte) 0xCC, (byte) 0x6E, (byte) 0xE6, (byte) 0xDD, (byte) 0xDD,
-            (byte) 0xD9, (byte) 0x99, (byte) 0xBB, (byte) 0xBB, (byte) 0x67, (byte) 0x63,
-            (byte) 0x6E, (byte) 0x0E, (byte) 0xEC, (byte) 0xCC, (byte) 0xDD, (byte) 0xDC,
-            (byte) 0x99, (byte) 0x9F, (byte) 0xBB, (byte) 0xB9, (byte) 0x33, (byte) 0x3E};
+    /*
+    Timer/Divider
+    */
+    // Timer located in mmeory address $FF05, increments by amount set at $FF07
+    // When timer overflows (>255 byte) it request a timer interrupt and resets to value set at $FF06
+    private final short timerAdr = (short) 0xFF05;
+    private final short timerModulatorAdr = (short) 0xFF06;
+    private final short timerControllerAdr = (short) 0xFF07;
+    private final short dividerAdr = (short) 0xFF04;
+    private int timerCounter = 1024;// CLOCKSPEED(4194304) / frequency(4096)
+    private int dividerCounter = 0;
 
 
     public MMU() {
@@ -173,7 +178,7 @@ public class MMU {
 
                         // Zero-page
                     case 0xF00:
-                        if (adr >= (short) 0xFF80) {
+                        if (adr < (short) 0xFF80) {
                             return zram[adr & 0x7F];
                         } else {
                             // TODO: I/O handling
@@ -194,7 +199,6 @@ public class MMU {
      */
     public void setMemVal(short adr, byte val) {
         // Handles RAM/ROM bank selections
-
         if (adr >= (short) 0 && adr < (short) 0x2000) {
             if (usesMBC2 || usesMBC1) {
                 enableERAMCheck(adr, val);
@@ -299,9 +303,21 @@ public class MMU {
 
                         // Zero-page
                     case 0xF00:
-                        if (adr >= (short) 0xFF80) {
+                        if (adr < (short) 0xFF80) {
                             zram[adr & 0x7F] = val;
                         } else {
+
+                            if (adr == (short) 0xFF07) {
+                                // Timer Controller
+                                if (val != getClockFreq()) {
+                                    zram[0xFF07] = val;
+                                    setClockFreq();
+
+                                }
+                            } else if (adr == (short) (0xFF04)) {
+                                // Attempting to write to the divider register resets it to 0
+                                zram[timerAdr] = 0;
+                            }
                             // TODO: I/O handling
                             // I/O, GPU
                             int b = adr & 0x80;
@@ -320,7 +336,7 @@ public class MMU {
      * @param adr memory address
      * @param val 16bit value to store
      */
-    public void setMemVal(short adr, short val) {
+    private void setMemVal(short adr, short val) {
         byte upperByte = (byte) ((val >> 8) & 0xFF);
         byte lowerByte = (byte) (val & 0xFF);
         setMemVal(adr, lowerByte);
@@ -479,5 +495,71 @@ public class MMU {
             romBanking = true;
             currentRAMBank = 0;
         }
+    }
+
+    void updateTimers(int cycles) {
+        // Update the divider register
+        dividerCounter += cycles;
+        if (dividerCounter >= 255) {
+            dividerCounter = 0;
+            incDividerRegister();
+        }
+
+        if (isClockEnabled()) {
+            timerCounter -= cycles;
+
+            // Enough CPU cycles passed to update the timer
+            if (timerCounter <= 0) {
+                // reset timerCounter
+                setClockFreq();
+
+
+                // Updating timer
+                if (getMemVal(timerAdr) == (short) 0xFF) {
+                    // Timer overflow handling
+                    setMemVal(timerAdr, getMemVal(timerModulatorAdr));
+                    Interrupts.requestInterupt(new Interrupt("Timer Overflowe", "MMU - updateTimers()"));
+                } else {
+                    setMemVal(timerAdr, (byte) (getMemVal(timerAdr) + 1));
+                }
+            }
+        }
+    }
+
+    private boolean isClockEnabled() {
+        return ((getMemVal(timerControllerAdr) >> 2) & 0x1) == 1;
+    }
+
+    /**
+     * Fetches the clock speed from register 0xFF07 and returns the last 3 bits
+     *
+     * @return clock speed of timer
+     */
+    private byte getClockFreq() {
+        return (byte) (zram[timerControllerAdr] & 0x3);
+    }
+
+    private void setClockFreq() {
+        switch (getClockFreq() & 0x3) {
+            case 0:
+                timerCounter = (byte) 1024; // 4096hz
+                break;
+            case 1:
+                timerCounter = (byte) 16; // 262144hz
+                break;
+            case 2:
+                timerCounter = (byte) 64; // 65536hz
+                break;
+            case 3:
+                timerCounter = (byte) 256; // 16382hz
+                break;
+        }
+    }
+
+    /**
+     * Increments the divider register, so it doesn't get reset
+     */
+    void incDividerRegister() {
+        zram[dividerAdr]++;
     }
 }
