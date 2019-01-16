@@ -9,15 +9,15 @@ import java.util.PriorityQueue;
  * Filename: GameBoy.Interrupts
  * Description: A interrupt handler class. Contains a priority queue to handle interrupts with varying priorities.
  * In order for an interrupt to be processed/executed it must follow these steps:
- * <p>
- * 1. When an event occurs that needs to trigger its interrupt it must make an interrupt request
- * by setting its corresponding bit in the Interrupt Request Register (0xFF0F).
- * <p>
- * 2. An interrupt can only be serviced if the Interrupt Master Enable switch is set to true
- * <p>
- * 3. If the above two conditions are true and their is no other interupt with a higher priority
- * awaiting to be serviced then it checks the Interupt Enabled Register(0xFFFF) to see if its
- * corresponding interrupt bit is set to 1 to allow servicing of this particular interrupt.
+ *
+ *      1. When an event occurs that needs to trigger its interrupt it must make an interrupt request
+ *      by setting its corresponding bit in the Interrupt Request Register (0xFF0F).
+ *
+ *      2. An interrupt can only be serviced if the Interrupt Master Enable switch is set to true
+ *
+ *      3. If the above two conditions are true and their is no other interupt with a higher priority
+ *      awaiting to be serviced then it checks the Interupt Enabled Register(0xFFFF) to see if its
+ *      corresponding interrupt bit is set to 1 to allow servicing of this particular interrupt.
  */
 public class Interrupts {
     static boolean masterInterruptSwitch = true; // Tool used by GameBoy to enable servicing of an interrupt
@@ -34,7 +34,7 @@ public class Interrupts {
         }
     });
 
-    static public Interrupt retreiveInterrupt() {
+    static public Interrupt retreiveInterrupt(MMU mmu) {
         return interrupts.remove();
     }
 

@@ -83,11 +83,37 @@ public class CPU {
     private void handleInterrupts() {
         // Make sure the system is allowing interrupts
         if (Interrupts.masterInterruptSwitch) {
+            byte irEnabled = mmu.getMemVal((short) 0xFFFF);
 
-            for (Interrupt ir : Interrupts.interrupts) {
+            // Remove interrupt from queue
+            while (Interrupts.interrupts.size() > 0) {
+
+                // Check if the interruptEnable register has bits set to enable servicing
+                Interrupt ir = Interrupts.interrupts.peek();
+                byte irEnabledBit = (byte) (irEnabled >> ir.getPriority() & 0x1);
+
+                // Service and remove interrupt from queue
+                if (irEnabledBit == 1) {
+                    serviceInterrupt(ir);
+                    Interrupts.interrupts.remove();
+                }
 
             }
         }
+    }
+
+    private void serviceInterrupt(Interrupt ir) {
+        Interrupts.masterInterruptSwitch = false;   // Need to set to true once interrupts are done
+        byte interruptRequest = (byte) (mmu.getMemVal((short) 0xFF0F) | ir.getPriority());  // Clear interrupt request bit
+        mmu.setMemVal((short) 0xFF0F, interruptRequest);
+
+        // Push PC to stack
+        mmu.push(regs.getSP(), regs.getPC());
+        regs.setSP((short) (regs.getSP() - 2));
+
+        // Set program counter to interrupt handler
+        regs.setPC(ir.getServiceAdr());
+
     }
 
     private int runNextOpCode(Registers regs, MMU mmu) {
