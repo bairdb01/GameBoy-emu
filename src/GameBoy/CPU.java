@@ -69,7 +69,7 @@ public class CPU {
 //            gpu.step(mmu);
 
             // Handle Interrupts
-
+            handleInterrupts();
 
 //            System.out.println("Executed");
 //            String debug = "CPU Clock: " + clock_cycles + "\n" + regs.toString();
@@ -80,6 +80,15 @@ public class CPU {
 //        gpu.render();
     }
 
+    private void handleInterrupts() {
+        // Make sure the system is allowing interrupts
+        if (Interrupts.masterInterruptSwitch) {
+
+            for (Interrupt ir : Interrupts.interrupts) {
+
+            }
+        }
+    }
 
     private int runNextOpCode(Registers regs, MMU mmu) {
         byte[] args = new byte[2];

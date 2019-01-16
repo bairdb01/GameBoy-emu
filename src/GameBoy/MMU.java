@@ -38,7 +38,10 @@ public class MMU {
     private byte[] oam = new byte[0xA0];
 
     // GPU specific registers
-    private byte[] hram = new byte[0x81];
+    private byte[] hram = new byte[0x80];
+
+    // Interrupt Register Toggle @ $FFFF
+    private byte interruptEnabled = 0;
 
     /*
         RAM/ROM banking
@@ -181,6 +184,9 @@ public class MMU {
                         if (adr < (short) 0xFF80) {
                             return zram[adr & 0x7F];
                         } else {
+                            if (adr == (short) 0xFFFF) {
+                                return interruptEnabled;
+                            }
                             // TODO: I/O handling
                             // TODO GPU memory
                             // I/O, GPU
@@ -317,6 +323,8 @@ public class MMU {
                             } else if (adr == (short) (0xFF04)) {
                                 // Attempting to write to the divider register resets it to 0
                                 zram[timerAdr] = 0;
+                            } else if (adr == (short) 0xFFFF) {
+                                interruptEnabled = val;
                             }
                             // TODO: I/O handling
                             // I/O, GPU
@@ -336,7 +344,7 @@ public class MMU {
      * @param adr memory address
      * @param val 16bit value to store
      */
-    private void setMemVal(short adr, short val) {
+    public void setMemVal(short adr, short val) {
         byte upperByte = (byte) ((val >> 8) & 0xFF);
         byte lowerByte = (byte) (val & 0xFF);
         setMemVal(adr, lowerByte);
@@ -518,7 +526,7 @@ public class MMU {
                 if (getMemVal(timerAdr) == (short) 0xFF) {
                     // Timer overflow handling
                     setMemVal(timerAdr, getMemVal(timerModulatorAdr));
-                    Interrupts.requestInterupt(new Interrupt("Timer Overflowe", "MMU - updateTimers()"));
+                    Interrupts.requestInterupt(this, new Interrupt("Timer Overflowe", "MMU - updateTimers()", 2));
                 } else {
                     setMemVal(timerAdr, (byte) (getMemVal(timerAdr) + 1));
                 }

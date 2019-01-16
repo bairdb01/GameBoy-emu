@@ -381,11 +381,11 @@ public class Opcodes {
 //        setOpCode(std_opcodes, "HALT", 76, 4, (regs, mmu, args) -> regs.halt());
 //        setOpCode(std_opcodes, "STOP", 0x1000, 4, (regs, mmu, args) -> regs.stop());
 
-        // Disable Interrupt
+        // Disable Interrupts
 //        setOpCode(std_opcodes, "DI", 0xF3, 4, (regs, mmu, args) -> regs.disableInterrupts());
 
         // Enable Interrupts
-//        setOpCode(std_opcodes, "DI", 0xFB, 4, (regs, mmu, args) -> regs.enableInterrupts());
+//        setOpCode(std_opcodes, "EI", 0xFB, 4, (regs, mmu, args) -> regs.enableInterrupts());
 
 
         /*
