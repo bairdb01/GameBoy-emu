@@ -1,6 +1,12 @@
 # SwoleBoy
 A WIP GameBoy emulator.
 
+### Current state and order of progression
+1. Extract CPU opcodes from manuals
+2. Implement each opcode to specification (testing as much as you can along the way)
+3. Implement Memory Controllers and ROM/RAM banking
+... To be continued
+
 ## Some of my troubles and thoughts
 Since this is my first emulator I have ever programmed, I thought it would be nice to note down some of my thoughts and problems. 
 
@@ -94,12 +100,6 @@ and draw images to the screen. In this step you should work on the following:
 1. Understand how the GameBoy loads/draws things to the screen.
 2. Implement a basic way to load objects to draw to the screen.
 3. Figure out a way to switch between the four LCD modes.
-
-### Noting the order of progression:
-1. Extract CPU opcodes from manuals
-2. Implement each opcode to specification (testing as much as you can along the way)
-3. Loading opcodes and programs from MMU.
-4. (Current step) Implement the LCD controller / GPU. This is a hefty step, which includes many MMU controllers and the reading of the GameBoy programming Manual.
 
 ## Resources:
 [GameBoy Development Lessons](http://gameboy.mongenel.com/asmschool.html) - I haven't used this site yet, but it looks very informative. I might use this for verifying functions.
