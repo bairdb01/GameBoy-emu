@@ -5,6 +5,8 @@ A WIP GameBoy emulator.
 1. Extract CPU opcodes from manuals
 2. Implement each opcode to specification (testing as much as you can along the way)
 3. Implement Memory Controllers and ROM/RAM banking
+4. Timers 
+
 ... To be continued
 
 ## Some of my troubles and thoughts
