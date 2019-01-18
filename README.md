@@ -5,7 +5,9 @@ A WIP GameBoy emulator.
 1. Extract CPU opcodes from manuals
 2. Implement each opcode to specification (testing as much as you can along the way)
 3. Implement Memory Controllers and ROM/RAM banking
-4. Timers 
+4. Timers
+5. LCD Controller 
+6. DMA  
 
 ... To be continued
 
@@ -95,6 +97,18 @@ This step can be done by mimicing the dissassembled boot ROM or by initializing 
 
 ### Memory (RAM) 
 The MMU of the GameBoy is quite large. However, it is broken up into different segments. I recommend coding it in a similar manner because it will be much easier to maintain the code and to understand.
+
+### LCD Controller
+This step is not to tricky. If you look at the [GameBoy Programming Manual](https://ia801906.us.archive.org/19/items/GameBoyProgManVer1.1/GameBoyProgManVer1.1.pdf) you 
+will be able to see how the LCD controller works. By examining the LCD controller's registers and their explanations
+you will start to be able to piece together how this part should be implemented. This step heavily focuses on the 
+LCD statuses and their mode swapping. During this step you should:
+1. Sync your GPU/LCD controller to the CPU clocks to be able to perform tasks at an appropriate time.  
+2. Update the LCD status register and perform needed interrupts
+3. Update the memory management unit to handle specific reading/writing of address
+
+By this point, you should have much better understanding of how the GameBoy works.
+
 
 ### Moving onto the GPU
 After completing the CPU and the memory management, you will want to move onto the GPU implementation. In this step you must load data from specific registers
