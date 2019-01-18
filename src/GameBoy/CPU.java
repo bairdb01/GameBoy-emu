@@ -66,7 +66,7 @@ public class CPU {
             mmu.updateTimers(cycles);
 
             // GPU Operates/Updates
-//            gpu.step(mmu);
+//            gpu.step(mmu, cycles);
 
             // Handle Interrupts
             handleInterrupts();

@@ -318,11 +318,17 @@ public class MMU {
                                 if (val != getClockFreq()) {
                                     zram[0xFF07] = val;
                                     setClockFreq();
-
                                 }
                             } else if (adr == (short) (0xFF04)) {
                                 // Attempting to write to the divider register resets it to 0
                                 zram[timerAdr] = 0;
+                            } else if (adr == (short) 0xFF44) {
+                                // Attempting to write to scanline register, resets it
+                                zram[0xFF44] = 0;
+                            } else if (adr == (short) 0xFF46) {
+                                // Direct Memory Access (DMA)
+                                DMATransfer(val);
+
                             } else if (adr == (short) 0xFFFF) {
                                 interruptEnabled = val;
                             }
@@ -371,6 +377,13 @@ public class MMU {
         short valLower = getMemVal(adr);
         short valUpper = getMemVal((short) (adr + 1));
         return (short) ((valUpper << 8) + valLower );
+    }
+
+    /**
+     * Increment the scanline register
+     */
+    public void incScanline() {
+        zram[0xFF44]++;
     }
 
     /**
@@ -432,6 +445,13 @@ public class MMU {
         System.out.println("Loaded ROM: " + filename);
     }
 
+    /**
+     * When 0xA is written to to 0xA000 - 0xBFFF, the ERAM can be enabled.
+     * If MBC2 is enabled bit 4 must be 0 to enable
+     *
+     * @param adr Address of memory being written to
+     * @param val Value of byte being written to
+     */
     private void enableERAMCheck(short adr, byte val) {
         if (usesMBC2) {
             // When using mbc2, bit 4 of address must be 0
@@ -505,6 +525,10 @@ public class MMU {
         }
     }
 
+    /**
+     * Update the timer and divider registers
+     * @param cycles
+     */
     void updateTimers(int cycles) {
         // Update the divider register
         dividerCounter += cycles;
@@ -534,19 +558,25 @@ public class MMU {
         }
     }
 
+    /**
+     * Checks if the clock is enabled
+     * @return true if clock is enabled
+     */
     private boolean isClockEnabled() {
         return ((getMemVal(timerControllerAdr) >> 2) & 0x1) == 1;
     }
 
     /**
      * Fetches the clock speed from register 0xFF07 and returns the last 3 bits
-     *
-     * @return clock speed of timer
+     * @return a byte representing the number of CPU cycles performed before the timer is incremented
      */
     private byte getClockFreq() {
         return (byte) (zram[timerControllerAdr] & 0x3);
     }
 
+    /**
+     * Changes the frequency of timer updates, to be the value stored in the timer modulator register
+     */
     private void setClockFreq() {
         switch (getClockFreq() & 0x3) {
             case 0:
@@ -569,5 +599,18 @@ public class MMU {
      */
     void incDividerRegister() {
         zram[dividerAdr]++;
+    }
+
+    /**
+     * Transfer 0xA0 worth of memory from RAM/ROM ($0000-$F100) to OAM memory starting at 0xFE00.
+     *
+     * @param offset The offset of the location to begin transferring data
+     *               from. Starting memory address = offset << 8, since all start address are 0x0000, 0x0100, .., 0xFF00
+     */
+    private void DMATransfer(byte offset) {
+        short startAdr = (short) (offset << 8);
+        for (int i = 0; i < 0xA0; i++) {
+            setMemVal((short) (0xFE00 + i), getMemVal((short) (startAdr + i)));
+        }
     }
 }

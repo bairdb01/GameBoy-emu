@@ -6,6 +6,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
+/**
+ * Author: Benjamin Baird
+ * Date: 2019-01-16
+ * Date Created: 2019-01-03
+ * Description: Represents a screen of the GameBoy
+ **/
 public class Screen extends JPanel {
     int width;
     int height;
@@ -14,6 +20,7 @@ public class Screen extends JPanel {
         this.width = width;
         this.height = height;
     }
+
     public void paint(Graphics g) {
         // Do something
     }

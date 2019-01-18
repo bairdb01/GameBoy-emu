@@ -39,9 +39,11 @@ public class Interrupts {
     }
 
     /**
-     * Add an interrupt to the queue if not already in
+     * Add an interrupt to the queue if not already in and
+     * Update the interrupt request flag in the MMU.
      *
-     * @param ir
+     * @param mmu The memory management unit with access to the interrupt request register
+     * @param ir An interrupt
      */
     static public void requestInterupt(MMU mmu, Interrupt ir) {
         if (!interrupts.contains(ir)) {

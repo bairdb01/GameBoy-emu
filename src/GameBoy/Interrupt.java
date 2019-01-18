@@ -24,16 +24,21 @@ public class Interrupt {
         this.priority = priority;
         switch(priority) {
             case 0:
+                // V-Blank
                 serviceAdr = 0x40;
                 break;
             case 1:
+                // LCD Interrupt
                 serviceAdr = 0x48;
                 break;
             case 2:
+                // Timer Interrupt
                 serviceAdr = 0x50;
                 break;
             case 3:
+                // Joypad Interrupt
                 serviceAdr = 0x60;
+                break;
         }
     }
 
