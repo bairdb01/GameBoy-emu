@@ -6,8 +6,7 @@ A WIP GameBoy emulator.
 2. Implement each opcode to specification (testing as much as you can along the way)
 3. Implement Memory Controllers and ROM/RAM banking
 4. Timers
-5. LCD Controller 
-6. DMA  
+5. LCD Controller/GPU (Redesigning implementation)
 
 ... To be continued
 
