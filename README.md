@@ -117,18 +117,28 @@ and draw images to the screen. In this step you should work on the following:
 2. Implement a basic way to load objects to draw to the screen.
 3. Figure out a way to switch between the four LCD modes.
 
+Step one is no easy task. It finally clicked for me once I was reading the GameBoy Programming Manual in conjunction with the Pandocs.
+In short, the background/window tiles are selected based on the location of the viewing window. See the image below. We have 256 pixels
+or dots which consist of 32 blocks/tiles. When scroll_x, scroll_y = 0, the first block to be loaded is Block number 0, which is stored in either 0x9800 or 0x9C00
+depending on the LCD controller. This byte contains the tile number or offset in the background display data 1/2 (0x9800 or 0x9C00). Next, we load in 16 bytes.
+These bytes will join in pairs to create the colour of the 8x8 background tile. The lower byte will be the LSB and the upper byte will be the MSB. For example,
+if Byte 0 = 00110101 and Byte 1 = 10101111. Then the colour for each pixel in the first row will be (10, 00, 11, 01, 10, 11, 10, 11), repeat for 7 other pairs to have 1 tile.
+This will result in having 1 block complete out of the possible 18 vertical blocks and 32 horizontal blocks
+
+<img src="bg-render-example.png " width="500" height="400">
+
 ## Resources:
-[GameBoy Development Lessons](http://gameboy.mongenel.com/asmschool.html) - I haven't used this site yet, but it looks very informative. I might use this for verifying functions.
+[PanDocs](http://bgb.bircd.org/pandocs.htm#vramtiledata) - Contains technical information on how the components/registers work. Useful for a quick reference.
 
 [Coffee-gb](https://blog.rekawek.eu/2017/02/09/coffee-gb/) - Looking at other people's emulators can help get you started
 
 [The Ultimate Game Boy Talk (33c3)](https://youtu.be/HyzD8pNlpwI) - A nice video to get an understanding of how the GameBoy works
 
-[GameBoy GameBoy.CPU Manual](http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf) - Recommended when writing the GameBoy.CPU. Chapter 3 has almost all you need.
+[GameBoy CPU Manual](http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf) - Recommended when writing the CPU. Chapter 3 has almost all you need.
 
-[GameBoy Programming Manual](https://ia801906.us.archive.org/19/items/GameBoyProgManVer1.1/GameBoyProgManVer1.1.pdf) - Highly detailed GameBoy manual. Goes into detail of how the GameBoy works.
+[GameBoy Programming Manual](https://ia801906.us.archive.org/19/items/GameBoyProgManVer1.1/GameBoyProgManVer1.1.pdf) - Highly detailed GameBoy manual. Goes into detail of how the GameBoy works use this in conjunction with the Pandocs.
 
-[GameBoy GameBoy.Opcodes Summary](http://gameboy.mongenel.com/dmg/opcodes.html) - Provides more detail on how the flags work for different opcodes
+[GameBoy Opcodes Summary](http://gameboy.mongenel.com/dmg/opcodes.html) - Provides more detail on how the flags work for different opcodes
 
 [Opcode chart](http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html) - Shows the size of bytes each opcode takes up. Prov
 

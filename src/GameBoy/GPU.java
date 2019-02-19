@@ -1,6 +1,7 @@
 package GameBoy;
 
 import javax.swing.*;
+import java.util.ArrayList;
 
 /**
  * Author: Benjamin Baird
@@ -272,65 +273,107 @@ public class GPU {
         setLCDMode(mmu, (byte) 4, 0xFB);
     }
 
-    public void renderRow(MMU mmu) {
 
-        // Load location on background map
-        int scroll_x = mmu.getMemVal(this.scroll_x);
-        int scroll_y = mmu.getMemVal(this.scroll_y);
+    public void drawScanLine(MMU mmu){
+         byte lcdControl = mmu.getMemVal(this.lcdc);
 
-        // Load LCDC flags
-        byte lcdc = mmu.getMemVal(this.lcdc);
-        int objFlag = lcdc & 0b10 >> 1;
-        int objBlockSizeFlag = lcdc & 0b100 >> 2;
-        int bgFlag = lcdc & 0b1000 >> 3;
-        int bgCharacterFlag = lcdc & 0b10000 >> 4;
-        int windowingFlag = lcdc & 0b100000 >> 5;
-        int windowCodeAreaFlag = lcdc & 0b1000000 >> 6;
-        int lcdcStopFlag = lcdc & 0b10000000 >> 7;
-
-        // VRAM offset for the tile map
-        short bgMemOffset;
-        if (bgFlag == 1)
-            bgMemOffset = 0x1C00;
-        else {
-            bgMemOffset = 0x1800;
+         if (BitUtils.testBit(lcdControl, 0)) {
+             gatherTiles(mmu, lcdControl);
         }
 
-        // Which line of tiles to use in the map
-        bgMemOffset += ((this.drawRow + scroll_y) & 255) >> 3;
-
-        // Which tile to start with in the map line
-        int lineoffs = (this.scroll_x >> 3);
-
-        // Which line of pixels to use in the tiles
-        int y = (this.drawRow + scroll_y) & 7;
-
-        // Where in the tileline to start
-        int x = scroll_x & 7;
-
-        // Where to render on the canvas
-        int canvasoffs = this.drawRow * 160 * 4;
-
-        // Read tile index from the background map
-        int tile = mmu.getMemVal((short) (bgMemOffset + lineoffs));
-
-        // If the tile data set in use is #1, the
-        // indices are signed; calculate a real tile offset
-//        if(GPU._bgtile == 1 && tile < 128) tile += 256;
-
-        // Drawing tiles to the pixels
-        for (int i = 0; i < 144; i++) {
-            for (int j = 0; j < 156; j += 4) {
-//                mmu.setMemVal(this.bgp, colours);
-                mainScreenPixels[i][j] = 0;
-                mainScreenPixels[i][j + 1] = 1;
-                mainScreenPixels[i][j + 2] = 2;
-                mainScreenPixels[i][j + 3] = 3;
-            }
-
+        if (BitUtils.testBit(lcdControl, 1)) {
+            renderSprites(mmu, lcdControl);
         }
-
-        screen.createImageWithArray(mainScreenPixels);
     }
 
+    /**
+     * Renders the background/window tiles.
+     * @param mmu The memory management unit containing the VRAM
+     * @param lcdControl The LCD control register's value
+     */
+    public void gatherTiles(MMU mmu, byte lcdControl) {
+        // Upper left starting position of the background to be displayed
+        byte scrollX = mmu.getMemVal(this.scroll_x);
+        byte scrollY = mmu.getMemVal(this.scroll_y);
+
+        // X,Y positions of the window area to start drawing the window from
+        byte windowY = mmu.getMemVal(this.wy);
+        byte windowX = (byte)(mmu.getMemVal(this.wx) - 7);      // value of wx is offset by 7 to allow scrolling in, 7 <= windowX <=166
+
+
+//        Bit 6 - Window Tile Map Display Select (0=9800-9BFF, 1=9C00-9FFF)
+//        Bit 5 - Windowing Flag
+//        Bit 4 - BG & Window Tile Data Select (0=8800-97FF, 1=8000-8FFF)
+//        Bit 3 - BG Tile Map Display Select (0=9800-9BFF, 1=9C00-9FFF)
+
+
+        // Check if loading normal Background Tiles or window background tiles (LCDC Bit 6 = 0/1)
+        short bgDataAdr;
+
+        if (BitUtils.testBit(lcdControl, 5)) {
+            // Window Background tiles
+            if (BitUtils.testBit(lcdControl, 6)) {
+                bgDataAdr = (short)0x9800;
+            } else {
+                bgDataAdr = (short)0x9C00;
+            }
+        } else {
+            // Normal Background tiles
+            if (BitUtils.testBit(lcdControl, 3)) {
+                bgDataAdr = (short)0x9800;
+            } else {
+                bgDataAdr = (short)0x9C00;
+            }
+        }
+
+        // Check where the Bitmap/tile data is located
+        short tileDataAdr;
+        boolean signed = false;
+        if (BitUtils.testBit(lcdControl, 4)) {
+            tileDataAdr = (short)0x8000;
+        } else {
+            tileDataAdr = (short)0x8800;
+            signed = true;
+        }
+
+
+        // Start at scroll_x, scroll_y and load tiles
+        Tile tile;
+        for (int curCol = 0; curCol < 20; curCol++) {
+            int blockX = (scrollX/8 + curCol) % 32;
+            for (int curRow = 0; curRow < 18; curRow++) {
+                int blockY = (32 * (scrollY/8 + curRow));
+
+
+                // Find current block
+                int block = blockX + blockY;
+                short tileCode = (short) (bgDataAdr + block);
+                tile = new Tile(mmu.getMemVal(tileCode));
+
+                // Load Bitmap from tile address
+                byte [] bitmap = new byte[16];
+                for (int i = 0; i < 16; i++) {
+                    if (signed) {
+                        // Tile CHR_CODE will be signed
+                        tileCode += 128;
+                    }
+                    byte tileAdr = (byte) (tileDataAdr + tileCode * 16);
+                    bitmap[i] = mmu.getMemVal(tileAdr);
+                }
+                tile.setBitmap(bitmap);
+
+                // Tile is ready to be drawn in it's 8x8 location
+                for (int i = 0; i < 8; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        mainScreenPixels[curRow*8+i][curCol*8+j] = tile.getPixel(i,j);
+                    }
+                }
+
+            }
+        }
+    }
+
+    public void renderSprites(MMU mmu, byte lcdControl){
+        //        Bit 2 - OBJ (Sprite) Size (0=8x8, 1=8x16)
+    }
 }

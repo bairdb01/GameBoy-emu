@@ -20,11 +20,11 @@ package GameBoy;
  */
 
 // TODO: Interrupts. Interrupts can't happen during a CB opcode.
+// TODO: Restructure CPU/GPU/etc to an emulator class to perform updates
 
 public class CPU {
 
     private Registers regs = new Registers();
-    private Flags flags = new Flags();
     private Opcodes opcodes = new Opcodes();
     private MMU mmu = new MMU();    // memory management unit
 
@@ -41,19 +41,13 @@ public class CPU {
         boolean exit = false;
         final int maxCycles = 69905;
         while (!exit) {
-            update();
-            // Testing new mmu
-            short adr = (short) 0xFFFF;
-            byte val = 0x26;
-            mmu.setMemVal(adr, val);
-            System.out.println("memory[" + (adr & 0xFFFF) + "]:" + mmu.getMemVal(adr));
-
+            update(gpu);
             exit = true;
         }
 
     }
 
-    private void update() {
+    private void update(GPU gpu) {
         final int maxCycles = 69905;
         int clock_cycles = 0;   // Number of cycles performed during this update
 
@@ -66,7 +60,7 @@ public class CPU {
             mmu.updateTimers(cycles);
 
             // GPU Operates/Updates
-//            gpu.step(mmu, cycles);
+            gpu.updateGraphics(mmu, cycles);
 
             // Handle Interrupts
             handleInterrupts();

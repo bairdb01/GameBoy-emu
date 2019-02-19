@@ -6,7 +6,7 @@ package GameBoy;
  * Filename: GameBoy.Registers
  * Description: GameBoy registers (excluding flags) and functions to manage them.
  */
-class Registers {
+public class Registers {
     private Byte[] registers = new Byte[8]; // GameBoy.Registers A, B, C, D, E, F (FLAGS), H, L (8 bit)
     final private int A = 0;
     final private int B = 1;

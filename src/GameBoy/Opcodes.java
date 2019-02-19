@@ -433,7 +433,7 @@ public class Opcodes {
         setOpCode(cb_opcodes, "RRC L", 0x0D, 8, (regs, mmu, args) -> regs.setL(Commands.rrc(regs, regs.getL())));
         setOpCode(cb_opcodes, "RRC (HL)", 0x0E, 16, (regs, mmu, args) -> mmu.setMemVal(regs.getHL(), Commands.rrc(regs, mmu.getMemVal(regs.getHL()))));
 
-        // Rotate n right through  Carry flag. GameBoy.Flags affected
+        // Rotate n right through  Carry flag. Flags affected
         setOpCode(cb_opcodes, "RR A", 0x1F, 8, (regs, mmu, args) -> regs.setA(Commands.rr(regs, regs.getA())));
         setOpCode(cb_opcodes, "RR B", 0x18, 8, (regs, mmu, args) -> regs.setB(Commands.rr(regs, regs.getB())));
         setOpCode(cb_opcodes, "RR C", 0x19, 8, (regs, mmu, args) -> regs.setC(Commands.rr(regs, regs.getC())));
@@ -477,7 +477,7 @@ public class Opcodes {
         /*
          * Bit GameBoy.Opcodes
          */
-        // Test bit b in register r. GameBoy.Flags affected
+        // Test bit b in register r. Flags affected
         for (byte b = 0; b < 8; b++) {
             final byte bit = b;
             setOpCode(cb_opcodes, "BIT " + b + ",A", 0x47 + (8 * b), 8, (regs, mmu, args) -> Commands.testBit(regs, regs.getA(), bit));
