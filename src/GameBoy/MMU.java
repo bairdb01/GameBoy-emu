@@ -22,8 +22,8 @@ public class MMU {
      * $8000 - $9FFF is video RAM. ($8000 - 97FF is for Character Data bank 0 + 1, split evenly) ($9800 - $9FFF is for background (BG) data)
      * $A000 - $BFFF is cartridge/external RAM, if a cartridge HAS any RAM on it. NULL and VOID if no RAM on cartridge.
      * $C000 - $DFFF is internal work RAM (WRAM) for most runtime variables. Other variables will be saved on the cartridge's RAM
-     * $E000 - $FDFF specified to copy contents of #C000 - $DDFF, but DO NOT USE FOR ANYTHING.
-     * $FE00 - FE9F for object attribute memory (Sprite RAM) (40 sprites max.) Two modes: 8x8 and 8x16, these modes will apply to ALL sprites.
+     * $E000 - $FDFF specified to copy contents of $C000 - $DDFF, but DO NOT USE FOR ANYTHING.
+     * $FE00 - $FE9F for object attribute memory (Sprite RAM) (40 sprites max.) Two modes: 8x8 and 8x16, these modes will apply to ALL sprites.
      * $FEA0 - $FEFF is unusable address space.
      * $FF00 - $FFFE is the ZERO page. Lower 64bytes is memory-mapped I/O. Upper 63 bytes is High RAM (HRAM).
      * $FFFF is a single memory-mapped I/O register.
@@ -44,7 +44,7 @@ public class MMU {
     private byte interruptEnabled = 0;
 
     /*
-        RAM/ROM banking
+     *  RAM/ROM banking
      */
     private boolean enableERAM = false;
     private boolean usesMBC1 = false;
@@ -54,8 +54,8 @@ public class MMU {
     private boolean romBanking = true;
 
     /*
-    Timer/Divider
-    */
+     *   Timer/Divider
+     */
     // Timer located in mmeory address $FF05, increments by amount set at $FF07
     // When timer overflows (>255 byte) it request a timer interrupt and resets to value set at $FF06
     private final short timerAdr = (short) 0xFF05;
@@ -387,9 +387,9 @@ public class MMU {
     }
 
     /**
-     * Load a gameboy ROM into memory
+     * Load a GameBoy Application into memory
      *
-     * @param filename Name/Location of ROM to load into memory
+     * @param filename Relative path of ROM to load into memory
      */
     public void load(String filename) {
         FileInputStream fis = null;
@@ -454,8 +454,8 @@ public class MMU {
      */
     private void enableERAMCheck(short adr, byte val) {
         if (usesMBC2) {
-            // When using mbc2, bit 4 of address must be 0
-            if ((adr >> 4 & 0x1) == 1) return;
+            // When using mbc2, bit 4 of address must be 0 to enable
+            if (BitUtils.testBit(adr, 4)) return;
         }
 
         // Data must be 0xA to enable ERAM
@@ -482,7 +482,6 @@ public class MMU {
                     currentRomBank++;
                 }
             } else if (usesMBC1) {
-
                 // mbc1 means the lower 5bits of current rom bank is set to lower 5 bits of val
                 byte lowerFiveBits = (byte) (val & 0x1F);
                 currentRomBank = (byte) ((currentRomBank & 0xE0) + lowerFiveBits);
@@ -510,7 +509,6 @@ public class MMU {
             currentRAMBank = val & 0x3;
         }
     }
-
 
     /**
      * Changes between ROM/RAM modes
@@ -563,7 +561,7 @@ public class MMU {
      * @return true if clock is enabled
      */
     private boolean isClockEnabled() {
-        return ((getMemVal(timerControllerAdr) >> 2) & 0x1) == 1;
+        return BitUtils.testBit(getMemVal(timerControllerAdr), 2);
     }
 
     /**

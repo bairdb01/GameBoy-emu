@@ -22,7 +22,7 @@ public class Sprite extends Tile{
     }
 
 
-    public Sprite(int height, byte attributes, byte y, byte x, int CHR_CODE){
+    public Sprite(int height, byte y, byte x, int CHR_CODE, byte attributes){
         this.height = height;
         this.CHR_CODE = CHR_CODE;
         this.bitmap = new int[this.height][this.width];
