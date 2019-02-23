@@ -6,6 +6,7 @@ package GameBoy;
  * Description: Operations for various opcodes. These may be broken down into ALU, Bit Operations, etc. in the future.
  *
  * Flag decriptors: - means unaffected, 0/1 clears/sets the flag, and * means affected accordingly
+ * TODO: Split this file up into smaller classes
  * TODO: Test subc, adc, PUSH, POP, swap, cpl, ccf, rotate and shift operations
  */
 

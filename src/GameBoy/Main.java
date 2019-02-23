@@ -5,7 +5,8 @@ package GameBoy;
  * TODO: Priority 1: Load a GB ROM. ROM -> MMU
  * TODO: Audio sounds
  * TODO: Take screen data and draw to screen
- * TODO: Implement MBC1, MBC2, MBC3, MBC5
+ * TODO: Colour Palettes
+ * TODO: Change all bytes/shorts to ints, to stop type casting ints.
  */
 public class Main {
 

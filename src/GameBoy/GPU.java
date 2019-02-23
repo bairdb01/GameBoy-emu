@@ -156,7 +156,7 @@ public class GPU {
 
             } else if (curScanline < (byte) 144) {
                 // Draw visible scanline
-//                drawScanline(mmu);
+                drawScanline(mmu);
             }
         }
 
@@ -260,13 +260,20 @@ public class GPU {
     }
 
 
-    public void drawScanLine(MMU mmu){
-         byte lcdControl = mmu.getMemVal(this.lcdc);
+    /**
+     * Draws one row of pixels to the screen.
+     *
+     * @param mmu Memory management unit which contains the LCDC, VRAM, and OAM
+     */
+    public void drawScanline(MMU mmu) {
+        byte lcdControl = mmu.getMemVal(this.lcdc);
 
-         if (BitUtils.testBit(lcdControl, 0)) {
-             gatherTiles(mmu, lcdControl);
+        // Draw background/window tiles
+        if (BitUtils.testBit(lcdControl, 0)) {
+            renderTiles(mmu, lcdControl);
         }
 
+        // Draw sprites
         if (BitUtils.testBit(lcdControl, 1)) {
             renderSprites(mmu, lcdControl);
         }
@@ -274,11 +281,11 @@ public class GPU {
 
     /**
      * Renders the background/window tiles.
-     * TODO: Modify to draw only one row then return. Take into account window_y and window_x.
+     * TODO: Take into account window_y and window_x.
      * @param mmu The memory management unit containing the VRAM
      * @param lcdControl The LCD control register's value
      */
-    public void gatherTiles(MMU mmu, byte lcdControl) {
+    public void renderTiles(MMU mmu, byte lcdControl) {
         // Upper left starting position of the background to be displayed
         byte scrollX = mmu.getMemVal(this.scroll_x);
         byte scrollY = mmu.getMemVal(this.scroll_y);
@@ -315,42 +322,39 @@ public class GPU {
             signed = true;
         }
 
-
-        // Start at scroll_x, scroll_y and load tiles
+        // Draw tiles at the current scanline (LY)
         Tile tile;
+        int curRow = (mmu.getMemVal(ly)) / 8; // Account for the block size of 8 (18 blocks)
         for (int curCol = 0; curCol < 20; curCol++) {
+            // Find current block/tile
             int blockX = (scrollX/8 + curCol) % 32;
-            for (int curRow = 0; curRow < 18; curRow++) {
-                int blockY = (32 * (scrollY/8 + curRow));
+            int blockY = (32 * (scrollY / 8 + curRow));
+            int blockNum = blockY + blockX;
 
-                // Find current block
-                int block = blockX + blockY;
-                short tileCode = (short) (bgDataAdr + block);
-                tile = new Tile(mmu.getMemVal(tileCode));
+            // Load CHR_CODE
+            short chrCode = (short) (bgDataAdr + blockNum);
+            tile = new Tile(mmu.getMemVal(chrCode));
 
-                // Load Bitmap from tile address
-                byte [] bitmap = new byte[16];  // 16 because 2 bytes create 1 row. 16/2 = 8 rows
-
-                // Check if CHR_CODE will be signed
-                if (signed) {
-                    tileCode += 128;
-                }
-                short tileAdr = (short) (tileDataAdr + tileCode * 16);
-
-                for (int i = 0; i < 16; i++) {
-                    bitmap[i] = mmu.getMemVal((short)(tileAdr + i));
-                }
-                tile.setBitmap(bitmap);
-
-                // Tile is ready to be drawn in it's 8x8 location
-                drawTile(tile, curRow * 8, curCol * 8);
-
+            // Check if CHR_CODE will be signed
+            if (signed) {
+                chrCode += 128;
             }
+            short tileAdr = (short) (tileDataAdr + chrCode * 16);
+
+            // Load Bitmap from tile address
+            byte[] bitmap = new byte[16];  // 16 because 2 bytes create 1 row. 16/2 = 8 rows
+            for (int i = 0; i < 16; i++) {
+                bitmap[i] = mmu.getMemVal((short) (tileAdr + i));
+            }
+            tile.setBitmap(bitmap);
+
+            // Tile is ready to be drawn in it's 8x8 location
+            drawTile(tile, curRow % 8, curCol * 8);
         }
     }
 
     /**
-     * Renders sprites onto the LCD screen.
+     * Renders a row of sprites onto the LCD screen.
      * @param mmu Memory management unit containing the OAM and VRAM.
      * @param lcdControl The LCDC register's value.
      */
@@ -382,19 +386,16 @@ public class GPU {
     }
 
     /**
-     * Draws a tile to the screen at it's based on it's top,left-most pixel relative to the LCD view.
+     * Draws a tile to the LCD's current scanline.
      * TODO: Account for priority when drawing.
      * TODO: Account for palette selection.
      * @param t The tile to draw.
-     * @param y The vertical position of the tile's top-most point relative to LCD
-     * @param x The horizontal position of the tile's left-most point relative to LCD
+     * @param scanlineY The current scanline we are drawing (0-143)
+     * @param col The position of the tile within the row.
      */
-    public void drawTile(Tile t, int y, int x) {
-        // Tile is ready to be drawn in it's 8x8 location
-        for (int i = 0; i < t.height; i++) {
-            for (int j = 0; j < t.width; j++) {
-                mainScreenPixels[y + i][x + j] = t.getPixel(i,j);
-            }
+    public void drawTile(Tile t, int scanlineY, int col) {
+        for (int i = 0; i < 8; i++) {
+            mainScreenPixels[scanlineY][col + i] = t.getPixel(scanlineY % 8, col + i);
         }
     }
 }

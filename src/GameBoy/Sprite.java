@@ -13,7 +13,7 @@ public class Sprite extends Tile{
     byte yCoord;
     byte xCoord;
     boolean priority;
-    int palette;
+    short palette;
 
     public Sprite(int height, int CHR_CODE){
         this.height = height;
@@ -29,7 +29,7 @@ public class Sprite extends Tile{
         this.yCoord = y;
         this.xCoord = x;
 
-        palette = BitUtils.testBit(attributes, 4)? 1:0;
+        palette = BitUtils.testBit(attributes, 4) ? (short) 0xFF49 : (short) 0xFF48;
         xFlip = BitUtils.testBit(attributes, 5);
         yFlip = BitUtils.testBit(attributes, 6);
         priority = !BitUtils.testBit(attributes, 7);
