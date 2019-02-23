@@ -15,6 +15,7 @@ public class Main {
         GPU gpu = new GPU();
         CPU cpu = new CPU(filename);
         cpu.run(gpu);
+        System.out.println("Exited");
     }
 
 }

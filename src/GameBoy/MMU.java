@@ -10,7 +10,7 @@ import java.io.IOException;
  * Created on: 2018-08-30
  * Filename: MMU
  * Description: Holds memory and methods required by the opcodes.
- *  Any access to an array is masked with 0xFFFF so the array can be access with signed shorts without being considered a negative number
+ * TODO: Change all callers of functions to use int adresses now.
  *  TODO: Handle read only and write only memory addresses
  */
 public class MMU {
@@ -28,17 +28,20 @@ public class MMU {
      * $FF00 - $FFFE is the ZERO page. Lower 64bytes is memory-mapped I/O. Upper 63 bytes is High RAM (HRAM).
      * $FFFF is a single memory-mapped I/O register.
      */
+
+    private byte[] mem = new byte[0x10000];
+
     private byte[] cartridge = new byte[0x200000];  // Maximum cartridge size
-    private byte[] rom = new byte[0x8000];
-    private byte[] vram = new byte[0x2000];
-    private byte[] eram = new byte[0x2000];
-    private byte[] wram = new byte[0x2000];
-
-    private byte[] zram = new byte[0x80];
-    private byte[] oam = new byte[0xA0];
-
-    // GPU specific registers
-    private byte[] hram = new byte[0x80];
+//    private byte[] rom = new byte[0x8000];
+//    private byte[] vram = new byte[0x2000];
+//    private byte[] eram = new byte[0x2000];
+//    private byte[] wram = new byte[0x2000];
+//
+//    private byte[] zram = new byte[0x80];
+//    private byte[] oam = new byte[0xA0];
+//
+//    // GPU specific registers
+//    private byte[] hram = new byte[0x80];
 
     // Interrupt Register Toggle @ $FFFF
     private byte interruptEnabled = 0;
@@ -58,49 +61,78 @@ public class MMU {
      */
     // Timer located in mmeory address $FF05, increments by amount set at $FF07
     // When timer overflows (>255 byte) it request a timer interrupt and resets to value set at $FF06
-    private final short timerAdr = (short) 0xFF05;
-    private final short timerModulatorAdr = (short) 0xFF06;
-    private final short timerControllerAdr = (short) 0xFF07;
-    private final short dividerAdr = (short) 0xFF04;
+    private final int timerAdr = 0xFF05;
+    private final int timerModulatorAdr = 0xFF06;
+    private final int timerControllerAdr = 0xFF07;
+    private final int dividerAdr = 0xFF04;
     private int timerCounter = 1024;// CLOCKSPEED(4194304) / frequency(4096)
     private int dividerCounter = 0;
 
 
     public MMU() {
         // Setting up registers post boot up sequence
-        setMemVal((short) (0xFF05), (byte) 0);
-        setMemVal((short) (0xFF06), (byte) 0);
-        setMemVal((short) (0xFF07), (byte) 0);
-        setMemVal((short) (0xFF10), (byte) 0x80);
-        setMemVal((short) (0xFF11), (byte) 0xBF);
-        setMemVal((short) (0xFF12), (byte) 0xF3);
-        setMemVal((short) (0xFF14), (byte) 0xBF);
-        setMemVal((short) (0xFF16), (byte) 0x3F);
-        setMemVal((short) (0xFF17), (byte) 0x00);
-        setMemVal((short) (0xFF19), (byte) 0xBF);
-        setMemVal((short) (0xFF1A), (byte) 0x7F);
-        setMemVal((short) (0xFF1B), (byte) 0xFF);
-        setMemVal((short) (0xFF1C), (byte) 0x9F);
-        setMemVal((short) (0xFF1E), (byte) 0xBF);
-        setMemVal((short) (0xFF20), (byte) 0xFF);
-        setMemVal((short) (0xFF21), (byte) 0x00);
-        setMemVal((short) (0xFF22), (byte) 0x00);
-        setMemVal((short) (0xFF23), (byte) 0xBF);
-        setMemVal((short) (0xFF24), (byte) 0x77);
-        setMemVal((short) (0xFF25), (byte) 0xF3);
-        setMemVal((short) (0xFF26), (byte) 0xF1);
-        setMemVal((short) (0xFF26), (byte) 0xF1);
-        setMemVal((short) (0xFF40), (byte) 0x91);
-        setMemVal((short) (0xFF42), (byte) 0x00);
-        setMemVal((short) (0xFF43), (byte) 0x00);
-        setMemVal((short) (0xFF45), (byte) 0x00);
-        setMemVal((short) (0xFF47), (byte) 0xFC);
-        setMemVal((short) (0xFF48), (byte) 0xFF);
-        setMemVal((short) (0xFF49), (byte) 0xFF);
-        setMemVal((short) (0xFF4A), (byte) 0x00);
-        setMemVal((short) (0xFF4B), (byte) 0x00);
-        setMemVal((short) (0xFFFF), (byte) 0x00);
+        setMemVal(0xFF05, (byte) 0);
+        setMemVal(0xFF06, (byte) 0);
+        setMemVal(0xFF07, (byte) 0);
+        setMemVal(0xFF10, (byte) 0x80);
+        setMemVal(0xFF11, (byte) 0xBF);
+        setMemVal(0xFF12, (byte) 0xF3);
+        setMemVal(0xFF14, (byte) 0xBF);
+        setMemVal(0xFF16, (byte) 0x3F);
+        setMemVal(0xFF17, (byte) 0x00);
+        setMemVal(0xFF19, (byte) 0xBF);
+        setMemVal(0xFF1A, (byte) 0x7F);
+        setMemVal(0xFF1B, (byte) 0xFF);
+        setMemVal(0xFF1C, (byte) 0x9F);
+        setMemVal(0xFF1E, (byte) 0xBF);
+        setMemVal(0xFF20, (byte) 0xFF);
+        setMemVal(0xFF21, (byte) 0x00);
+        setMemVal(0xFF22, (byte) 0x00);
+        setMemVal(0xFF23, (byte) 0xBF);
+        setMemVal(0xFF24, (byte) 0x77);
+        setMemVal(0xFF25, (byte) 0xF3);
+        setMemVal(0xFF26, (byte) 0xF1);
+        setMemVal(0xFF26, (byte) 0xF1);
+        setMemVal(0xFF40, (byte) 0x91);
+        setMemVal(0xFF42, (byte) 0x00);
+        setMemVal(0xFF43, (byte) 0x00);
+        setMemVal(0xFF45, (byte) 0x00);
+        setMemVal(0xFF47, (byte) 0xFC);
+        setMemVal(0xFF48, (byte) 0xFF);
+        setMemVal(0xFF49, (byte) 0xFF);
+        setMemVal(0xFF4A, (byte) 0x00);
+        setMemVal(0xFF4B, (byte) 0x00);
+        setMemVal(0xFFFF, (byte) 0x00);
     }
+
+
+    public void tempSetMemVal(int adr, byte val) {
+        if (adr == 0xFF07) {
+            // Timer Controller
+            if (val != getClockFreq()) {
+                mem[adr] = val;
+                setClockFreq();
+            }
+        } else if (adr == 0xFF46) {
+            // Direct Memory Access (DMA)
+            DMATransfer(val);
+        } else if (adr == 0xFFFF) {
+            interruptEnabled = val;
+        } else {
+            mem[adr] = val;
+        }
+    }
+
+    public byte tempGetMemVal(int adr) {
+        if (adr == (short) 0xFFFF) {
+            return interruptEnabled;
+        } else {
+            return mem[adr];
+        }
+    }
+
+
+
 
     /**
      * Gets a byte from memory
@@ -108,92 +140,93 @@ public class MMU {
      * @param adr Address of byte in memory from 0x000 to 0xFFFF
      * @return A byte from the corresponding address
      */
-    public byte getMemVal(short adr) {
+    public byte getMemVal(int adr) {
+        tempGetMemVal(adr);
         // Split up to handle the varying types memory blocks
-        switch (adr & 0xF000) {
-
-            // BIOS(256b)/ROM0
-            case 0x0000:
-                return rom[adr];
-
-            // ROM0 (Unbanked)(16k)
-            case 0x1000:
-            case 0x2000:
-            case 0x3000:
-                return rom[adr];
-
-            // ROM1 (Unbanked)(16k)
-            case 0x4000:
-            case 0x5000:
-            case 0x6000:
-            case 0x7000:
-                return rom[adr];
-
-            // Graphics (VRAM)(8k)
-            case 0x8000:
-            case 0x9000:
-                return vram[adr & 0x1FFF]; // Size of VRAM is 0x9FFF - 0x8000 = 0x1FFF = 8k
-
-            // External RAM (8k)
-            case 0xA000:
-            case 0xB000:
-                // Only useable if mode is selected
-                if (enableERAM) {
-                    return eram[adr & 0x1FFF]; // Size of ERAM is 0xBFFF - 0xA000 = 0x1FFF
-                }
-
-            // Working RAM (8k)
-            case 0xC000:
-            case 0xD000:
-                return wram[adr & 0x1FFF]; // Size of VRAM is 0xDFFF - 0xC000 = 0x1FFF
-
-            // Working RAM duplicate (first half)
-            case 0xE000:
-                return wram[adr & 0x1FFF];
-
-            // Working RAM duplicate (2nd half), I/O, Zeo-page RAM
-            case 0xF000:
-                switch (adr & 0x0F00) {
-                    // Working RAM duplicate
-                    case 0x000:
-                    case 0x100:
-                    case 0x200:
-                    case 0x300:
-                    case 0x400:
-                    case 0x500:
-                    case 0x600:
-                    case 0x700:
-                    case 0x800:
-                    case 0x900:
-                    case 0xA00:
-                    case 0xB00:
-                    case 0xC00:
-                    case 0xD00:
-                        return wram[adr & 0x1FFF];
-
-                    // Graphics: Object attribute memory (160byte, remaining bytes are 0)
-                    case 0xE00:
-                        if (adr < (short) 0xFEA0) {
-                            return oam[adr & 0xFF];
-                        } else {
-                            return 0;
-                        }
-
-                        // Zero-page
-                    case 0xF00:
-                        if (adr < (short) 0xFF80) {
-                            return zram[adr & 0x7F];
-                        } else {
-                            if (adr == (short) 0xFFFF) {
-                                return interruptEnabled;
-                            }
-                            // TODO: I/O handling
-                            // TODO GPU memory
-                            // I/O, GPU
-                            return hram[adr & 0x80];
-                        }
-                }
-        }
+//        switch (adr & 0xF000) {
+//
+//            // BIOS(256b)/ROM0
+//            case 0x0000:
+//                return rom[adr];
+//
+//            // ROM0 (Unbanked)(16k)
+//            case 0x1000:
+//            case 0x2000:
+//            case 0x3000:
+//                return rom[adr];
+//
+//            // ROM1 (Unbanked)(16k)
+//            case 0x4000:
+//            case 0x5000:
+//            case 0x6000:
+//            case 0x7000:
+//                return rom[adr];
+//
+//            // Graphics (VRAM)(8k)
+//            case 0x8000:
+//            case 0x9000:
+//                return vram[adr & 0x1FFF]; // Size of VRAM is 0x9FFF - 0x8000 = 0x1FFF = 8k
+//
+//            // External RAM (8k)
+//            case 0xA000:
+//            case 0xB000:
+//                // Only useable if mode is selected
+//                if (enableERAM) {
+//                    return eram[adr & 0x1FFF]; // Size of ERAM is 0xBFFF - 0xA000 = 0x1FFF
+//                }
+//
+//            // Working RAM (8k)
+//            case 0xC000:
+//            case 0xD000:
+//                return wram[adr & 0x1FFF]; // Size of VRAM is 0xDFFF - 0xC000 = 0x1FFF
+//
+//            // Working RAM duplicate (first half)
+//            case 0xE000:
+//                return wram[adr & 0x1FFF];
+//
+//            // Working RAM duplicate (2nd half), I/O, Zeo-page RAM
+//            case 0xF000:
+//                switch (adr & 0x0F00) {
+//                    // Working RAM duplicate
+//                    case 0x000:
+//                    case 0x100:
+//                    case 0x200:
+//                    case 0x300:
+//                    case 0x400:
+//                    case 0x500:
+//                    case 0x600:
+//                    case 0x700:
+//                    case 0x800:
+//                    case 0x900:
+//                    case 0xA00:
+//                    case 0xB00:
+//                    case 0xC00:
+//                    case 0xD00:
+//                        return wram[adr & 0x1FFF];
+//
+//                    // Graphics: Object attribute memory (160byte, remaining bytes are 0)
+//                    case 0xE00:
+//                        if (adr < (short) 0xFEA0) {
+//                            return oam[adr & 0xFF];
+//                        } else {
+//                            return 0;
+//                        }
+//
+//                        // Zero-page
+//                    case 0xF00:
+//                        if (adr < (short) 0xFF80) {
+//                            return zram[adr & 0x7F];
+//                        } else {
+//                            if (adr == (short) 0xFFFF) {
+//                                return interruptEnabled;
+//                            }
+//                            // TODO: I/O handling
+//                            // TODO GPU memory
+//                            // I/O, GPU
+//                            return hram[adr & 0x80];
+//                        }
+//                }
+//        }
         return 0;
     }
 
@@ -203,19 +236,19 @@ public class MMU {
      * @param adr memory address
      * @param val 8bit value to store
      */
-    public void setMemVal(short adr, byte val) {
+    public void setMemVal(int adr, byte val) {
         // Handles RAM/ROM bank selections
-        if (adr >= (short) 0 && adr < (short) 0x2000) {
+        if (adr >= 0 && adr < 0x2000) {
             if (usesMBC2 || usesMBC1) {
                 enableERAMCheck(adr, val);
             }
             return;
-        } else if (adr >= (short) 0x2000 && adr < (short) 0x4000) {
+        } else if (adr >= 0x2000 && adr < 0x4000) {
             if (usesMBC2 || usesMBC1) {
                 romBankChange(adr, val);
             }
             return;
-        } else if (adr >= (short) 0x4000 && adr < (short) 0x6000) {
+        } else if (adr >= 0x4000 && adr < 0x6000) {
             // No RAM bank in mbc2, so always use ram bank 0
             if (usesMBC1) {
                 if (romBanking) {
@@ -225,123 +258,124 @@ public class MMU {
                 }
             }
             return;
-        } else if (adr >= (short) 0x6000 && adr <= (short) 0x8000) {
+        } else if (adr >= 0x6000 && adr <= 0x8000) {
             romRamModeSwitch(val);
         }
 
+        tempSetMemVal(adr, val);
         // Handles writing data to memory addresses
-        switch (adr & 0xF000) {
-            // BIOS(256b)/ROM0
-            case 0x0000:
-                rom[adr] = val;
-                break;
-
-            // ROM0 (Unbanked)(16k)
-            case 0x1000:
-            case 0x2000:
-            case 0x3000:
-                rom[adr] = val;
-                break;
-
-                // ROM1 (Unbanked)(16k)
-            case 0x4000:
-            case 0x5000:
-                if (usesMBC2) {
-                    return;
-                }
-            case 0x6000:
-            case 0x7000:
-                rom[adr] = val;
-                break;
-
-                // Graphics (VRAM)(8k)
-            case 0x8000:
-            case 0x9000:
-                vram[adr & 0x1FFF] = val; // Size of VRAM is 0x9FFF - 0x8000 = 0x1FFF = 8k
-                break;
-
-                // External RAM (8k)
-            case 0xA000:
-            case 0xB000:
-                // Only useable if mode is selected
-                if (enableERAM) {
-                    eram[adr & 0x1FFF] = val; // Size of ERAM is 0xBFFF - 0xA000 = 0x1FFF
-                }
-                break;
-                // Working RAM (8k)
-            case 0xC000:
-            case 0xD000:
-                wram[adr & 0x1FFF] = val; // Size of VRAM is 0xDFFF - 0xC000 = 0x1FFF
-                break;
-
-                // Working RAM duplicate (first half)
-            case 0xE000:
-                wram[adr & 0x1FFF] = val;
-                break;
-
-                // Working RAM duplicate (2nd half), I/O, Zeo-page RAM
-            case 0xF000:
-                switch (adr & 0x0F00) {
-                    // Working RAM duplicate
-                    case 0x000:
-                    case 0x100:
-                    case 0x200:
-                    case 0x300:
-                    case 0x400:
-                    case 0x500:
-                    case 0x600:
-                    case 0x700:
-                    case 0x800:
-                    case 0x900:
-                    case 0xA00:
-                    case 0xB00:
-                    case 0xC00:
-                    case 0xD00:
-                        wram[adr & 0x1FFF] = val;
-                        break;
-
-                        // Graphics: Object attribute memory (160byte, remaining bytes are 0)
-                    case 0xE00:
-                        if (adr < (short) 0xFEA0) {
-                            oam[adr & 0xFF] = val;
-                        }
-                        break;
-
-                        // Zero-page
-                    case 0xF00:
-                        if (adr < (short) 0xFF80) {
-                            zram[adr & 0x7F] = val;
-                        } else {
-
-                            if (adr == (short) 0xFF07) {
-                                // Timer Controller
-                                if (val != getClockFreq()) {
-                                    zram[0xFF07] = val;
-                                    setClockFreq();
-                                }
-                            } else if (adr == (short) (0xFF04)) {
-                                // Attempting to write to the divider register resets it to 0
-                                zram[timerAdr] = 0;
-                            } else if (adr == (short) 0xFF44) {
-                                // Attempting to write to scanline register, resets it
-                                zram[0xFF44] = 0;
-                            } else if (adr == (short) 0xFF46) {
-                                // Direct Memory Access (DMA)
-                                DMATransfer(val);
-
-                            } else if (adr == (short) 0xFFFF) {
-                                interruptEnabled = val;
-                            }
-                            // TODO: I/O handling
-                            // I/O, GPU
-                            int b = adr & 0x80;
-                            hram[adr & 0x80] = val;
-
-                        }
-                        break;
-                }
-                break;
-        }
+//        switch (adr & 0xF000) {
+//            // BIOS(256b)/ROM0
+//            case 0x0000:
+//                rom[adr] = val;
+//                break;
+//
+//            // ROM0 (Unbanked)(16k)
+//            case 0x1000:
+//            case 0x2000:
+//            case 0x3000:
+//                rom[adr] = val;
+//                break;
+//
+//                // ROM1 (Unbanked)(16k)
+//            case 0x4000:
+//            case 0x5000:
+//                if (usesMBC2) {
+//                    return;
+//                }
+//            case 0x6000:
+//            case 0x7000:
+//                rom[adr] = val;
+//                break;
+//
+//                // Graphics (VRAM)(8k)
+//            case 0x8000:
+//            case 0x9000:
+//                vram[adr & 0x1FFF] = val; // Size of VRAM is 0x9FFF - 0x8000 = 0x1FFF = 8k
+//                break;
+//
+//                // External RAM (8k)
+//            case 0xA000:
+//            case 0xB000:
+//                // Only useable if mode is selected
+//                if (enableERAM) {
+//                    eram[adr & 0x1FFF] = val; // Size of ERAM is 0xBFFF - 0xA000 = 0x1FFF
+//                }
+//                break;
+//                // Working RAM (8k)
+//            case 0xC000:
+//            case 0xD000:
+//                wram[adr & 0x1FFF] = val; // Size of VRAM is 0xDFFF - 0xC000 = 0x1FFF
+//                break;
+//
+//                // Working RAM duplicate (first half)
+//            case 0xE000:
+//                wram[adr & 0x1FFF] = val;
+//                break;
+//
+//                // Working RAM duplicate (2nd half), I/O, Zeo-page RAM
+//            case 0xF000:
+//                switch (adr & 0x0F00) {
+//                    // Working RAM duplicate
+//                    case 0x000:
+//                    case 0x100:
+//                    case 0x200:
+//                    case 0x300:
+//                    case 0x400:
+//                    case 0x500:
+//                    case 0x600:
+//                    case 0x700:
+//                    case 0x800:
+//                    case 0x900:
+//                    case 0xA00:
+//                    case 0xB00:
+//                    case 0xC00:
+//                    case 0xD00:
+//                        wram[adr & 0x1FFF] = val;
+//                        break;
+//
+//                        // Graphics: Object attribute memory (160byte, remaining bytes are 0)
+//                    case 0xE00:
+//                        if (adr < (short) 0xFEA0) {
+//                            oam[adr & 0xFF] = val;
+//                        }
+//                        break;
+//
+//                        // Zero-page
+//                    case 0xF00:
+//                        if (adr < (short) 0xFF80) {
+//                            zram[adr & 0x7F] = val;
+//                        } else {
+//
+//                            if (adr == (short) 0xFF07) {
+//                                // Timer Controller
+//                                if (val != getClockFreq()) {
+//                                    zram[0xFF07 & 0x7F] = val;
+//                                    setClockFreq();
+//                                }
+//                            } else if (adr == (short) (0xFF04)) {
+//                                // Attempting to write to the divider register resets it to 0
+//                                zram[timerAdr & 0x7F] = 0;
+//                            } else if (adr == (short) 0xFF44) {
+//                                // Attempting to write to scanline register, resets it
+//                                zram[0xFF44 & 0x7F] = 0;
+//                            } else if (adr == (short) 0xFF46) {
+//                                // Direct Memory Access (DMA)
+//                                DMATransfer(val);
+//
+//                            } else if (adr == (short) 0xFFFF) {
+//                                interruptEnabled = val;
+//                            }
+//                            // TODO: I/O handling
+//                            // I/O, GPU
+//                            int b = adr & 0x80;
+//                            hram[adr & 0x80] = val;
+//
+//                        }
+//                        break;
+//                }
+//                break;
+//        }
     }
 
     /**
@@ -350,11 +384,11 @@ public class MMU {
      * @param adr memory address
      * @param val 16bit value to store
      */
-    public void setMemVal(short adr, short val) {
+    public void setMemVal(int adr, short val) {
         byte upperByte = (byte) ((val >> 8) & 0xFF);
         byte lowerByte = (byte) (val & 0xFF);
         setMemVal(adr, lowerByte);
-        setMemVal((short) (adr + 1), upperByte);
+        setMemVal((adr + 1), upperByte);
     }
 
     /**
@@ -363,8 +397,8 @@ public class MMU {
      * @param adr  Stack pointer
      * @param val 16 bit value
      */
-    public void push(short adr, short val) {
-        setMemVal((short) (adr - 1), val);
+    public void push(int adr, short val) {
+        setMemVal((adr - 1), val);
     }
 
     /**
@@ -373,17 +407,18 @@ public class MMU {
      * @param adr   Stack pointer address
      * @return The popped 16 bit value.
      */
-    public short pop(short adr) {
-        short valLower = getMemVal(adr);
-        short valUpper = getMemVal((short) (adr + 1));
-        return (short) ((valUpper << 8) + valLower );
+    public int pop(int adr) {
+        byte valLower = getMemVal(adr);
+        byte valUpper = getMemVal(adr + 1);
+        return ((valUpper << 8) + valLower);
     }
 
     /**
      * Increment the scanline register
      */
     public void incScanline() {
-        zram[0xFF44]++;
+        setMemVal(0xFF44, (byte) (tempGetMemVal(0xFF44) + 1));
+//        zram[0xFF44]++;
     }
 
     /**
@@ -414,11 +449,11 @@ public class MMU {
 
             // First 16k is always stored in memory $0000 - $3FFF
             for (i = 0; i < cartridge.length && i < 0x4000; i++) {
-                rom[i] = cartridge[i];
+                setMemVal(i, cartridge[i]);
             }
 
             // State the type of MBC used
-            switch (rom[0x147]) {
+            switch (getMemVal(0x147)) {
                 case 1:
                 case 2:
                 case 3:
@@ -452,7 +487,7 @@ public class MMU {
      * @param adr Address of memory being written to
      * @param val Value of byte being written to
      */
-    private void enableERAMCheck(short adr, byte val) {
+    private void enableERAMCheck(int adr, byte val) {
         if (usesMBC2) {
             // When using mbc2, bit 4 of address must be 0 to enable
             if (BitUtils.testBit(adr, 4)) return;
@@ -473,8 +508,8 @@ public class MMU {
      *
      * @param val Byte value of data to be written to an address
      */
-    private void romBankChange(short adr, byte val) {
-        if (adr >= (short) 0x2000 || adr < (short) 0x4000) {
+    private void romBankChange(int adr, byte val) {
+        if (adr >= 0x2000 && adr < 0x4000) {
             if (usesMBC2) {
                 currentRomBank = (byte) (val & 0xF);
                 if (currentRomBank == 0) {
@@ -489,11 +524,11 @@ public class MMU {
                     currentRomBank++;
                 }
             }
-        } else if (adr >= (short) 0x4000 || adr < (short) 0x6000) {
+        } else if (adr >= 0x4000 && adr < 0x6000) {
             if (usesMBC1 || usesMBC2) {
                 // Turn off lower 5 bits of data and combine with upper 3 bits of current ROM bank
                 currentRomBank = 0x1F;
-                currentRomBank += (short) (val & 0xE0);
+                currentRomBank += (val & 0xE0);
             }
         }
     }
@@ -545,7 +580,7 @@ public class MMU {
 
 
                 // Updating timer
-                if (getMemVal(timerAdr) == (short) 0xFF) {
+                if (getMemVal(timerAdr) == (byte) 0xFF) {
                     // Timer overflow handling
                     setMemVal(timerAdr, getMemVal(timerModulatorAdr));
                     Interrupts.requestInterupt(this, new Interrupt("Timer Overflowe", "MMU - updateTimers()", 2));
@@ -569,7 +604,8 @@ public class MMU {
      * @return a byte representing the number of CPU cycles performed before the timer is incremented
      */
     private byte getClockFreq() {
-        return (byte) (zram[timerControllerAdr] & 0x3);
+        return (byte) (mem[timerControllerAdr] & 0x3);
+//        return (byte) (zram[timerControllerAdr] & 0x3);
     }
 
     /**
@@ -595,8 +631,9 @@ public class MMU {
     /**
      * Increments the divider register, so it doesn't get reset
      */
-    void incDividerRegister() {
-        zram[dividerAdr]++;
+    private void incDividerRegister() {
+        mem[dividerAdr]++;
+//        zram[dividerAdr]++;
     }
 
     /**
@@ -606,9 +643,9 @@ public class MMU {
      *               from. Starting memory address = offset << 8, since all start address are 0x0000, 0x0100, .., 0xFF00
      */
     private void DMATransfer(byte offset) {
-        short startAdr = (short) (offset << 8);
+        int startAdr = (offset << 8);
         for (int i = 0; i < 0xA0; i++) {
-            setMemVal((short) (0xFE00 + i), getMemVal((short) (startAdr + i)));
+            setMemVal((0xFE00 + i), getMemVal((startAdr + i)));
         }
     }
 }

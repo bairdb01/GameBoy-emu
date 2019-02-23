@@ -18,7 +18,7 @@ public class GPU {
     Screen screen = new Screen(144, 160);
     Screen debug = new Screen(300, 400);
 
-    short lcdc = (short) 0xFF40; /* LCD control register
+    int lcdc = 0xFF40; /* LCD control register
                     Bit 0:
                     CGB Mode: BG display always on
                     DMG Mode:   0: BG display off
@@ -52,7 +52,7 @@ public class GPU {
                                 0: LCDC Off (OFF during v-blank)
                                 1: LCDC On
                      */
-    short stat = (short) 0xFF41; /* LCD Status flag
+    int stat = 0xFF41; /* LCD Status flag
                     Bit 0, 1: Mode Flag
                             00: Enable CPU Access to all Display RAM (H-Blank period)
                             01: In vertical blanking period (V-Blank period)
@@ -69,28 +69,28 @@ public class GPU {
                             Mode 10 Selection, 1: selected
                             LYC = LY matching selection
                      */
-    short scroll_y = (short) 0xFF42; // Scroll Y (00 - FF) top location of window on background map
-    short scroll_x = (short) 0xFF43; // Scroll X (00 - FF) left location of window on background map
-    short ly = (short) 0xFF44; // LCDC y-coordinate. 0 - 153 (144 - 153 represent V-Blank period) (Current scanline)
+    int scroll_y = 0xFF42; // Scroll Y (00 - FF) top location of window on background map
+    int scroll_x = 0xFF43; // Scroll X (00 - FF) left location of window on background map
+    int ly = 0xFF44; // LCDC y-coordinate. 0 - 153 (144 - 153 represent V-Blank period) (Current scanline)
 
     // Writing a value of 0 to bit 7 of the CDC reg when its value is 1 stops the LCD controller and LY becomes 0
-    short lyc = (short) 0xFF45; // Register LYC is compared with register ly. If they match, the matchflag of the stat register is set.
-    short bgp = (short) 0xFF47; /* BG Palette Data
+    int lyc = 0xFF45; // Register LYC is compared with register ly. If they match, the matchflag of the stat register is set.
+    int bgp = 0xFF47; /* BG Palette Data
                                 Bit 0,1: Data for dot data 00
                                 Bit 2,3: Data for dot data 01
                                 Bit 4,5: Data for dot data 10
                                 Bit 6,7: Data for dot data 11
                                 */
-    short obp0 = (short) 0xFF48; // OBG Palette Data 0 (bit usage same as bgp), when value of OAM palette selection flag is 0
-    short obp1 = (short) (short) 0xFF49; // OBJ Palette Data 1 (bit usage same as bgp), when value of OAM palette selection flag is 1
+    int obp0 = 0xFF48; // OBG Palette Data 0 (bit usage same as bgp), when value of OAM palette selection flag is 0
+    int obp1 = 0xFF49; // OBJ Palette Data 1 (bit usage same as bgp), when value of OAM palette selection flag is 1
 
-    short wy = (short) 0xFF4A; // Window y-coordinate 0 <= WY <= 143, window is displayed from the top edge
-    short wx = (short) 0xFF4B; // Window x-coordinate 7 <= WX <= 166, window is displayed from the left edge
+    int wy = 0xFF4A; // Window y-coordinate 0 <= WY <= 143, window is displayed from the top edge
+    int wx = 0xFF4B; // Window x-coordinate 7 <= WX <= 166, window is displayed from the left edge
 
-    short dma = (short) 0xFF46; // DMA Transfer and starting address
+    int dma = 0xFF46; // DMA Transfer and starting address
 
-    short bg_data_0 = (short) 0x9800; // ($9800 - $9BFF) for BG map 0
-    short bg_data_1 = (short) 0x9C00; // ($9C00 - $9FFF) for Bg map 1
+    int bg_data_0 = 0x9800; // ($9800 - $9BFF) for BG map 0
+    int bg_data_1 = 0x9C00; // ($9C00 - $9FFF) for Bg map 1
 
     byte[][] mainScreenPixels = new byte[144][160];
 
@@ -277,15 +277,18 @@ public class GPU {
         if (BitUtils.testBit(lcdControl, 1)) {
             renderSprites(mmu, lcdControl);
         }
+        mmu.setMemVal(ly, (byte) (mmu.getMemVal(ly) + 1));
+        screen.createImageWithArray(mainScreenPixels);
     }
 
     /**
-     * Renders the background/window tiles.
+     * Renders the background/window tiles (8x8 pixels).
      * TODO: Take into account window_y and window_x.
      * @param mmu The memory management unit containing the VRAM
      * @param lcdControl The LCD control register's value
      */
     public void renderTiles(MMU mmu, byte lcdControl) {
+
         // Upper left starting position of the background to be displayed
         byte scrollX = mmu.getMemVal(this.scroll_x);
         byte scrollY = mmu.getMemVal(this.scroll_y);
@@ -295,56 +298,73 @@ public class GPU {
         byte windowX = (byte)(mmu.getMemVal(this.wx) - 7);      // value of wx is offset by 7 to allow scrolling in, 7 <= windowX <=166
 
         // Check if loading normal Background Tiles or window background tiles
-        short bgDataAdr;
+        int bgDataAdr;
+        int winDataAdr = bg_data_0;
+        boolean usingWindow = false;
         if (BitUtils.testBit(lcdControl, 5)) {
-            // Window Background tiles
+            usingWindow = true;
+            // Window tiles needed
             if (BitUtils.testBit(lcdControl, 6)) {
-                bgDataAdr = bg_data_0;
+                winDataAdr = bg_data_1;
             } else {
-                bgDataAdr = bg_data_1;
-            }
-        } else {
-            // Normal Background tiles
-            if (BitUtils.testBit(lcdControl, 3)) {
-                bgDataAdr = bg_data_0;
-            } else {
-                bgDataAdr = bg_data_1;
+                winDataAdr = bg_data_0;
             }
         }
 
+        // Only Background tiles needed
+        if (BitUtils.testBit(lcdControl, 3)) {
+            bgDataAdr = bg_data_1;
+        } else {
+            bgDataAdr = bg_data_0;
+        }
+
+
         // Check where the Bitmap/tile data is located
-        short tileDataAdr;
+        int tileMapAdr;
         boolean signed = false;
         if (BitUtils.testBit(lcdControl, 4)) {
-            tileDataAdr = (short)0x8000;
+            tileMapAdr = 0x8000;
         } else {
-            tileDataAdr = (short)0x8800;
+            tileMapAdr = 0x8800;
             signed = true;
         }
 
         // Draw tiles at the current scanline (LY)
         Tile tile;
-        int curRow = (mmu.getMemVal(ly)) / 8; // Account for the block size of 8 (18 blocks)
+        int curScanline = mmu.getMemVal(ly);
+        int curRow = (curScanline) / 8; // Account for the block size of 8 (18 blocks)
         for (int curCol = 0; curCol < 20; curCol++) {
             // Find current block/tile
-            int blockX = (scrollX/8 + curCol) % 32;
+            int blockX = (scrollX / 8 + curCol) % 32;
             int blockY = (32 * (scrollY / 8 + curRow));
+
+            // Check if current pixel is for a window
+            int tileDataAdr;
+            if (usingWindow && curScanline >= windowY && (windowX) >= curCol * 8) {
+                // Within window area
+//                blockX = curCol*8 - windowX;
+//                blockY = (curScanline - windowY)/8;
+                tileDataAdr = winDataAdr;
+            } else {
+                tileDataAdr = bgDataAdr;
+            }
+
             int blockNum = blockY + blockX;
 
             // Load CHR_CODE
-            short chrCode = (short) (bgDataAdr + blockNum);
+            int chrCode = (tileDataAdr + blockNum);
             tile = new Tile(mmu.getMemVal(chrCode));
 
             // Check if CHR_CODE will be signed
             if (signed) {
                 chrCode += 128;
             }
-            short tileAdr = (short) (tileDataAdr + chrCode * 16);
+            int tileAdr = (tileMapAdr + chrCode * 16);
 
             // Load Bitmap from tile address
             byte[] bitmap = new byte[16];  // 16 because 2 bytes create 1 row. 16/2 = 8 rows
             for (int i = 0; i < 16; i++) {
-                bitmap[i] = mmu.getMemVal((short) (tileAdr + i));
+                bitmap[i] = mmu.getMemVal((tileAdr + i));
             }
             tile.setBitmap(bitmap);
 
@@ -365,16 +385,16 @@ public class GPU {
             int spriteAdr = 0xFE00 + (spriteNumber * 4);
 
             // Each sprite consists of 4 bytes
-            byte y_coord = mmu.getMemVal((short)(spriteAdr));                               // Byte 1: LCD y_coordinate
-            byte x_coord = mmu.getMemVal((short)(spriteAdr + 1));                           // Byte 2: LCD x_coordinate
-            byte chr_code = (byte) ((mmu.getMemVal((short)(spriteAdr + 2)) >> 1) << 1 );    // Byte 3: CHR_CODE or tile code. Odd CHR_CODES get rounded down. 1->0. 3->2.
-            byte attributes = mmu.getMemVal((short)(spriteAdr + 3));                        // Byte 4: Attribute flag - Palette, Horizontal/Vertical Flip Flag, and Priority
+            byte y_coord = mmu.getMemVal((spriteAdr));                               // Byte 1: LCD y_coordinate
+            byte x_coord = mmu.getMemVal((spriteAdr + 1));                           // Byte 2: LCD x_coordinate
+            byte chr_code = (byte) ((mmu.getMemVal((spriteAdr + 2)) >> 1) << 1);    // Byte 3: CHR_CODE or tile code. Odd CHR_CODES get rounded down. 1->0. 3->2.
+            byte attributes = mmu.getMemVal((spriteAdr + 3));                        // Byte 4: Attribute flag - Palette, Horizontal/Vertical Flip Flag, and Priority
 
             // Load Bitmap from sprite address and CHR_CODE
             byte [] bitmap = new byte[height * 2];
-            short tileAdr = (short) (0x8000 + chr_code * 16);
+            int tileAdr = (0x8000 + chr_code * 16);
             for (int i = 0; i < (2 * height); i++) { // Account of 8x8 or 8x16 sprites
-                bitmap[i] = mmu.getMemVal((short)(tileAdr + i));
+                bitmap[i] = mmu.getMemVal((tileAdr + i));
             }
 
             Sprite sprite = new Sprite(height, y_coord, x_coord, chr_code, attributes);

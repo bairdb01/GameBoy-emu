@@ -42,7 +42,7 @@ public class CPU {
         final int maxCycles = 69905;
         while (!exit) {
             update(gpu);
-            exit = true;
+//            exit = true;
         }
 
     }
@@ -77,7 +77,7 @@ public class CPU {
     private void handleInterrupts() {
         // Make sure the system is allowing interrupts
         if (Interrupts.masterInterruptSwitch) {
-            byte irEnabled = mmu.getMemVal((short) 0xFFFF);
+            byte irEnabled = mmu.getMemVal(0xFFFF);
 
             // Remove interrupt from queue
             while (Interrupts.interrupts.size() > 0) {
@@ -98,8 +98,8 @@ public class CPU {
 
     private void serviceInterrupt(Interrupt ir) {
         Interrupts.masterInterruptSwitch = false;   // Need to set to true once interrupts are done
-        byte interruptRequest = (byte) (mmu.getMemVal((short) 0xFF0F) | ir.getPriority());  // Clear interrupt request bit
-        mmu.setMemVal((short) 0xFF0F, interruptRequest);
+        byte interruptRequest = (byte) (mmu.getMemVal(0xFF0F) | ir.getPriority());  // Clear interrupt request bit
+        mmu.setMemVal(0xFF0F, interruptRequest);
 
         // Push PC to stack
         mmu.push(regs.getSP(), regs.getPC());
@@ -114,12 +114,12 @@ public class CPU {
         byte[] args = new byte[2];
 
         // Load an opcode
-        int opcode = 0xFF & mmu.getMemVal(regs.getPC());
+        int opcode = 0xFF & mmu.getMemVal(regs.getPC() & 0xFFFF);
         regs.incPC();
 
         // If CB prefix in opcode, need to load instruction suffix
         if (opcode == 0xCB) {
-            opcode = 0xFF & mmu.getMemVal(regs.getPC());
+            opcode = 0xFF & mmu.getMemVal(regs.getPC() & 0xFFFF);
             regs.incPC();
             opcode = 0xCB00 + opcode;   // 0xCBnn
         }
@@ -128,7 +128,7 @@ public class CPU {
         // Load arguments for opcode
         int numArgs = opcodes.getNumArgs(opcode);
         for (int i = 0; i < numArgs; i++) {
-            args[i] = (byte) (0xFF & mmu.getMemVal(regs.getPC()));
+            args[i] = (byte) (0xFF & mmu.getMemVal(regs.getPC() & 0xFFFF));
             regs.incPC();
         }
 

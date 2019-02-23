@@ -232,7 +232,11 @@ public class Registers {
     }
 
     void incPC() {
+
         this.PC++;
+        if (this.PC > 0xFFFF) {
+            this.PC--;
+        }
     }
 
     public String toString() {

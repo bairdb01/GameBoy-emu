@@ -752,12 +752,12 @@ public class Commands {
 
     }
 
-    public static void disableInterrupts() {
-
+    public static void disableInterrupts(MMU mmu) {
+        mmu.setMemVal(0xFFFF, (byte) 0);
     }
 
-    public static void enableInterrupts() {
-
+    public static void enableInterrupts(MMU mmu) {
+        mmu.setMemVal(0xFFFF, (byte) 1);
     }
 
 }
