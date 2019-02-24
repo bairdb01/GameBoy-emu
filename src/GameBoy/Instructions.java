@@ -4,7 +4,8 @@ package GameBoy;
  * Author: Benjamin Baird
  * Created on: 2018-08-28
  * Filename: Opcode
- * Description:
+ * Description: A packaging of an Opcode instruction. Contains the opcode, it's label, number of CPU cycles to execute,
+ * number of arguments, and the operation to perform.
  */
 public class Instructions {
     String label;

@@ -4,7 +4,7 @@ package GameBoy;
  * Author: Benjamin Baird
  * Created on: 2018-08-28
  * Filename: GameBoy.Registers
- * Description: GameBoy registers (excluding flags) and functions to manage them.
+ * Description: GameBoy CPU registers and functions to manage them.
  */
 public class Registers {
     private Byte[] registers = new Byte[8]; // GameBoy.Registers A, B, C, D, E, F (FLAGS), H, L (8 bit)
@@ -104,7 +104,7 @@ public class Registers {
     }
 
     short getRegPair(int upperReg, int lowerReg) {
-        return (short) (((registers[0xFF & upperReg] << 8) & 0xFF00) + (registers[0xFF & lowerReg] & 0xFF));
+        return BitUtils.mergeBytes(registers[upperReg & 0xFF], registers[lowerReg & 0xFF]);
     }
 
 

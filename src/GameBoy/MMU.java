@@ -407,10 +407,10 @@ public class MMU {
      * @param adr   Stack pointer address
      * @return The popped 16 bit value.
      */
-    public int pop(int adr) {
+    public short pop(int adr) {
         byte valLower = getMemVal(adr);
         byte valUpper = getMemVal(adr + 1);
-        return ((valUpper << 8) + valLower);
+        return BitUtils.mergeBytes(valLower, valUpper);
     }
 
     /**
