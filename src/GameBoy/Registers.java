@@ -77,14 +77,6 @@ public class Registers {
         this.registers[E] = e;
     }
 
-    byte getF() {
-        return registers[F];
-    }
-
-    void setF(byte f) {
-        this.registers[F] = f;
-    }
-
     byte getH() {
         return registers[H];
     }
@@ -164,10 +156,6 @@ public class Registers {
         setRegPair(H, L, val);
     }
 
-    byte getFlag() {
-        return getF();
-    }
-
     byte getCFlag() {
         return (byte) ((this.registers[F] >> this.c_pos) & 0x1);
     }
@@ -187,46 +175,36 @@ public class Registers {
      * Flag set/clear methods
      */
 
-    byte clearBit(byte register, byte pos) {
-        register &= ~(1 << pos);
-        return register;
-    }
-
-    byte setBit(byte register, byte pos) {
-        register |= (1 << pos);
-        return register;
-    }
-
     void setZFlag() {
-        registers[F] = setBit(registers[F], z_pos);
+        registers[F] = BitUtils.setBit(registers[F], z_pos);
     }
 
     void clearZFlag() {
-        registers[F] = clearBit(registers[F], z_pos);
+        registers[F] = BitUtils.clearBit(registers[F], z_pos);
     }
 
     void setNFlag() {
-        registers[F] = setBit(registers[F], n_pos);
+        registers[F] = BitUtils.setBit(registers[F], n_pos);
     }
 
     void clearNFlag() {
-        registers[F] = clearBit(registers[F], n_pos);
+        registers[F] = BitUtils.clearBit(registers[F], n_pos);
     }
 
     void setHFlag() {
-        registers[F] = setBit(registers[F], h_pos);
+        registers[F] = BitUtils.setBit(registers[F], h_pos);
     }
 
     void clearHFlag() {
-        registers[F] = clearBit(registers[F], h_pos);
+        registers[F] = BitUtils.clearBit(registers[F], h_pos);
     }
 
     void setCFlag() {
-        registers[F] = setBit(registers[F], c_pos);
+        registers[F] = BitUtils.setBit(registers[F], c_pos);
     }
 
     void clearCFlag() {
-        registers[F] = clearBit(registers[F], c_pos);
+        registers[F] = BitUtils.clearBit(registers[F], c_pos);
     }
 
     void incPC() {

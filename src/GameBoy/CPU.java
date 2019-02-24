@@ -133,7 +133,7 @@ public class CPU {
 
         System.out.print("Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug
         for (int i : args) {
-            System.out.print(i + " ");
+            System.out.print(Integer.toHexString(i) + " ");
         }
         System.out.println();
 

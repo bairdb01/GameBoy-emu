@@ -50,9 +50,9 @@ public class Opcodes {
         setOpCode(std_opcodes, "LD A,(BC)", 0x0A, 8, (regs, mmu, args) -> regs.setA(mmu.getMemVal(regs.getBC())));
         setOpCode(std_opcodes, "LD A,(DE)", 0x1A, 8, (regs, mmu, args) -> regs.setA(mmu.getMemVal(regs.getDE())));
         setOpCode(std_opcodes, "LD A,(HL)", 0x7E, 8, (regs, mmu, args) -> regs.setA(mmu.getMemVal(regs.getHL())));
-        setOpCode(std_opcodes, "LD A,(nn)", 0xFA, 16, 2, (regs, mmu, args) -> regs.setA(mmu.getMemVal((short) (((args[1] << 8) & 0xFF00) & ((0xFF & args[0]))))));
+        setOpCode(std_opcodes, "LD A,(nn)", 0xFA, 16, 2, (regs, mmu, args) -> regs.setA(mmu.getMemVal(BitUtils.mergeBytes(args[1], args[0]))));
         setOpCode(std_opcodes, "LD A,n", 0x3E, 8, 1, (regs, mmu, args) -> regs.setA(args[0]));
-        setOpCode(std_opcodes, "LD A,($FF00 + n)", 0xF2, 8, 1, (regs, mmu, args) -> regs.setA(mmu.getMemVal((short) (0xFF00 + (args[0] & 0xFF)))));
+        setOpCode(std_opcodes, "LD A,($FF00 + n)", 0xF2, 8, 1, (regs, mmu, args) -> regs.setA(mmu.getMemVal((0xFF00 + (args[0] & 0xFF)))));
         setOpCode(std_opcodes, "LDD A,(HL)", 0x3A, 8, (regs, mmu, args) -> {
             regs.setA(mmu.getMemVal(regs.getHL()));
             regs.setHL(Commands.dec(regs.getHL()));
@@ -62,7 +62,7 @@ public class Opcodes {
             regs.setA(mmu.getMemVal(regs.getHL()));
             regs.setHL(Commands.inc(regs.getHL()));
         });
-        setOpCode(std_opcodes, "LDD A,(n)", 0xF0, 12, 1, (regs, mmu, args) -> regs.setA(mmu.getMemVal((short) (0xFF00 + (args[0] & 0xFF)))));
+        setOpCode(std_opcodes, "LDD A,(n)", 0xF0, 12, 1, (regs, mmu, args) -> regs.setA(mmu.getMemVal((0xFF00 + (args[0] & 0xFF)))));
 
         //LD INTO B
         setOpCode(std_opcodes, "LD B,A", 0x47, 4, (regs, mmu, args) -> regs.setB(regs.getA()));
@@ -83,7 +83,7 @@ public class Opcodes {
         setOpCode(std_opcodes, "LD C,H", 0x4C, 4, (regs, mmu, args) -> regs.setC(regs.getH()));
         setOpCode(std_opcodes, "LD C,L", 0x4D, 4, (regs, mmu, args) -> regs.setC(regs.getL()));
         setOpCode(std_opcodes, "LD C,(HL)", 0x4E, 8, (regs, mmu, args) -> regs.setC(mmu.getMemVal(regs.getHL())));
-        setOpCode(std_opcodes, "LD ($FF00 + C),A", 0xE2, 8, (regs, mmu, args) -> mmu.setMemVal((short) (0xFF00 + regs.getC()), regs.getA()));
+        setOpCode(std_opcodes, "LD ($FF00 + C),A", 0xE2, 8, (regs, mmu, args) -> mmu.setMemVal(0xFF00 + (regs.getC() & 0xFF), regs.getA()));
 
         //LD INTO D
         setOpCode(std_opcodes, "LD D,A", 0x57, 4, (regs, mmu, args) -> regs.setD(regs.getA()));
@@ -151,25 +151,25 @@ public class Opcodes {
         // See GameBoy.CPU book for flags
         // Put SP + n effective address into HL
         setOpCode(std_opcodes, "LDHL SP,n", 0xF8, 12, 1, (regs, mmu, args) -> Commands.ldhl(regs, args[0]));
-        setOpCode(std_opcodes, "LD HL,nn", 0x21, 12, 2, (regs, mmu, args) -> regs.setHL((short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0])))));
+        setOpCode(std_opcodes, "LD HL,nn", 0x21, 12, 2, (regs, mmu, args) -> regs.setHL(BitUtils.mergeBytes(args[1], args[0])));
 
         // LD INTO BC
-        setOpCode(std_opcodes, "LD BC,nn", 0x01, 12, 2, (regs, mmu, args) -> regs.setBC((short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0])))));
+        setOpCode(std_opcodes, "LD BC,nn", 0x01, 12, 2, (regs, mmu, args) -> regs.setBC(BitUtils.mergeBytes(args[1], args[0])));
         setOpCode(std_opcodes, "LD BC,A", 0x02, 8, (regs, mmu, args) -> regs.setBC(regs.getA()));
 
         // LD INTO DE
-        setOpCode(std_opcodes, "LD DE,nn", 0x11, 12, 2, (regs, mmu, args) -> regs.setDE((short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0])))));
+        setOpCode(std_opcodes, "LD DE,nn", 0x11, 12, 2, (regs, mmu, args) -> regs.setDE(BitUtils.mergeBytes(args[1], args[0])));
         setOpCode(std_opcodes, "LD DE,A", 0x12, 8, (regs, mmu, args) -> regs.setDE(regs.getA()));
 
         // LD INTO SP
-        setOpCode(std_opcodes, "LD SP,nn", 0x31, 12, 2, (regs, mmu, args) -> regs.setSP((short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0])))));
+        setOpCode(std_opcodes, "LD SP,nn", 0x31, 12, 2, (regs, mmu, args) -> regs.setSP(BitUtils.mergeBytes(args[1], args[0])));
         setOpCode(std_opcodes, "LD SP,HL", 0xF9, 8, (regs, mmu, args) -> regs.setSP(regs.getHL()));
 
-        setOpCode(std_opcodes, "LD (NN),A", 0xEA, 8, 2, (regs, mmu, args) -> mmu.setMemVal((short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0]))), regs.getA()));
-        setOpCode(std_opcodes, "LD (NN),SP", 0x08, 20, 2, (regs, mmu, args) -> mmu.setMemVal((short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0]))), regs.getSP()));
+        setOpCode(std_opcodes, "LD (NN),A", 0xEA, 8, 2, (regs, mmu, args) -> mmu.setMemVal(BitUtils.mergeBytes(args[1], args[0]), regs.getA()));
+        setOpCode(std_opcodes, "LD (NN),SP", 0x08, 20, 2, (regs, mmu, args) -> mmu.setMemVal(BitUtils.mergeBytes(args[1], args[0]), regs.getSP()));
 
         // Put A into $FF00 + n
-        setOpCode(std_opcodes, "LD ($FF00+n),A", 0xE0, 12, 1, (regs, mmu, args) -> mmu.setMemVal((short) (0xFF00 + args[0]), regs.getA()));
+        setOpCode(std_opcodes, "LD ($FF00+n),A", 0xE0, 12, 1, (regs, mmu, args) -> mmu.setMemVal((0xFF00 + (args[0] & 0xFF)), regs.getA()));
 
 
         // PUSH REGISTER PAIR ONTO STACK; DECREMENT SP - 2
@@ -493,27 +493,27 @@ public class Opcodes {
         // Set bit b in register r.
         for (byte b = 0; b < 8; b++) {
             final byte bit = b;
-            setOpCode(cb_opcodes, "SET " + b + ",A", 0xC7 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setA(regs.setBit(regs.getA(), bit)));
-            setOpCode(cb_opcodes, "SET " + b + ",B", 0xC0 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setB(regs.setBit(regs.getB(), bit)));
-            setOpCode(cb_opcodes, "SET " + b + ",C", 0xC1 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setC(regs.setBit(regs.getC(), bit)));
-            setOpCode(cb_opcodes, "SET " + b + ",D", 0xC2 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setD(regs.setBit(regs.getD(), bit)));
-            setOpCode(cb_opcodes, "SET " + b + ",E", 0xC3 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setE(regs.setBit(regs.getE(), bit)));
-            setOpCode(cb_opcodes, "SET " + b + ",H", 0xC4 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setH(regs.setBit(regs.getH(), bit)));
-            setOpCode(cb_opcodes, "SET " + b + ",L", 0xC5 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setL(regs.setBit(regs.getL(), bit)));
-            setOpCode(cb_opcodes, "SET " + b + ",(HL)", 0xC6 + (8 * b), 16, 1, (regs, mmu, args) -> mmu.setMemVal(regs.getHL(), regs.setBit(mmu.getMemVal(regs.getHL()), bit)));
+            setOpCode(cb_opcodes, "SET " + b + ",A", 0xC7 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setA(BitUtils.setBit(regs.getA(), bit)));
+            setOpCode(cb_opcodes, "SET " + b + ",B", 0xC0 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setB(BitUtils.setBit(regs.getB(), bit)));
+            setOpCode(cb_opcodes, "SET " + b + ",C", 0xC1 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setC(BitUtils.setBit(regs.getC(), bit)));
+            setOpCode(cb_opcodes, "SET " + b + ",D", 0xC2 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setD(BitUtils.setBit(regs.getD(), bit)));
+            setOpCode(cb_opcodes, "SET " + b + ",E", 0xC3 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setE(BitUtils.setBit(regs.getE(), bit)));
+            setOpCode(cb_opcodes, "SET " + b + ",H", 0xC4 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setH(BitUtils.setBit(regs.getH(), bit)));
+            setOpCode(cb_opcodes, "SET " + b + ",L", 0xC5 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setL(BitUtils.setBit(regs.getL(), bit)));
+            setOpCode(cb_opcodes, "SET " + b + ",(HL)", 0xC6 + (8 * b), 16, 1, (regs, mmu, args) -> mmu.setMemVal(regs.getHL(), BitUtils.setBit(mmu.getMemVal(regs.getHL()), bit)));
         }
 
         // RESET BIT B IN REGISTER r
         for (byte b = 0; b < 8; b++) {
             final byte bit = b;
-            setOpCode(cb_opcodes, "RES " + b + ",A", 0x87 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setA(regs.clearBit(regs.getA(), bit)));
-            setOpCode(cb_opcodes, "RES " + b + ",B", 0x80 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setB(regs.clearBit(regs.getB(), bit)));
-            setOpCode(cb_opcodes, "RES " + b + ",C", 0x81 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setC(regs.clearBit(regs.getC(), bit)));
-            setOpCode(cb_opcodes, "RES " + b + ",D", 0x82 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setD(regs.clearBit(regs.getD(), bit)));
-            setOpCode(cb_opcodes, "RES " + b + ",E", 0x83 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setE(regs.clearBit(regs.getE(), bit)));
-            setOpCode(cb_opcodes, "RES " + b + ",H", 0x84 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setH(regs.clearBit(regs.getH(), bit)));
-            setOpCode(cb_opcodes, "RES " + b + ",L", 0x85 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setL(regs.clearBit(regs.getL(), bit)));
-            setOpCode(cb_opcodes, "RES b,(HL)", 0x86 + (8 * b), 16, 1, (regs, mmu, args) -> mmu.setMemVal(regs.getHL(), regs.clearBit(mmu.getMemVal(regs.getHL()), bit)));
+            setOpCode(cb_opcodes, "RES " + b + ",A", 0x87 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setA(BitUtils.clearBit(regs.getA(), bit)));
+            setOpCode(cb_opcodes, "RES " + b + ",B", 0x80 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setB(BitUtils.clearBit(regs.getB(), bit)));
+            setOpCode(cb_opcodes, "RES " + b + ",C", 0x81 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setC(BitUtils.clearBit(regs.getC(), bit)));
+            setOpCode(cb_opcodes, "RES " + b + ",D", 0x82 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setD(BitUtils.clearBit(regs.getD(), bit)));
+            setOpCode(cb_opcodes, "RES " + b + ",E", 0x83 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setE(BitUtils.clearBit(regs.getE(), bit)));
+            setOpCode(cb_opcodes, "RES " + b + ",H", 0x84 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setH(BitUtils.clearBit(regs.getH(), bit)));
+            setOpCode(cb_opcodes, "RES " + b + ",L", 0x85 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setL(BitUtils.clearBit(regs.getL(), bit)));
+            setOpCode(cb_opcodes, "RES b,(HL)", 0x86 + (8 * b), 16, 1, (regs, mmu, args) -> mmu.setMemVal(regs.getHL(), BitUtils.clearBit(mmu.getMemVal(regs.getHL()), bit)));
         }
 
 
@@ -521,14 +521,14 @@ public class Opcodes {
          * Jumps
          */
         //  Jump to address nn
-        setOpCode(std_opcodes, "JP NN", 0xC3, 12, 2, (regs, mmu, args) -> regs.setPC((short) (((args[1] << 8) & 0xFF00) + (0xFF & args[0]))));
+        setOpCode(std_opcodes, "JP NN", 0xC3, 12, 2, (regs, mmu, args) -> regs.setPC(BitUtils.mergeBytes(args[1], args[0])));
 
 
         // Jump to address n if following condition is true
-        setOpCode(std_opcodes, "JP NZ,NN", 0xC2, 12, 2, (regs, mmu, args) -> Commands.jpIf(regs, (short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0]))), "NZ"));
-        setOpCode(std_opcodes, "JP Z,NN", 0xCA, 12, 2, (regs, mmu, args) -> Commands.jpIf(regs, (short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0]))), "Z"));
-        setOpCode(std_opcodes, "JP NC,NN", 0xD2, 12, 2, (regs, mmu, args) -> Commands.jpIf(regs, (short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0]))), "NC"));
-        setOpCode(std_opcodes, "JP C,NN", 0xDA, 12, 2, (regs, mmu, args) -> Commands.jpIf(regs, (short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0]))), "C"));
+        setOpCode(std_opcodes, "JP NZ,NN", 0xC2, 12, 2, (regs, mmu, args) -> Commands.jpIf(regs, BitUtils.mergeBytes(args[1], args[0]), "NZ"));
+        setOpCode(std_opcodes, "JP Z,NN", 0xCA, 12, 2, (regs, mmu, args) -> Commands.jpIf(regs, BitUtils.mergeBytes(args[1], args[0]), "Z"));
+        setOpCode(std_opcodes, "JP NC,NN", 0xD2, 12, 2, (regs, mmu, args) -> Commands.jpIf(regs, BitUtils.mergeBytes(args[1], args[0]), "NC"));
+        setOpCode(std_opcodes, "JP C,NN", 0xDA, 12, 2, (regs, mmu, args) -> Commands.jpIf(regs, BitUtils.mergeBytes(args[1], args[0]), "C"));
 
 
         // JUMP TO ADDRESS HL
@@ -548,13 +548,13 @@ public class Opcodes {
          * Calls
          */
         // Push address of next instruction onto stack and then jump to address nn
-        setOpCode(std_opcodes, "CALL nn", 0xCD, 12, (regs, mmu, args) -> Commands.call(regs, mmu, (short) (((args[1] << 8) & 0xFF00) + ((0xFF & args[0])))));
+        setOpCode(std_opcodes, "CALL nn", 0xCD, 12, (regs, mmu, args) -> Commands.call(regs, mmu, BitUtils.mergeBytes(args[1], args[0])));
 //
 //        // Call adr if
-//        setOpCode(std_opcodes, "CALL NZ,nn", 0xC4, 12, (regs, mmu, args) -> regs.callIf((short)(((args[1] << 8) & 0xFF00) + ((0xFF & args[0])));
-//        setOpCode(std_opcodes, "CALL Z,nn", 0xCC, 12, (regs, mmu, args) -> regs.callIf((short)(((args[1] << 8) & 0xFF00) + ((0xFF & args[0])));
-//        setOpCode(std_opcodes, "CALL NC,nn", 0xD4, 12, (regs, mmu, args) -> regs.callIf((short)(((args[1] << 8) & 0xFF00) + ((0xFF & args[0])));
-//        setOpCode(std_opcodes, "CALL C,nn", 0xDC, 12, (regs, mmu, args) -> regs.callIf((short)(((args[1] << 8) & 0xFF00) + ((0xFF & args[0])));
+//        setOpCode(std_opcodes, "CALL NZ,nn", 0xC4, 12, (regs, mmu, args) -> regs.callIf(BitUtils.mergeBytes(args[1], args[0]));
+//        setOpCode(std_opcodes, "CALL Z,nn", 0xCC, 12, (regs, mmu, args) -> regs.callIf(BitUtils.mergeBytes(args[1], args[0]));
+//        setOpCode(std_opcodes, "CALL NC,nn", 0xD4, 12, (regs, mmu, args) -> regs.callIf(BitUtils.mergeBytes(args[1], args[0])));
+//        setOpCode(std_opcodes, "CALL C,nn", 0xDC, 12, (regs, mmu, args) -> regs.callIf(BitUtils.mergeBytes(args[1], args[0]));
 //
 //
 //        /**
