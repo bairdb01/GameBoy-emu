@@ -18,7 +18,7 @@ public class Registers {
     final private int L = 7;
 
     // AF, BC, DE, HL pairings enable 16bit registers (Note: Bitshift to combine)
-    private short SP = (short) (0xFFFE), PC = 0;          // SP (stack pointer), PC (program counter) (16 bit) registers
+    private short SP = (short) (0xFFFE), PC = 0x100;          // SP (stack pointer), PC (program counter) (16 bit) registers
 
     private byte z_pos = 7; // Zero
     private byte n_pos = 6; // Subtraction
@@ -31,8 +31,6 @@ public class Registers {
         setBC((short) 0x0013);
         setDE((short) 0x00D8);
         setHL((short) (0x014D));
-        setSP((short) 0xFFFE);
-        setPC((short) 0x100); // Location after boot ROM
     }
 
     /*
@@ -234,7 +232,7 @@ public class Registers {
     void incPC() {
 
         this.PC++;
-        if (this.PC > 0xFFFF) {
+        if (this.PC < (short) 0xFFFF) {
             this.PC--;
         }
     }

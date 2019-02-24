@@ -101,18 +101,18 @@ public class GPU {
         window.setSize(200, 200);
         window.setVisible(true);
 
-//        debugWindow.getContentPane().add(debug);
-//        debugWindow.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-//        debugWindow.setSize(320, 400);
-//        debugWindow.setVisible(true);
+        debugWindow.getContentPane().add(debug);
+        debugWindow.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        debugWindow.setSize(320, 400);
+        debugWindow.setVisible(true);
     }
 
-    public void draw(Registers regs, MMU mmu) {
-//        mainScreenPixels = screen.drawRow(mainScreenPixels[i]);
-        screen.createImageWithArray(mainScreenPixels);
-//        debug.displayText(regs.toString());
-
-    }
+//    public void draw(Registers regs, MMU mmu) {
+////        mainScreenPixels = screen.drawRow(mainScreenPixels[i]);
+//        screen.createImageWithArray(mainScreenPixels);
+////        debug.displayText(regs.toString());
+//
+//    }
 
     int drawRow = 0;
     int clockCounter = 0; // Keeps track of the number of CPU cycles passed, to keep CPU/GPU in sync
@@ -128,7 +128,7 @@ public class GPU {
      * @param mmu    Memory management unit containing graphics registers
      * @param cycles The number of CPU cycles of the last OP code performed
      */
-    public void updateGraphics(MMU mmu, int cycles) {
+    public void updateGraphics(MMU mmu, int cycles, Registers regs) {
         updateLCDStatus(mmu);
 
         if (isLCDEnabled(mmu)) {
@@ -143,7 +143,7 @@ public class GPU {
             clockCounter = 0;
 
             // Move to next scanline
-            mmu.incScanline();
+            mmu.incScanline();  // May need to move this to after execution
             byte curScanline = mmu.getMemVal(this.ly);
 
             // V-Blank period, send interrupt
@@ -159,6 +159,9 @@ public class GPU {
                 drawScanline(mmu);
             }
         }
+        screen.createImageWithArray(mainScreenPixels);
+        System.out.println(regs.toString());
+        debug.displayText(regs.toString());
 
     }
 
@@ -277,7 +280,7 @@ public class GPU {
         if (BitUtils.testBit(lcdControl, 1)) {
             renderSprites(mmu, lcdControl);
         }
-        mmu.setMemVal(ly, (byte) (mmu.getMemVal(ly) + 1));
+
         screen.createImageWithArray(mainScreenPixels);
     }
 
@@ -416,6 +419,22 @@ public class GPU {
     public void drawTile(Tile t, int scanlineY, int col) {
         for (int i = 0; i < 8; i++) {
             mainScreenPixels[scanlineY][col + i] = t.getPixel(scanlineY % 8, col + i);
+        }
+    }
+
+    int bCount = 0;
+
+    public void drawBlarg(MMU mmu) {
+        if (mmu.getMemVal(0xFF02) == (byte) 0x81) {
+            char letter = Character.forDigit(0xFF01, 16);
+            System.out.print(mmu.getMemVal(letter));
+            bCount++;
+        }
+
+
+        if (bCount >= 160) {
+            bCount = 0;
+            System.out.println();
         }
     }
 }

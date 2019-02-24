@@ -44,7 +44,7 @@ public class Commands {
      * @return destPtr
      */
     public static int ld_src_destPtr(byte src, short destPtr, MMU mmu) {
-        mmu.setMemVal(destPtr, src);
+        mmu.setMemVal(destPtr & 0xFFFF, src);
         return destPtr;
     }
 
@@ -56,7 +56,7 @@ public class Commands {
      * @return
      */
     public static int ld_srcPtr_destPtr(short srcPtr, short destPtr, MMU mmu) {
-        mmu.setMemVal(destPtr, mmu.getMemVal(srcPtr));
+        mmu.setMemVal(destPtr & 0xFFFF, mmu.getMemVal(srcPtr));
         return destPtr;
     }
 
@@ -695,7 +695,7 @@ public class Commands {
      * @param adr  address to jump to
      */
     public static void call(Registers regs, MMU mmu, short adr) {
-        mmu.push(regs.getSP(), regs.getPC());
+        mmu.push(regs.getSP() & 0xFFFF, regs.getPC());
         regs.setSP((short) (regs.getSP() - 2));
         regs.setPC(adr);
     }
@@ -709,7 +709,7 @@ public class Commands {
     }
 
     public static void restart(Registers regs, MMU mmu, short offset) {
-        mmu.push(regs.getSP(), regs.getPC());
+        mmu.push(regs.getSP() & 0xFFFF, regs.getPC());
         regs.setSP((short) (regs.getSP() - 2));
         regs.setPC(offset);
     }

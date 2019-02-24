@@ -60,7 +60,8 @@ public class CPU {
             mmu.updateTimers(cycles);
 
             // GPU Operates/Updates
-            gpu.updateGraphics(mmu, cycles);
+            gpu.updateGraphics(mmu, cycles, regs);
+            gpu.drawBlarg(mmu);
 
             // Handle Interrupts
             handleInterrupts();
@@ -71,7 +72,6 @@ public class CPU {
 
 
         }
-//        gpu.render();
     }
 
     private void handleInterrupts() {
@@ -124,13 +124,18 @@ public class CPU {
             opcode = 0xCB00 + opcode;   // 0xCBnn
         }
 
-
         // Load arguments for opcode
         int numArgs = opcodes.getNumArgs(opcode);
         for (int i = 0; i < numArgs; i++) {
             args[i] = (byte) (0xFF & mmu.getMemVal(regs.getPC() & 0xFFFF));
             regs.incPC();
         }
+
+        System.out.print("Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug
+        for (int i : args) {
+            System.out.print(i + " ");
+        }
+        System.out.println();
 
         // Execute Instruction
         return opcodes.execute(opcode, regs, mmu, args);

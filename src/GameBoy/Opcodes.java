@@ -521,7 +521,7 @@ public class Opcodes {
          * Jumps
          */
         //  Jump to address nn
-        setOpCode(std_opcodes, "JP NN", 0xC3, 12, (regs, mmu, args) -> regs.setPC((short) (((args[1] << 8) & 0xFF00) + (0xFF & args[0]))));
+        setOpCode(std_opcodes, "JP NN", 0xC3, 12, 2, (regs, mmu, args) -> regs.setPC((short) (((args[1] << 8) & 0xFF00) + (0xFF & args[0]))));
 
 
         // Jump to address n if following condition is true
@@ -605,6 +605,14 @@ public class Opcodes {
             opcode &= 0xFF; // Remove the CB prefix
             cb_opcodes[0xFF & opcode].op.cmd(regs, mmu, args);
             return cb_opcodes[0xFF & opcode].cycles;
+        }
+    }
+
+    String getName(int opcode) {
+        if (opcode < 0x100) {
+            return std_opcodes[opcode].label;
+        } else {
+            return cb_opcodes[0xFF & opcode].label;
         }
     }
 }

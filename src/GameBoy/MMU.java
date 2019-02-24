@@ -141,7 +141,7 @@ public class MMU {
      * @return A byte from the corresponding address
      */
     public byte getMemVal(int adr) {
-        tempGetMemVal(adr);
+        return tempGetMemVal(adr);
         // Split up to handle the varying types memory blocks
 //        switch (adr & 0xF000) {
 //
@@ -227,7 +227,7 @@ public class MMU {
 //                        }
 //                }
 //        }
-        return 0;
+//        return 0;
     }
 
     /**
@@ -437,11 +437,11 @@ public class MMU {
             int i = 0;
             while ((b = fis.read()) != -1) {
                 cartridge[i] = ((byte) (0xFF & b));
-                // Debug
-                System.out.print(cartridge[i] + " ");
-                if (((i + 1) % 160) == 0 && i != 0) {
-                    System.out.println();
-                }
+//                // Debug
+//                System.out.print(cartridge[i] + " ");
+//                if (((i + 1) % 160) == 0 && i != 0) {
+//                    System.out.println();
+//                }
 
 
                 i++;
@@ -449,7 +449,7 @@ public class MMU {
 
             // First 16k is always stored in memory $0000 - $3FFF
             for (i = 0; i < cartridge.length && i < 0x4000; i++) {
-                setMemVal(i, cartridge[i]);
+                mem[i] = cartridge[i];
             }
 
             // State the type of MBC used
