@@ -131,7 +131,7 @@ public class CPU {
             regs.incPC();
         }
 
-        System.out.print("Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug
+        System.out.print("SP: " + Integer.toHexString(regs.getPC()) + " | Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug
         for (int i : args) {
             System.out.print(Integer.toHexString(i) + " ");
         }

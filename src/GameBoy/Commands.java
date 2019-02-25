@@ -615,22 +615,22 @@ public class Commands {
         switch (flagCondition) {
             case ("Z"):
                 if (regs.getZFlag() == 1) {
-                    regs.setPC((short) (regs.getPC() + adr));
+                    regs.setPC(adr);
                 }
                 break;
             case ("NZ"):
                 if (regs.getZFlag() == 0) {
-                    regs.setPC((short) (regs.getPC() + adr));
+                    regs.setPC(adr);
                 }
                 break;
             case ("C"):
                 if (regs.getCFlag() == 1) {
-                    regs.setPC((short) (regs.getPC() + adr));
+                    regs.setPC(adr);
                 }
                 break;
             case ("NC"):
                 if (regs.getCFlag() == 0) {
-                    regs.setPC((short) (regs.getPC() + adr));
+                    regs.setPC(adr);
                 }
                 break;
             default:
