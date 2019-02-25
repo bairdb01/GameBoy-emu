@@ -11,7 +11,7 @@ package GameBoy;
 public class Main {
 
     public static void main(String[] args) {
-        String filename = "test.GB";
+        String filename = "tetris.GB";
         GPU gpu = new GPU();
         CPU cpu = new CPU(filename);
         cpu.run(gpu);

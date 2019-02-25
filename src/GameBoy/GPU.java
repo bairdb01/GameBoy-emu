@@ -118,8 +118,7 @@ public class GPU {
     int clockCounter = 0; // Keeps track of the number of CPU cycles passed, to keep CPU/GPU in sync
 
     public boolean isLCDEnabled(MMU mmu) {
-        byte enabledFlag = (byte) (mmu.getMemVal(this.lcdc) >> 7);
-        return enabledFlag == (byte) 1;
+        return BitUtils.testBit(mmu.getMemVal(this.lcdc), 7);
     }
 
     /**
@@ -261,7 +260,6 @@ public class GPU {
 
         setLCDMode(mmu, (byte) 4, 0xFB);
     }
-
 
     /**
      * Draws one row of pixels to the screen.

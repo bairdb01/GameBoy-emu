@@ -1,0 +1,28 @@
+Loading ROM: test.GB
+Loaded ROM: test.GB
+Opcode: 0 NOP 0 0 
+Opcode: c3 JP NN 50 1 
+Opcode: 31 LD SP,nn fffffff4 ffffffff 
+Opcode: 3e LD A,n 1 0 
+Opcode: e0 LD ($FF00+n),A ffffffff 0 
+Opcode: 97 SUB A 0 0 
+Opcode: e0 LD ($FF00+n),A 41 0 
+Opcode: e0 LD ($FF00+n),A 40 0 
+Opcode: e0 LD ($FF00+n),A 43 0 
+Opcode: e0 LD ($FF00+n),A 42 0 
+Opcode: 1 LD BC,nn ffffffca 1 
+Opcode: cd CALL nn 77 1 
+Opcode: 21 LD HL,nn 0 ffffff80 
+Opcode: 11 LD DE,nn 40 0 
+Opcode: 16 LD D,n 10 0 
+Opcode: 1e LD E,n 5 0 
+Opcode: f0 LDD A,(n) 41 0 
+Opcode: e6 AND n 2 0 
+Opcode: 20 JR NZ, * fffffffa 0 
+Opcode: a LD A,(BC) 0 0 
+Opcode: 22 LD (HL+),A 0 0 
+Opcode: 3 INC BC 0 0 
+Opcode: 15 DEC D 0 0 
+Opcode: c2 JP NZ,NN ffffff81 1 
+
+Should be next >>> LD a,($FF + 31)

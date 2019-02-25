@@ -61,7 +61,7 @@ public class CPU {
 
             // GPU Operates/Updates
             gpu.updateGraphics(mmu, cycles, regs);
-            gpu.drawBlarg(mmu);
+//            gpu.drawBlarg(mmu);
 
             // Handle Interrupts
             handleInterrupts();
@@ -131,11 +131,11 @@ public class CPU {
             regs.incPC();
         }
 
-        System.out.print("SP: " + Integer.toHexString(regs.getPC()) + " | Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug
-        for (int i : args) {
-            System.out.print(Integer.toHexString(i) + " ");
-        }
-        System.out.println();
+//        System.out.print("SP: " + Integer.toHexString(regs.getPC()) + " | Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug
+//        for (int i : args) {
+//            System.out.print(Integer.toHexString(i) + " ");
+//        }
+//        System.out.println();
 
         // Execute Instruction
         return opcodes.execute(opcode, regs, mmu, args);
