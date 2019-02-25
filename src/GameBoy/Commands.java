@@ -65,10 +65,11 @@ public class Commands {
         regs.clearZFlag();
         regs.clearNFlag();
 
+        // Set H flag if carry from bit 3
         if (((regs.getSP() & 0xF) + (offset & 0xF)) > 0xF) {
             regs.setHFlag();
         } else {
-            regs.setHFlag();
+            regs.clearHFlag();
         }
 
         if (((regs.getSP() & 0xFF) + (offset & 0xFF)) > 0xFF) {
