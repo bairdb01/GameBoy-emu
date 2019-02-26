@@ -53,15 +53,15 @@ public class Opcodes {
         setOpCode(std_opcodes, "LD A,(HL)", 0x7E, 8, (regs, mmu, args) -> regs.setA(mmu.getMemVal(regs.getHL() & 0xFFFF)));
         setOpCode(std_opcodes, "LD A,(nn)", 0xFA, 16, 2, (regs, mmu, args) -> regs.setA(mmu.getMemVal(BitUtils.mergeBytes(args[1], args[0]))));
         setOpCode(std_opcodes, "LD A,n", 0x3E, 8, 1, (regs, mmu, args) -> regs.setA(args[0]));
-        setOpCode(std_opcodes, "LD A,($FF00 + n)", 0xF2, 8, 1, (regs, mmu, args) -> regs.setA(mmu.getMemVal((0xFF00 + (args[0] & 0xFF)))));
-        setOpCode(std_opcodes, "LDD A,(HL)", 0x3A, 8, (regs, mmu, args) -> {
+        setOpCode(std_opcodes, "LD A,($FF00 + (C))", 0xF2, 8, 1, (regs, mmu, args) -> regs.setA(mmu.getMemVal((0xFF00 + regs.getC()))));
+        setOpCode(std_opcodes, "LD A,(HL-)", 0x3A, 8, (regs, mmu, args) -> {
             regs.setA(mmu.getMemVal(regs.getHL() & 0xFFFF));
-            regs.setHL(Commands.dec(regs.getHL()));
+            regs.setHL((short) (regs.getHL() - 1));
         });
 
         setOpCode(std_opcodes, "LD A,(HL+)", 0x2A, 8, (regs, mmu, args) -> {
             regs.setA(mmu.getMemVal(regs.getHL() & 0xFFFF));
-            regs.setHL(Commands.inc(regs.getHL()));
+            regs.setHL((short) (regs.getHL() + 1));
         });
         setOpCode(std_opcodes, "LDH A,(n)", 0xF0, 12, 1, (regs, mmu, args) -> regs.setA(mmu.getMemVal((0xFF00 + (args[0] & 0xFF)))));
 
@@ -137,14 +137,13 @@ public class Opcodes {
         setOpCode(std_opcodes, "LD (HL),n", 0x36, 12, 1, (regs, mmu, args) -> mmu.setMemVal(regs.getHL() & 0xFFFF, args[0]));
         setOpCode(std_opcodes, "LD (HL-),A", 0x32, 8, (regs, mmu, args) -> {
             mmu.setMemVal(regs.getHL() & 0xFFFF, regs.getA());
-            regs.setHL(Commands.dec(regs.getHL()));
+            regs.setHL((short) (regs.getHL() - 1));
         });
         setOpCode(std_opcodes, "LD (HL+),A", 0x22, 8, (regs, mmu, args) -> {
             mmu.setMemVal(regs.getHL() & 0xFFFF, regs.getA());
-            regs.setHL(Commands.inc(regs.getHL()));
+            regs.setHL((short) (regs.getHL() + 1));
         });
 //
-
 
         /*
          * 16-bit Loads
@@ -152,15 +151,15 @@ public class Opcodes {
         // See GameBoy.CPU book for flags
         // Put SP + n effective address into HL
         setOpCode(std_opcodes, "LDHL SP,n", 0xF8, 12, 1, (regs, mmu, args) -> Commands.ldhl(regs, args[0]));
-        setOpCode(std_opcodes, "LD HL, nn", 0x21, 12, 2, (regs, mmu, args) -> regs.setHL(BitUtils.mergeBytes(args[1], args[0])));
+        setOpCode(std_opcodes, "LD HL,nn", 0x21, 12, 2, (regs, mmu, args) -> regs.setHL(BitUtils.mergeBytes(args[1], args[0])));
 
         // LD INTO BC
         setOpCode(std_opcodes, "LD BC,nn", 0x01, 12, 2, (regs, mmu, args) -> regs.setBC(BitUtils.mergeBytes(args[1], args[0])));
-        setOpCode(std_opcodes, "LD (BC),A", 0x02, 8, (regs, mmu, args) -> mmu.setMemVal(regs.getBC(), regs.getA()));
+        setOpCode(std_opcodes, "LD (BC),A", 0x02, 8, (regs, mmu, args) -> mmu.setMemVal(regs.getBC() & 0xFFFF, regs.getA()));
 
         // LD INTO DE
         setOpCode(std_opcodes, "LD DE,nn", 0x11, 12, 2, (regs, mmu, args) -> regs.setDE(BitUtils.mergeBytes(args[1], args[0])));
-        setOpCode(std_opcodes, "LD (DE),A", 0x12, 8, (regs, mmu, args) -> mmu.setMemVal(regs.getDE(), regs.getA()));
+        setOpCode(std_opcodes, "LD (DE),A", 0x12, 8, (regs, mmu, args) -> mmu.setMemVal(regs.getDE() & 0xFFFF, regs.getA()));
 
         // LD INTO SP
         setOpCode(std_opcodes, "LD SP,nn", 0x31, 12, 2, (regs, mmu, args) -> regs.setSP(BitUtils.mergeBytes(args[1], args[0])));
@@ -193,22 +192,21 @@ public class Opcodes {
 
         // POP OFF STACK AND STORE IN REGISTER PAIR ; INCREMENT SP + 2
         setOpCode(std_opcodes, "POP AF", 0xF1, 12, (regs, mmu, args) -> {
-            mmu.pop(regs.getSP());
+            regs.setAF(mmu.pop(regs.getSP()));
             regs.setSP((short) (regs.getSP() + 2));
         });
         setOpCode(std_opcodes, "POP BC", 0xC1, 12, (regs, mmu, args) -> {
-            mmu.pop(regs.getSP());
+            regs.setBC(mmu.pop(regs.getSP()));
             regs.setSP((short) (regs.getSP() + 2));
         });
         setOpCode(std_opcodes, "POP DE", 0xD1, 12, (regs, mmu, args) -> {
-            mmu.pop(regs.getSP());
+            regs.setDE(mmu.pop(regs.getSP()));
             regs.setSP((short) (regs.getSP() + 2));
         });
         setOpCode(std_opcodes, "POP HL", 0xE1, 12, (regs, mmu, args) -> {
-            mmu.pop(regs.getSP());
+            regs.setHL(mmu.pop(regs.getSP()));
             regs.setSP((short) (regs.getSP() + 2));
         });
-
 
         /*
          * 8-Bit ALU
