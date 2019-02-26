@@ -346,7 +346,6 @@ public class Opcodes {
         setOpCode(std_opcodes, "DEC HL", 0x2B, 8, (regs, mmu, args) -> regs.setHL((short) (regs.getHL() - 1)));
         setOpCode(std_opcodes, "DEC SP", 0x3B, 8, (regs, mmu, args) -> regs.setSP((short) (regs.getSP() - 1)));
 
-
         /*
          * Misc.
          */
@@ -361,6 +360,7 @@ public class Opcodes {
         setOpCode(cb_opcodes, "SWAP (HL)", 0x36, 16, (regs, mmu, args) -> mmu.setMemVal(regs.getHL() & 0xFFFF, Commands.swap(mmu.getMemVal(regs.getHL() & 0xFFFF))));
 
         // Decimal adjust register A
+        // TODO DECIMAL ADJUST REGISTER
 //        setOpCode(std_opcodes, "DAA", 27, 4, (regs, mmu, args) -> regs.daa());
 
         // Complement A register
@@ -369,12 +369,11 @@ public class Opcodes {
         // Complement carry flag
         setOpCode(std_opcodes, "CCF", 0x3F, 4, (regs, mmu, args) -> Commands.ccf(regs));
 
-        // Set carry flag
+        // Set carry flag, clear N,H Flags
         setOpCode(std_opcodes, "SCF", 0x37, 4, (regs, mmu, args) -> {
             regs.setCFlag();
             regs.clearNFlag();
             regs.clearHFlag();
-            regs.setCFlag();
         });
 
         setOpCode(std_opcodes, "NOP", 0x00, 4, (regs, mmu, args) -> Commands.nop());
@@ -382,26 +381,45 @@ public class Opcodes {
 //        setOpCode(std_opcodes, "STOP", 0x1000, 4, (regs, mmu, args) -> regs.stop());
 
         // Disable Interrupts
-//        setOpCode(std_opcodes, "DI", 0xF3, 4, (regs, mmu, args) -> regs.disableInterrupts());
+        setOpCode(std_opcodes, "DI", 0xF3, 4, (regs, mmu, args) -> Commands.disableInterrupts(mmu));
 
         // Enable Interrupts
-//        setOpCode(std_opcodes, "EI", 0xFB, 4, (regs, mmu, args) -> regs.enableInterrupts());
-
+        setOpCode(std_opcodes, "EI", 0xFB, 4, (regs, mmu, args) -> Commands.enableInterrupts(mmu));
 
         /*
          * Rotates & Shifts
          */
         // Rotate A left. Old bit 7 to Carry flag. FLAGS AFFECTED
-        setOpCode(std_opcodes, "RLCA", 0x07, 4, (regs, mmu, args) -> regs.setA(Commands.rlc(regs, regs.getA())));
+        setOpCode(std_opcodes, "RLCA", 0x07, 4, (regs, mmu, args) -> {
+            regs.setA(Commands.rlc(regs, regs.getA()));
+            regs.clearZFlag();
+            regs.clearNFlag();
+            regs.clearHFlag();
+        });
 
         // Rotate A left through Carry flag.
-        setOpCode(std_opcodes, "RLA", 0x17, 4, (regs, mmu, args) -> regs.setA(Commands.rl(regs, regs.getA())));
+        setOpCode(std_opcodes, "RLA", 0x17, 4, (regs, mmu, args) -> {
+            regs.setA(Commands.rl(regs, regs.getA()));
+            regs.clearZFlag();
+            regs.clearNFlag();
+            regs.clearHFlag();
+        });
 
         // Rotate A right through Old 0 bit to Carry flag.
-        setOpCode(std_opcodes, "RRCA", 0x0F, 4, (regs, mmu, args) -> regs.setA(Commands.rrc(regs, regs.getA())));
+        setOpCode(std_opcodes, "RRCA", 0x0F, 4, (regs, mmu, args) -> {
+            regs.setA(Commands.rrc(regs, regs.getA()));
+            regs.clearZFlag();
+            regs.clearNFlag();
+            regs.clearHFlag();
+        });
 
         // Rotate A right through Carry flag.
-        setOpCode(std_opcodes, "RRA", 0x1F, 4, (regs, mmu, args) -> regs.setA(Commands.rr(regs, regs.getA())));
+        setOpCode(std_opcodes, "RRA", 0x1F, 4, (regs, mmu, args) -> {
+            regs.setA(Commands.rr(regs, regs.getA()));
+            regs.clearZFlag();
+            regs.clearNFlag();
+            regs.clearHFlag();
+        });
 
         // Rotate n left. Old bit 7 to carry flag. Flag affected
         setOpCode(cb_opcodes, "RLC A", 0x07, 8, (regs, mmu, args) -> regs.setA(Commands.rlc(regs, regs.getA())));
