@@ -567,18 +567,17 @@ public class Opcodes {
          */
         // Push address of next instruction onto stack and then jump to address nn
         setOpCode(std_opcodes, "CALL nn", 0xCD, 12, 2, (regs, mmu, args) -> Commands.call(regs, mmu, BitUtils.mergeBytes(args[1], args[0])));
-//
-//        // Call adr if
+
+        // Call adr if
         setOpCode(std_opcodes, "CALL NZ,nn", 0xC4, 12, (regs, mmu, args) -> Commands.callIf(regs, mmu, BitUtils.mergeBytes(args[1], args[0]), "NZ"));
         setOpCode(std_opcodes, "CALL Z,nn", 0xCC, 12, (regs, mmu, args) -> Commands.callIf(regs, mmu, BitUtils.mergeBytes(args[1], args[0]), "Z"));
         setOpCode(std_opcodes, "CALL NC,nn", 0xD4, 12, (regs, mmu, args) -> Commands.callIf(regs, mmu, BitUtils.mergeBytes(args[1], args[0]), "NC"));
         setOpCode(std_opcodes, "CALL C,nn", 0xDC, 12, (regs, mmu, args) -> Commands.callIf(regs, mmu, BitUtils.mergeBytes(args[1], args[0]), "C"));
-//
-//
-//        /**
-//         * Restarts
-//         */
-//        // Jump to address $0000 + n. 0x00, 0x08, ...
+
+        /*
+         * Restarts
+         */
+        // Jump to address $0000 + n. 0x00, 0x08, ...
         setOpCode(std_opcodes, "RST 0x00", 0xC7, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (short) 0x00));
         setOpCode(std_opcodes, "RST 0x08", 0xCF, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (short) 0x08));
         setOpCode(std_opcodes, "RST 0x10", 0xD7, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (short) 0x10));
@@ -588,19 +587,18 @@ public class Opcodes {
         setOpCode(std_opcodes, "RST 0x30", 0xF7, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (short) 0x30));
         setOpCode(std_opcodes, "RST 0x38", 0xFF, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (short) 0x38));
 
-
         /*
          * Returns
          */
         // Pop two bytes from stack and jump to that address
         setOpCode(std_opcodes, "RET", 0xC9, 8, (regs, mmu, args) -> Commands.ret(regs, mmu));
-//
-//        // Return if following condition is true
-//        setOpCode(std_opcodes, "RET NZ", 0xC0, 8, (regs, mmu, args) -> regs.popJmpIf(regs.getZFlag()));
-//        setOpCode(std_opcodes, "RET Z", 0xC8, 8, (regs, mmu, args) -> regs.popJmpIf(regs.getZFlag()));
-//        setOpCode(std_opcodes, "RET NC", 0xD0, 8, (regs, mmu, args) -> regs.popJmpIf(regs.getCFlag()));
-//        setOpCode(std_opcodes, "RET C", 0xD8, 8, (regs, mmu, args) -> regs.popJmpIf(regs.getCFlag()));
-//
+
+        // Return if following condition is true
+        setOpCode(std_opcodes, "RET NZ", 0xC0, 8, (regs, mmu, args) -> Commands.retIf(regs, mmu, "NZ"));
+        setOpCode(std_opcodes, "RET Z", 0xC8, 8, (regs, mmu, args) -> Commands.retIf(regs, mmu, "Z"));
+        setOpCode(std_opcodes, "RET NC", 0xD0, 8, (regs, mmu, args) -> Commands.retIf(regs, mmu, "NC"));
+        setOpCode(std_opcodes, "RET C", 0xD8, 8, (regs, mmu, args) -> Commands.retIf(regs, mmu, "C"));
+
 //        // Pop two bytes from stack and jump to that address then enable interrupts
 //        setOpCode(std_opcodes, "RET", 0xD9, 8, (regs, mmu, args) -> regs.reti());
 

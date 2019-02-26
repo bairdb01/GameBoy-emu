@@ -700,40 +700,32 @@ public class Commands {
      * @param mmu  memory management unit
      * @param adr  address to jump to
      */
-    public static void call(Registers regs, MMU mmu, short adr) {
+    public static void call(Registers regs, MMU mmu, int adr) {
         mmu.push(regs.getSP() & 0xFFFF, regs.getPC());
         regs.setSP((short) (regs.getSP() - 2));
-        regs.setPC(adr);
+        regs.setPC((short) adr);
     }
 
     public static void callIf(Registers regs, MMU mmu, int adr, String condition) {
         switch (condition) {
             case "Z":
                 if (regs.getZFlag() == 1) {
-                    mmu.push(regs.getSP() & 0xFFFF, regs.getPC());
-                    regs.setSP((short) (regs.getSP() - 2));
-                    regs.setPC((short) adr);
+                    call(regs, mmu, adr);
                 }
                 break;
             case "NZ":
                 if (regs.getZFlag() == 0) {
-                    mmu.push(regs.getSP() & 0xFFFF, regs.getPC());
-                    regs.setSP((short) (regs.getSP() - 2));
-                    regs.setPC((short) adr);
+                    call(regs, mmu, adr);
                 }
                 break;
             case "C":
                 if (regs.getCFlag() == 1) {
-                    mmu.push(regs.getSP() & 0xFFFF, regs.getPC());
-                    regs.setSP((short) (regs.getSP() - 2));
-                    regs.setPC((short) adr);
+                    call(regs, mmu, adr);
                 }
                 break;
             case "NC":
                 if (regs.getCFlag() == 0) {
-                    mmu.push(regs.getSP() & 0xFFFF, regs.getPC());
-                    regs.setSP((short) (regs.getSP() - 2));
-                    regs.setPC((short) adr);
+                    call(regs, mmu, adr);
                 }
                 break;
         }
@@ -754,8 +746,29 @@ public class Commands {
         regs.setPC((short) (regs.getSP() + 2));
     }
 
-    public static void ret(Registers regs, MMU mmu, String cc) {
-
+    public static void retIf(Registers regs, MMU mmu, String cc) {
+        switch (cc) {
+            case "Z":
+                if (regs.getZFlag() == 1) {
+                    ret(regs, mmu);
+                }
+                break;
+            case "NZ":
+                if (regs.getZFlag() == 0) {
+                    ret(regs, mmu);
+                }
+                break;
+            case "C":
+                if (regs.getCFlag() == 1) {
+                    ret(regs, mmu);
+                }
+                break;
+            case "NC":
+                if (regs.getCFlag() == 0) {
+                    ret(regs, mmu);
+                }
+                break;
+        }
     }
 
 
