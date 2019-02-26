@@ -9,7 +9,7 @@ import java.io.IOException;
  * Author: Benjamin Baird
  * Created on: 2018-08-30
  * Filename: MMU
- * Description: Holds memory and methods required by the opcodes.
+ * Description: Holds memory and methods required by the opcodes. Compatible with MBC1 and MBC2.
  * TODO: Change all callers of functions to use int adresses now.
  *  TODO: Handle read only and write only memory addresses
  */
@@ -32,7 +32,8 @@ public class MMU {
     private byte[] mem = new byte[0x10000];
     private byte[] ramBanks = new byte[0x8000]; // Max of 4 RAM banks, 0x2000 each
 
-    private byte[] cartridge = new byte[0x200000];  // Maximum cartridge size
+    private byte[] cartridge = new byte[0x400000];  // Maximum cartridge size, 256 banks * 0x4000 each
+
 //    private byte[] rom = new byte[0x8000];
 //    private byte[] vram = new byte[0x2000];
 //    private byte[] eram = new byte[0x2000];
@@ -167,6 +168,7 @@ public class MMU {
      */
     public byte getMemVal(int adr) {
         if (adr >= 0x4000 && adr < 0x8000) {
+            // Access the rom bank directly from the cartridge rather than swap to 0x4000 - 0x7FFF
             return cartridge[(adr - 0x4000) + (currentRomBank) * 0x4000];
         } else if ((adr >= 0xA000) && (adr < 0xC000)) {
             return ramBanks[(adr - 0xA000) + (currentRAMBank * 0x2000)];
