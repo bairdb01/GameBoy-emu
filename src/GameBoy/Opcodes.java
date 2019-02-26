@@ -599,8 +599,11 @@ public class Opcodes {
         setOpCode(std_opcodes, "RET NC", 0xD0, 8, (regs, mmu, args) -> Commands.retIf(regs, mmu, "NC"));
         setOpCode(std_opcodes, "RET C", 0xD8, 8, (regs, mmu, args) -> Commands.retIf(regs, mmu, "C"));
 
-//        // Pop two bytes from stack and jump to that address then enable interrupts
-//        setOpCode(std_opcodes, "RET", 0xD9, 8, (regs, mmu, args) -> regs.reti());
+        // Pop two bytes from stack and jump to that address then enable interrupts
+        setOpCode(std_opcodes, "RETI", 0xD9, 8, (regs, mmu, args) -> {
+            regs.setPC(mmu.pop(regs.getSP()));
+            Commands.enableInterrupts(mmu);
+        });
 
     }
 
