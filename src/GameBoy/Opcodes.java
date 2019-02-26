@@ -223,6 +223,7 @@ public class Opcodes {
         setOpCode(std_opcodes, "ADD A,n", 0xC6, 8, 1, (regs, mmu, args) -> Commands.addToA(regs, args[0]));
 
         // Add register + carry flag to A; FLAGS AFFECTED
+        // TODO: Need to double check the C Flag addition
         setOpCode(std_opcodes, "ADD A,A", 0x8F, 4, (regs, mmu, args) -> Commands.addToA(regs, (byte) (regs.getA() + regs.getCFlag())));
         setOpCode(std_opcodes, "ADD A,B", 0x88, 4, (regs, mmu, args) -> Commands.addToA(regs, (byte) (regs.getB() + regs.getCFlag())));
         setOpCode(std_opcodes, "ADD A,C", 0x89, 4, (regs, mmu, args) -> Commands.addToA(regs, (byte) (regs.getC() + regs.getCFlag())));
@@ -245,6 +246,7 @@ public class Opcodes {
         setOpCode(std_opcodes, "SUB n", 0xD6, 8, 1, (regs, mmu, args) -> Commands.sub(regs, args[0]));
 
         // SUBTRACT (N - CARRY FLAG) FROM A
+        // TODO: Need to double check the C flag
         setOpCode(std_opcodes, "SBC A,A", 0x9F, 4, (regs, mmu, args) -> Commands.sub(regs, (byte) (regs.getA() - regs.getCFlag())));
         setOpCode(std_opcodes, "SBC A,B", 0x98, 4, (regs, mmu, args) -> Commands.sub(regs, (byte) (regs.getB() - regs.getCFlag())));
         setOpCode(std_opcodes, "SBC A,C", 0x99, 4, (regs, mmu, args) -> Commands.sub(regs, (byte) (regs.getC() - regs.getCFlag())));
@@ -277,7 +279,7 @@ public class Opcodes {
         setOpCode(std_opcodes, "OR (HL)", 0xB6, 8, (regs, mmu, args) -> Commands.OR(regs, mmu.getMemVal(regs.getHL() & 0xFFFF)));
         setOpCode(std_opcodes, "OR n", 0xF6, 8, 1, (regs, mmu, args) -> Commands.OR(regs, args[0]));
 
-        // LOGICAL OR A & N STORED IN A; FLAG AFFECTED
+        // LOGICAL XOR A & N STORE RESULT IN A; FLAG AFFECTED
         setOpCode(std_opcodes, "XOR A", 0xAF, 4, (regs, mmu, args) -> Commands.XOR(regs, regs.getA()));
         setOpCode(std_opcodes, "XOR B", 0xA8, 4, (regs, mmu, args) -> Commands.XOR(regs, regs.getB()));
         setOpCode(std_opcodes, "XOR C", 0xA9, 4, (regs, mmu, args) -> Commands.XOR(regs, regs.getC()));
@@ -286,18 +288,18 @@ public class Opcodes {
         setOpCode(std_opcodes, "XOR H", 0xAC, 4, (regs, mmu, args) -> Commands.XOR(regs, regs.getH()));
         setOpCode(std_opcodes, "XOR L", 0xAD, 4, (regs, mmu, args) -> Commands.XOR(regs, regs.getL()));
         setOpCode(std_opcodes, "XOR (HL)", 0xAE, 8, (regs, mmu, args) -> Commands.XOR(regs, mmu.getMemVal(regs.getHL() & 0xFFFF)));
-        setOpCode(std_opcodes, "XOR n", 0xAE, 8, 1, (regs, mmu, args) -> Commands.XOR(regs, (args[0])));
+        setOpCode(std_opcodes, "XOR n", 0xAE, 8, 1, (regs, mmu, args) -> Commands.XOR(regs, args[0]));
 
         // COMPARE A with N. BASICALLY AN A - N SUBTRACTION, WITH THE RESULTS THROWN AWAY; FLAGS AFFECTED.
         setOpCode(std_opcodes, "CP A", 0xBF, 4, (regs, mmu, args) -> Commands.cp(regs, regs.getA()));
-        setOpCode(std_opcodes, "CP B", 0xB8, 4, (regs, mmu, args) -> Commands.cp(regs, regs.getA()));
-        setOpCode(std_opcodes, "CP C", 0xB9, 4, (regs, mmu, args) -> Commands.cp(regs, regs.getA()));
-        setOpCode(std_opcodes, "CP D", 0xBA, 4, (regs, mmu, args) -> Commands.cp(regs, regs.getA()));
-        setOpCode(std_opcodes, "CP E", 0xBB, 4, (regs, mmu, args) -> Commands.cp(regs, regs.getA()));
-        setOpCode(std_opcodes, "CP H", 0xBC, 4, (regs, mmu, args) -> Commands.cp(regs, regs.getA()));
-        setOpCode(std_opcodes, "CP L", 0xBD, 4, (regs, mmu, args) -> Commands.cp(regs, regs.getA()));
+        setOpCode(std_opcodes, "CP B", 0xB8, 4, (regs, mmu, args) -> Commands.cp(regs, regs.getB()));
+        setOpCode(std_opcodes, "CP C", 0xB9, 4, (regs, mmu, args) -> Commands.cp(regs, regs.getC()));
+        setOpCode(std_opcodes, "CP D", 0xBA, 4, (regs, mmu, args) -> Commands.cp(regs, regs.getD()));
+        setOpCode(std_opcodes, "CP E", 0xBB, 4, (regs, mmu, args) -> Commands.cp(regs, regs.getE()));
+        setOpCode(std_opcodes, "CP H", 0xBC, 4, (regs, mmu, args) -> Commands.cp(regs, regs.getH()));
+        setOpCode(std_opcodes, "CP L", 0xBD, 4, (regs, mmu, args) -> Commands.cp(regs, regs.getL()));
         setOpCode(std_opcodes, "CP (HL)", 0xBE, 8, (regs, mmu, args) -> Commands.cp(regs, mmu.getMemVal(regs.getHL() & 0xFFFF)));
-        setOpCode(std_opcodes, "CP n", 0xFE, 8, 1, (regs, mmu, args) -> Commands.cp(regs, mmu.getMemVal(args[0] & 0xFFFF)));
+        setOpCode(std_opcodes, "CP n", 0xFE, 8, 1, (regs, mmu, args) -> Commands.cp(regs, args[0]));
 
         // INCREMENT REGISTER N; FLAGS AFFECTED
         setOpCode(std_opcodes, "INC A", 0x3C, 4, (regs, mmu, args) -> regs.setA(Commands.inc(regs, regs.getA())));
