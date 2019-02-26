@@ -313,12 +313,12 @@ public class Opcodes {
 
         // DECREMENT REGISTER N; FLAGS AFFECTED
         setOpCode(std_opcodes, "DEC A", 0x3D, 4, (regs, mmu, args) -> regs.setA(Commands.dec(regs, regs.getA())));
-        setOpCode(std_opcodes, "DEC B", 0x05, 4, (regs, mmu, args) -> regs.setA(Commands.dec(regs, regs.getA())));
-        setOpCode(std_opcodes, "DEC C", 0x0D, 4, (regs, mmu, args) -> regs.setA(Commands.dec(regs, regs.getA())));
-        setOpCode(std_opcodes, "DEC D", 0x15, 4, (regs, mmu, args) -> regs.setA(Commands.dec(regs, regs.getA())));
-        setOpCode(std_opcodes, "DEC E", 0x1D, 4, (regs, mmu, args) -> regs.setA(Commands.dec(regs, regs.getA())));
-        setOpCode(std_opcodes, "DEC H", 0x25, 4, (regs, mmu, args) -> regs.setA(Commands.dec(regs, regs.getA())));
-        setOpCode(std_opcodes, "DEC L", 0x2D, 4, (regs, mmu, args) -> regs.setA(Commands.dec(regs, regs.getA())));
+        setOpCode(std_opcodes, "DEC B", 0x05, 4, (regs, mmu, args) -> regs.setB(Commands.dec(regs, regs.getB())));
+        setOpCode(std_opcodes, "DEC C", 0x0D, 4, (regs, mmu, args) -> regs.setC(Commands.dec(regs, regs.getC())));
+        setOpCode(std_opcodes, "DEC D", 0x15, 4, (regs, mmu, args) -> regs.setD(Commands.dec(regs, regs.getD())));
+        setOpCode(std_opcodes, "DEC E", 0x1D, 4, (regs, mmu, args) -> regs.setE(Commands.dec(regs, regs.getE())));
+        setOpCode(std_opcodes, "DEC H", 0x25, 4, (regs, mmu, args) -> regs.setH(Commands.dec(regs, regs.getH())));
+        setOpCode(std_opcodes, "DEC L", 0x2D, 4, (regs, mmu, args) -> regs.setL(Commands.dec(regs, regs.getL())));
         setOpCode(std_opcodes, "DEC (HL)", 0x35, 12, (regs, mmu, args) -> mmu.setMemVal(regs.getHL() & 0xFFFF, Commands.dec(regs, mmu.getMemVal(regs.getHL() & 0xFFFF))));
 
 
@@ -539,10 +539,10 @@ public class Opcodes {
         setOpCode(std_opcodes, "JR n", 0x18, 8, 1, (regs, mmu, args) -> regs.setPC((short) (regs.getPC() + (args[0] & 0xFF)))); // Fix function
 
 //        // Conditional jump + add
-        setOpCode(std_opcodes, "JR NZ, *", 0x20, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, (args[0]), "NZ"));
-        setOpCode(std_opcodes, "JR Z,*", 0x28, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, (args[0]), "Z"));
-        setOpCode(std_opcodes, "JR NC, *", 0x30, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, (args[0]), "NC"));
-        setOpCode(std_opcodes, "JR C,*", 0x38, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, (args[0]), "C"));
+        setOpCode(std_opcodes, "JR NZ, PC+n", 0x20, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, (args[0]), "NZ"));
+        setOpCode(std_opcodes, "JR Z, PC+n", 0x28, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, (args[0]), "Z"));
+        setOpCode(std_opcodes, "JR NC, PC+n", 0x30, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, (args[0]), "NC"));
+        setOpCode(std_opcodes, "JR C,PC+n", 0x38, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, (args[0]), "C"));
 
 
         /*
