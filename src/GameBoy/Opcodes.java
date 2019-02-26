@@ -321,16 +321,15 @@ public class Opcodes {
         setOpCode(std_opcodes, "DEC L", 0x2D, 4, (regs, mmu, args) -> regs.setL(Commands.dec(regs, regs.getL())));
         setOpCode(std_opcodes, "DEC (HL)", 0x35, 12, (regs, mmu, args) -> mmu.setMemVal(regs.getHL() & 0xFFFF, Commands.dec(regs, mmu.getMemVal(regs.getHL() & 0xFFFF))));
 
-
         /*
          * 16-Bit Arithmetic
          */
 
         // ADD TO HL
         setOpCode(std_opcodes, "ADD HL,BC", 0x09, 8, (regs, mmu, args) -> regs.setHL(Commands.add(regs, regs.getHL(), regs.getBC())));
-        setOpCode(std_opcodes, "ADD HL,DE", 0x19, 8, (regs, mmu, args) -> regs.setHL(Commands.add(regs, regs.getHL(), regs.getBC())));
-        setOpCode(std_opcodes, "ADD HL,HL", 0x29, 8, (regs, mmu, args) -> regs.setHL(Commands.add(regs, regs.getHL(), regs.getBC())));
-        setOpCode(std_opcodes, "ADD HL,SP", 0x39, 8, (regs, mmu, args) -> regs.setHL(Commands.add(regs, regs.getHL(), regs.getBC())));
+        setOpCode(std_opcodes, "ADD HL,DE", 0x19, 8, (regs, mmu, args) -> regs.setHL(Commands.add(regs, regs.getHL(), regs.getDE())));
+        setOpCode(std_opcodes, "ADD HL,HL", 0x29, 8, (regs, mmu, args) -> regs.setHL(Commands.add(regs, regs.getHL(), regs.getHL())));
+        setOpCode(std_opcodes, "ADD HL,SP", 0x39, 8, (regs, mmu, args) -> regs.setHL(Commands.add(regs, regs.getHL(), regs.getSP())));
 
         // ADD TO STACK POINTER
         setOpCode(std_opcodes, "ADD SP,n", 0xE8, 16, (regs, mmu, args) -> regs.setSP((short) (regs.getSP() + args[0])));
