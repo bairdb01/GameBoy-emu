@@ -163,16 +163,6 @@ public class Commands {
     }
 
     /**
-     * Subtract val from a and set carry flag
-     *
-     * @param a   register a
-     * @param val value to subtract
-     */
-    public static void sbcFromA(int a, int val) {
-
-    }
-
-    /**
      * Logical AND A and S and store in register A
      *
      * @param regs Registers
@@ -181,11 +171,14 @@ public class Commands {
     public static void AND(Registers regs, byte s) {
         regs.setA((byte) (regs.getA() & s));
 
-        if (regs.getA() == 0) regs.setZFlag();
+        if (regs.getA() == 0) {
+            regs.setZFlag();
+        } else {
+            regs.clearZFlag();
+        }
         regs.clearNFlag();
         regs.setHFlag();
         regs.clearCFlag();
-
     }
 
     /**
@@ -196,7 +189,11 @@ public class Commands {
      */
     public static void OR(Registers regs, byte s) {
         regs.setA((byte) (regs.getA() | s));
-        if (regs.getA() == 0) regs.setZFlag();
+        if (regs.getA() == 0) {
+            regs.setZFlag();
+        } else {
+            regs.clearZFlag();
+        }
         regs.clearNFlag();
         regs.clearHFlag();
         regs.clearCFlag();
@@ -210,15 +207,19 @@ public class Commands {
      */
     public static void XOR(Registers regs, byte s) {
         regs.setA((byte) (regs.getA() ^ s));
-        if (regs.getA() == 0) regs.setZFlag();
+        if (regs.getA() == 0) {
+            regs.setZFlag();
+        } else {
+            regs.clearZFlag();
+        }
         regs.clearNFlag();
         regs.clearHFlag();
         regs.clearCFlag();
     }
 
     /**
-     * Compare 8bit value with register A (Same as subtract, but results thrown away)
-     *
+     * Compare 8bit value with register A (Same as subtract, but results thrown away) Flags affected
+     * Z=*, N=1, H=*, C=*
      * @param regs All registers
      * @param s 8bit value
      */
@@ -339,11 +340,21 @@ public class Commands {
      */
     /**
      * Swaps nibbles of register
-     *
+     * Z=*, N=0, H=0, C=0
      * @param reg an 8bit register to swap (8bit register, (HL))
      */
-    public static byte swap(byte reg) {
-        return (byte) ((reg << 4) | (reg >>> 4));
+    public static byte swap(Registers regs, byte reg) {
+        byte result = (byte) ((reg << 4) | (reg >>> 4));
+        if (result == 0) {
+            regs.setZFlag();
+        } else {
+            regs.clearZFlag();
+        }
+
+        regs.clearNFlag();
+        regs.clearHFlag();
+        regs.clearCFlag();
+        return result;
     }
 
     public static void daa() {
