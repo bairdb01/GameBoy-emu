@@ -234,12 +234,12 @@ public class Commands {
      *
      * @param regs All registers
      * @param val 8bit register to increment (r, (HL))
-     * @return val + 1
+     * @return val + 1, if val > byte.MAX_VAL then overflowed value returned.
      */
     public static byte inc(Registers regs, byte val) {
         // Half carry check
         // Truncates register value to first nibble and then adds 1 to see if there is a carry from bit 3 to 4
-        if ((((val & 0xf) + (0x01 & 0xF)) & 0x10) == 0x10) {
+        if (((val & 0xf) + 0x1) >= 0x10) {
             regs.setHFlag();
         }
 
@@ -685,8 +685,6 @@ public class Commands {
                     regs.setPC((short) (regs.getPC() + offset));
                 }
                 break;
-            default:
-                break;
         }
     }
 
@@ -708,8 +706,37 @@ public class Commands {
         regs.setPC(adr);
     }
 
-    public static void callIf(int adr) {
-
+    public static void callIf(Registers regs, MMU mmu, int adr, String condition) {
+        switch (condition) {
+            case "Z":
+                if (regs.getZFlag() == 1) {
+                    mmu.push(regs.getSP() & 0xFFFF, regs.getPC());
+                    regs.setSP((short) (regs.getSP() - 2));
+                    regs.setPC((short) adr);
+                }
+                break;
+            case "NZ":
+                if (regs.getZFlag() == 0) {
+                    mmu.push(regs.getSP() & 0xFFFF, regs.getPC());
+                    regs.setSP((short) (regs.getSP() - 2));
+                    regs.setPC((short) adr);
+                }
+                break;
+            case "C":
+                if (regs.getCFlag() == 1) {
+                    mmu.push(regs.getSP() & 0xFFFF, regs.getPC());
+                    regs.setSP((short) (regs.getSP() - 2));
+                    regs.setPC((short) adr);
+                }
+                break;
+            case "NC":
+                if (regs.getCFlag() == 0) {
+                    mmu.push(regs.getSP() & 0xFFFF, regs.getPC());
+                    regs.setSP((short) (regs.getSP() - 2));
+                    regs.setPC((short) adr);
+                }
+                break;
+        }
     }
 
     public static void setReg(int reg, int val) {
@@ -733,17 +760,16 @@ public class Commands {
 
 
     public static void testBit(Registers regs, byte reg, byte bitPos) {
-        System.out.println((0x1 & (byte) (reg >>> bitPos)));
-        if ((0x1 & (byte) (reg >>> bitPos)) == 0) {
-            regs.setZFlag();
-        } else {
+        if (BitUtils.testBit(reg, bitPos)) {
             regs.clearZFlag();
+        } else {
+            regs.setZFlag();
         }
         regs.clearNFlag();
         regs.setHFlag();
     }
 
-    // Literally nothing
+    // Literally does nothing
     public static void nop() {
         return;
     }
