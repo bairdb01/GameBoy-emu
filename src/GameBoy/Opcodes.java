@@ -156,11 +156,11 @@ public class Opcodes {
 
         // LD INTO BC
         setOpCode(std_opcodes, "LD BC,nn", 0x01, 12, 2, (regs, mmu, args) -> regs.setBC(BitUtils.mergeBytes(args[1], args[0])));
-        setOpCode(std_opcodes, "LD BC,A", 0x02, 8, (regs, mmu, args) -> regs.setBC(regs.getA()));
+        setOpCode(std_opcodes, "LD (BC),A", 0x02, 8, (regs, mmu, args) -> mmu.setMemVal(regs.getBC(), regs.getA()));
 
         // LD INTO DE
         setOpCode(std_opcodes, "LD DE,nn", 0x11, 12, 2, (regs, mmu, args) -> regs.setDE(BitUtils.mergeBytes(args[1], args[0])));
-        setOpCode(std_opcodes, "LD DE,A", 0x12, 8, (regs, mmu, args) -> regs.setDE(regs.getA()));
+        setOpCode(std_opcodes, "LD (DE),A", 0x12, 8, (regs, mmu, args) -> mmu.setMemVal(regs.getDE(), regs.getA()));
 
         // LD INTO SP
         setOpCode(std_opcodes, "LD SP,nn", 0x31, 12, 2, (regs, mmu, args) -> regs.setSP(BitUtils.mergeBytes(args[1], args[0])));
