@@ -63,7 +63,7 @@ public class Opcodes {
             regs.setA(mmu.getMemVal(regs.getHL() & 0xFFFF));
             regs.setHL(Commands.inc(regs.getHL()));
         });
-        setOpCode(std_opcodes, "LDD A,(n)", 0xF0, 12, 1, (regs, mmu, args) -> regs.setA(mmu.getMemVal((0xFF00 + (args[0] & 0xFF)))));
+        setOpCode(std_opcodes, "LDH A,(n)", 0xF0, 12, 1, (regs, mmu, args) -> regs.setA(mmu.getMemVal((0xFF00 + (args[0] & 0xFF)))));
 
         //LD INTO B
         setOpCode(std_opcodes, "LD B,A", 0x47, 4, (regs, mmu, args) -> regs.setB(regs.getA()));
@@ -152,7 +152,7 @@ public class Opcodes {
         // See GameBoy.CPU book for flags
         // Put SP + n effective address into HL
         setOpCode(std_opcodes, "LDHL SP,n", 0xF8, 12, 1, (regs, mmu, args) -> Commands.ldhl(regs, args[0]));
-        setOpCode(std_opcodes, "LD HL,nn", 0x21, 12, 2, (regs, mmu, args) -> regs.setHL(BitUtils.mergeBytes(args[1], args[0])));
+        setOpCode(std_opcodes, "LD HL, nn", 0x21, 12, 2, (regs, mmu, args) -> regs.setHL(BitUtils.mergeBytes(args[1], args[0])));
 
         // LD INTO BC
         setOpCode(std_opcodes, "LD BC,nn", 0x01, 12, 2, (regs, mmu, args) -> regs.setBC(BitUtils.mergeBytes(args[1], args[0])));

@@ -60,7 +60,13 @@ public class Commands {
         return destPtr;
     }
 
-    public static void ldhl(Registers regs, short offset) {
+    /**
+     * Puts SP + offset into register HL
+     *
+     * @param regs   Registers containing H and L
+     * @param offset One byte to offset SP
+     */
+    public static void ldhl(Registers regs, byte offset) {
         regs.setHL((short) (regs.getSP() + offset));
         regs.clearZFlag();
         regs.clearNFlag();
@@ -117,11 +123,11 @@ public class Commands {
         return sum;
     }
 
+
     /**
-     * Subtract val from a
-     *
-     * @param regs All registers
-     * @param val value to subtract
+     * Subtract val from register A
+     * @param regs Registers containing register A
+     * @param val value to subtract from A
      */
     public static byte sub(Registers regs, byte val) {
         byte a = regs.getA();
@@ -138,6 +144,7 @@ public class Commands {
         regs.setNFlag();
 
         // H Flag set if no borrow, clear if borrow from bit 4
+        System.out.println((((a & 0xF) - (val & 0xF))));
         if (((a & 0xF) - (val & 0xF)) < 0) {
             regs.clearHFlag();
         } else {

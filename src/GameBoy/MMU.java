@@ -30,6 +30,7 @@ public class MMU {
      */
 
     private byte[] mem = new byte[0x10000];
+    private byte[] ramBanks = new byte[0x8000]; // Max of 4 RAM banks, 0x2000 each
 
     private byte[] cartridge = new byte[0x200000];  // Maximum cartridge size
 //    private byte[] rom = new byte[0x8000];
@@ -94,6 +95,7 @@ public class MMU {
         setMemVal(0xFF26, (byte) 0xF1);
         setMemVal(0xFF26, (byte) 0xF1);
         setMemVal(0xFF40, (byte) 0x91);
+        setMemVal(0xFF41, (byte) 0x85);
         setMemVal(0xFF42, (byte) 0x00);
         setMemVal(0xFF43, (byte) 0x00);
         setMemVal(0xFF45, (byte) 0x00);
@@ -105,6 +107,32 @@ public class MMU {
         setMemVal(0xFFFF, (byte) 0x00);
     }
 
+    public void handleBanking(int adr, byte val) {
+        // Handles RAM/ROM bank selections
+        if (adr >= 0 && adr < 0x2000) {
+            if (usesMBC2 || usesMBC1) {
+                enableERAMCheck(adr, val);
+            }
+        } else if (adr >= 0x2000 && adr < 0x4000) {
+            // ROM Bank change
+            if (usesMBC2 || usesMBC1) {
+                // LowRom Bank
+                romBankChange(adr, val);
+            }
+        } else if (adr >= 0x4000 && adr < 0x6000) {
+            // No RAM bank in mbc2. Always use ram bank 0
+            if (usesMBC1) {
+                if (romBanking) {
+                    // HiRom Bank
+                    romBankChange(adr, val);
+                } else {
+                    ramBankChange(val);
+                }
+            }
+        } else if (adr >= 0x6000 && adr < 0x8000) {
+            romRamModeSwitch(val);
+        }
+    }
 
     public void tempSetMemVal(int adr, byte val) {
         if (adr == 0xFF07) {
@@ -131,9 +159,6 @@ public class MMU {
         }
     }
 
-
-
-
     /**
      * Gets a byte from memory
      *
@@ -141,7 +166,13 @@ public class MMU {
      * @return A byte from the corresponding address
      */
     public byte getMemVal(int adr) {
-        return tempGetMemVal(adr);
+        if (adr >= 0x4000 && adr < 0x8000) {
+            return cartridge[(adr - 0x4000) + (currentRomBank) * 0x4000];
+        } else if ((adr >= 0xA000) && (adr < 0xC000)) {
+            return ramBanks[(adr - 0xA000) + (currentRAMBank * 0x2000)];
+        } else {
+            return tempGetMemVal(adr);
+        }
         // Split up to handle the varying types memory blocks
 //        switch (adr & 0xF000) {
 //
@@ -237,32 +268,15 @@ public class MMU {
      * @param val 8bit value to store
      */
     public void setMemVal(int adr, byte val) {
-        // Handles RAM/ROM bank selections
-        if (adr >= 0 && adr < 0x2000) {
-            if (usesMBC2 || usesMBC1) {
-                enableERAMCheck(adr, val);
+        if (adr < 0x8000) {
+            handleBanking(adr, val);
+        } else if ((adr >= 0xA000 && adr < 0xC000)) {
+            if (enableERAM) {
+                ramBanks[adr - 0xA000 + (currentRAMBank * 0x2000)] = val;
             }
-            return;
-        } else if (adr >= 0x2000 && adr < 0x4000) {
-            if (usesMBC2 || usesMBC1) {
-                romBankChange(adr, val);
-            }
-            return;
-        } else if (adr >= 0x4000 && adr < 0x6000) {
-            // No RAM bank in mbc2, so always use ram bank 0
-            if (usesMBC1) {
-                if (romBanking) {
-                    romBankChange(adr, val);
-                } else {
-                    ramBankChange(val);
-                }
-            }
-            return;
-        } else if (adr >= 0x6000 && adr <= 0x8000) {
-            romRamModeSwitch(val);
+        } else {
+            tempSetMemVal(adr, val);
         }
-
-        tempSetMemVal(adr, val);
         // Handles writing data to memory addresses
 //        switch (adr & 0xF000) {
 //            // BIOS(256b)/ROM0
@@ -510,6 +524,7 @@ public class MMU {
      */
     private void romBankChange(int adr, byte val) {
         if (adr >= 0x2000 && adr < 0x4000) {
+            // ROM bank changing
             if (usesMBC2) {
                 currentRomBank = (byte) (val & 0xF);
                 if (currentRomBank == 0) {
@@ -525,10 +540,14 @@ public class MMU {
                 }
             }
         } else if (adr >= 0x4000 && adr < 0x6000) {
+            // ROM/RAM bank change
             if (usesMBC1 || usesMBC2) {
                 // Turn off lower 5 bits of data and combine with upper 3 bits of current ROM bank
-                currentRomBank = 0x1F;
-                currentRomBank += (val & 0xE0);
+                currentRomBank &= 0xE0;
+                currentRomBank |= (val & 0xE0);
+                if (currentRomBank == 0) {
+                    currentRomBank++;
+                }
             }
         }
     }
@@ -546,14 +565,13 @@ public class MMU {
     }
 
     /**
-     * Changes between ROM/RAM modes
+     * Changes between ROM/RAM modes. If LSB of val == 0 then rom banking is enabled.
      *
      * @param val A byte value written to an address in memory
      */
     private void romRamModeSwitch(byte val) {
-        val &= (byte) 0x1;
-        if (val == 0) {
-            romBanking = true;
+        romBanking = !BitUtils.testBit(val, 0);
+        if (romBanking) {
             currentRAMBank = 0;
         }
     }
@@ -647,5 +665,17 @@ public class MMU {
         for (int i = 0; i < 0xA0; i++) {
             setMemVal((0xFE00 + i), getMemVal((startAdr + i)));
         }
+    }
+
+
+    /**
+     * Prints off important registers for debugging
+     *
+     * @return String containing values of important registers
+     */
+    public String toString() {
+        return "LCDC:" + String.format("0x%02X", this.mem[0xFF40]) + " " +
+                "stat:" + String.format("0x%02X", this.mem[0xFF41]) + " " +
+                "ly:" + String.format("0x%02X", this.mem[0xFF44]) + " ";
     }
 }
