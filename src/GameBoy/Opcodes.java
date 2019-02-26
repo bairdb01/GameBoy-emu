@@ -569,10 +569,10 @@ public class Opcodes {
         setOpCode(std_opcodes, "CALL nn", 0xCD, 12, 2, (regs, mmu, args) -> Commands.call(regs, mmu, BitUtils.mergeBytes(args[1], args[0])));
 //
 //        // Call adr if
-//        setOpCode(std_opcodes, "CALL NZ,nn", 0xC4, 12, (regs, mmu, args) -> regs.callIf(BitUtils.mergeBytes(args[1], args[0]));
-//        setOpCode(std_opcodes, "CALL Z,nn", 0xCC, 12, (regs, mmu, args) -> regs.callIf(BitUtils.mergeBytes(args[1], args[0]));
-//        setOpCode(std_opcodes, "CALL NC,nn", 0xD4, 12, (regs, mmu, args) -> regs.callIf(BitUtils.mergeBytes(args[1], args[0])));
-//        setOpCode(std_opcodes, "CALL C,nn", 0xDC, 12, (regs, mmu, args) -> regs.callIf(BitUtils.mergeBytes(args[1], args[0]));
+        setOpCode(std_opcodes, "CALL NZ,nn", 0xC4, 12, (regs, mmu, args) -> Commands.callIf(regs, mmu, BitUtils.mergeBytes(args[1], args[0]), "NZ"));
+        setOpCode(std_opcodes, "CALL Z,nn", 0xCC, 12, (regs, mmu, args) -> Commands.callIf(regs, mmu, BitUtils.mergeBytes(args[1], args[0]), "Z"));
+        setOpCode(std_opcodes, "CALL NC,nn", 0xD4, 12, (regs, mmu, args) -> Commands.callIf(regs, mmu, BitUtils.mergeBytes(args[1], args[0]), "NC"));
+        setOpCode(std_opcodes, "CALL C,nn", 0xDC, 12, (regs, mmu, args) -> Commands.callIf(regs, mmu, BitUtils.mergeBytes(args[1], args[0]), "C"));
 //
 //
 //        /**
