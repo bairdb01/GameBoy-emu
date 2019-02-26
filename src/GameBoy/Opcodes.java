@@ -350,14 +350,14 @@ public class Opcodes {
          * Misc.
          */
         // Swap upper and lower nibbles of n
-        setOpCode(cb_opcodes, "SWAP A", 0x37, 8, (regs, mmu, args) -> regs.setA(Commands.swap(regs.getA())));
-        setOpCode(cb_opcodes, "SWAP B", 0x30, 8, (regs, mmu, args) -> regs.setB(Commands.swap(regs.getB())));
-        setOpCode(cb_opcodes, "SWAP C", 0x31, 8, (regs, mmu, args) -> regs.setC(Commands.swap(regs.getC())));
-        setOpCode(cb_opcodes, "SWAP D", 0x32, 8, (regs, mmu, args) -> regs.setD(Commands.swap(regs.getD())));
-        setOpCode(cb_opcodes, "SWAP E", 0x33, 8, (regs, mmu, args) -> regs.setE(Commands.swap(regs.getE())));
-        setOpCode(cb_opcodes, "SWAP H", 0x34, 8, (regs, mmu, args) -> regs.setH(Commands.swap(regs.getH())));
-        setOpCode(cb_opcodes, "SWAP L", 0x35, 8, (regs, mmu, args) -> regs.setL(Commands.swap(regs.getL())));
-        setOpCode(cb_opcodes, "SWAP (HL)", 0x36, 16, (regs, mmu, args) -> mmu.setMemVal(regs.getHL() & 0xFFFF, Commands.swap(mmu.getMemVal(regs.getHL() & 0xFFFF))));
+        setOpCode(cb_opcodes, "SWAP A", 0x37, 8, (regs, mmu, args) -> regs.setA(Commands.swap(regs, regs.getA())));
+        setOpCode(cb_opcodes, "SWAP B", 0x30, 8, (regs, mmu, args) -> regs.setB(Commands.swap(regs, regs.getB())));
+        setOpCode(cb_opcodes, "SWAP C", 0x31, 8, (regs, mmu, args) -> regs.setC(Commands.swap(regs, regs.getC())));
+        setOpCode(cb_opcodes, "SWAP D", 0x32, 8, (regs, mmu, args) -> regs.setD(Commands.swap(regs, regs.getD())));
+        setOpCode(cb_opcodes, "SWAP E", 0x33, 8, (regs, mmu, args) -> regs.setE(Commands.swap(regs, regs.getE())));
+        setOpCode(cb_opcodes, "SWAP H", 0x34, 8, (regs, mmu, args) -> regs.setH(Commands.swap(regs, regs.getH())));
+        setOpCode(cb_opcodes, "SWAP L", 0x35, 8, (regs, mmu, args) -> regs.setL(Commands.swap(regs, regs.getL())));
+        setOpCode(cb_opcodes, "SWAP (HL)", 0x36, 16, (regs, mmu, args) -> mmu.setMemVal(regs.getHL() & 0xFFFF, Commands.swap(regs, mmu.getMemVal(regs.getHL() & 0xFFFF))));
 
         // Decimal adjust register A
         // TODO DECIMAL ADJUST REGISTER
