@@ -335,16 +335,16 @@ public class Opcodes {
         setOpCode(std_opcodes, "ADD SP,n", 0xE8, 16, (regs, mmu, args) -> regs.setSP((short) (regs.getSP() + args[0])));
 
         // INCREMENT REGISTER PAIR
-        setOpCode(std_opcodes, "INC BC", 0x03, 8, (regs, mmu, args) -> regs.setBC(Commands.inc(regs.getBC())));
-        setOpCode(std_opcodes, "INC DE", 0x13, 8, (regs, mmu, args) -> regs.setDE(Commands.inc(regs.getDE())));
-        setOpCode(std_opcodes, "INC HL", 0x23, 8, (regs, mmu, args) -> regs.setHL(Commands.inc(regs.getHL())));
-        setOpCode(std_opcodes, "INC SP", 0x33, 8, (regs, mmu, args) -> regs.setSP(Commands.inc(regs.getSP())));
+        setOpCode(std_opcodes, "INC BC", 0x03, 8, (regs, mmu, args) -> regs.setBC((short) (regs.getBC() + 1)));
+        setOpCode(std_opcodes, "INC DE", 0x13, 8, (regs, mmu, args) -> regs.setDE((short) (regs.getDE() + 1)));
+        setOpCode(std_opcodes, "INC HL", 0x23, 8, (regs, mmu, args) -> regs.setHL((short) (regs.getHL() + 1)));
+        setOpCode(std_opcodes, "INC SP", 0x33, 8, (regs, mmu, args) -> regs.setSP((short) (regs.getSP() + 1)));
 
         //  DECREMENT REGISTER PAIR
-        setOpCode(std_opcodes, "DEC BC", 0x0B, 8, (regs, mmu, args) -> regs.setBC(Commands.dec(regs.getBC())));
-        setOpCode(std_opcodes, "DEC DE", 0x1B, 8, (regs, mmu, args) -> regs.setDE(Commands.dec(regs.getDE())));
-        setOpCode(std_opcodes, "DEC HL", 0x2B, 8, (regs, mmu, args) -> regs.setHL(Commands.dec(regs.getHL())));
-        setOpCode(std_opcodes, "DEC SP", 0x3B, 8, (regs, mmu, args) -> regs.setSP(Commands.dec(regs.getSP())));
+        setOpCode(std_opcodes, "DEC BC", 0x0B, 8, (regs, mmu, args) -> regs.setBC((short) (regs.getBC() - 1)));
+        setOpCode(std_opcodes, "DEC DE", 0x1B, 8, (regs, mmu, args) -> regs.setDE((short) (regs.getDE() - 1)));
+        setOpCode(std_opcodes, "DEC HL", 0x2B, 8, (regs, mmu, args) -> regs.setHL((short) (regs.getHL() - 1)));
+        setOpCode(std_opcodes, "DEC SP", 0x3B, 8, (regs, mmu, args) -> regs.setSP((short) (regs.getSP() - 1)));
 
 
         /*
