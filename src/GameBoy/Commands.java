@@ -266,11 +266,11 @@ public class Commands {
      * @return val - 1
      */
     public static byte dec(Registers regs, byte val) {
-        // Truncates the first 4 bits and subtracts 1. If result is less than 0 (borrowed from bit 4) then it is a half carry.
-        if (((val & 0xf) - (0x01)) < 0) {
-            regs.clearHFlag();
-        } else {
+        // H flag if first 4 bits borrows from upper 4 bits
+        if ((val & 0xF) < (0x01)) {
             regs.setHFlag();
+        } else {
+            regs.clearHFlag();
         }
 
         val -= 1;
@@ -305,11 +305,17 @@ public class Commands {
 
         // Setting flags
         regs.clearNFlag();
-        if ((((a & 0xf) + (b & 0xF)) & 0x10) == 0x10) {
+        if (((a & 0xF) + (b & 0xF)) > 0xF) {
             regs.setHFlag();
+        } else {
+            regs.clearHFlag();
         }
-        if ((a + b) > Short.MAX_VALUE) {
+
+
+        if ((a + b) > 0xFF) {
             regs.setCFlag();
+        } else {
+            regs.clearCFlag();
         }
 
         sum = (short) (a + b);
