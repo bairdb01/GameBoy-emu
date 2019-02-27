@@ -10,8 +10,7 @@ import java.io.IOException;
  * Created on: 2018-08-30
  * Filename: MMU
  * Description: Holds memory and methods required by the opcodes. Compatible with MBC1 and MBC2.
- * TODO: Change all callers of functions to use int adresses now.
- *  TODO: Handle read only and write only memory addresses
+ * TODO: Handle read only and write only memory addresses
  */
 public class MMU {
 
@@ -106,33 +105,6 @@ public class MMU {
         setMemVal(0xFF4A, (byte) 0x00);
         setMemVal(0xFF4B, (byte) 0x00);
         setMemVal(0xFFFF, (byte) 0x00);
-    }
-
-    public void handleBanking(int adr, byte val) {
-        // Handles RAM/ROM bank selections
-        if (adr >= 0 && adr < 0x2000) {
-            if (usesMBC2 || usesMBC1) {
-                enableERAMCheck(adr, val);
-            }
-        } else if (adr >= 0x2000 && adr < 0x4000) {
-            // ROM Bank change
-            if (usesMBC2 || usesMBC1) {
-                // LowRom Bank
-                romBankChange(adr, val);
-            }
-        } else if (adr >= 0x4000 && adr < 0x6000) {
-            // No RAM bank in mbc2. Always use ram bank 0
-            if (usesMBC1) {
-                if (romBanking) {
-                    // HiRom Bank
-                    romBankChange(adr, val);
-                } else {
-                    ramBankChange(val);
-                }
-            }
-        } else if (adr >= 0x6000 && adr < 0x8000) {
-            romRamModeSwitch(val);
-        }
     }
 
     public void tempSetMemVal(int adr, byte val) {
@@ -424,8 +396,8 @@ public class MMU {
      * @return The popped 16 bit value.
      */
     public short pop(int adr) {
-        byte valLower = getMemVal(adr);
-        byte valUpper = getMemVal(adr + 1);
+        byte valLower = getMemVal(adr & 0xFFFF);
+        byte valUpper = getMemVal((adr + 1) & 0xFFFF);
         return BitUtils.mergeBytes(valLower, valUpper);
     }
 
@@ -494,6 +466,39 @@ public class MMU {
             }
         }
         System.out.println("Loaded ROM: " + filename);
+    }
+
+    /**
+     * Handles requests to change ROM/RAM banks.
+     *
+     * @param adr Requested address to write to.
+     * @param val Value to write to address.
+     */
+    public void handleBanking(int adr, byte val) {
+        // Handles RAM/ROM bank selections
+        if (adr >= 0 && adr < 0x2000) {
+            if (usesMBC2 || usesMBC1) {
+                enableERAMCheck(adr, val);
+            }
+        } else if (adr >= 0x2000 && adr < 0x4000) {
+            // ROM Bank change
+            if (usesMBC2 || usesMBC1) {
+                // LowRom Bank
+                romBankChange(adr, val);
+            }
+        } else if (adr >= 0x4000 && adr < 0x6000) {
+            // No RAM bank in mbc2. Always use ram bank 0
+            if (usesMBC1) {
+                if (romBanking) {
+                    // HiRom Bank
+                    romBankChange(adr, val);
+                } else {
+                    ramBankChange(val);
+                }
+            }
+        } else if (adr >= 0x6000 && adr < 0x8000) {
+            romRamModeSwitch(val);
+        }
     }
 
     /**
@@ -603,7 +608,7 @@ public class MMU {
                 if (getMemVal(timerAdr) == (byte) 0xFF) {
                     // Timer overflow handling
                     setMemVal(timerAdr, getMemVal(timerModulatorAdr));
-                    Interrupts.requestInterupt(this, new Interrupt("Timer Overflowe", "MMU - updateTimers()", 2));
+                    Interrupts.requestInterrupt(this, new Interrupt("Timer Overflow", "MMU - updateTimers()", 2));
                 } else {
                     setMemVal(timerAdr, (byte) (getMemVal(timerAdr) + 1));
                 }

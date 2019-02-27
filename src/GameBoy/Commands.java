@@ -242,6 +242,8 @@ public class Commands {
         // Truncates register value to first nibble and then adds 1 to see if there is a carry from bit 3 to 4
         if (((val & 0xf) + 0x1) >= 0x10) {
             regs.setHFlag();
+        } else {
+            regs.clearHFlag();
         }
 
         val += 1;
@@ -674,7 +676,7 @@ public class Commands {
     }
 
     /**
-     * Moves the program counter up by an 8bit adr if Flag condition is met
+     * Moves the program counter by an 8bit offset if Flag condition is met
      *
      * @param regs          Registers containing the flags
      * @param offset        8bit number
@@ -759,7 +761,7 @@ public class Commands {
     }
 
     public static void ret(Registers regs, MMU mmu) {
-        mmu.pop(regs.getSP());
+        mmu.pop(regs.getSP() & 0xFFFF);
         regs.setPC((short) (regs.getSP() + 2));
     }
 

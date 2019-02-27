@@ -13,14 +13,14 @@ public class BitUtils {
         return (((b >> pos) & 0b1) == 1);
     }
 
-    static byte setBit(byte register, byte pos) {
-        register |= (1 << pos);
-        return register;
+    static byte setBit(byte val, int pos) {
+        val = (byte) (val | (0x01 << pos));
+        return val;
     }
 
-    static byte clearBit(byte register, byte pos) {
-        register &= ~(1 << pos);
-        return register;
+    static byte clearBit(byte val, int pos) {
+        val = (byte) (val & ~(1 << pos));
+        return val;
     }
 
     static short mergeBytes(byte upper, byte lower) {

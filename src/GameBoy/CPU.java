@@ -51,17 +51,33 @@ public class CPU {
         final int maxCycles = 69905;
         int clock_cycles = 0;   // Number of cycles performed during this update
 
+
+        int bCount = 0;
+
         while (clock_cycles < maxCycles) {
             // CPU Operates
             int cycles = runNextOpCode(regs, mmu);
             clock_cycles += cycles;
 
+            // Blarg test print out
+            if (mmu.getMemVal(0xFF02) == (byte) 0x81) {
+                char letter = Character.forDigit(0xFF01, 16);
+                System.out.print(mmu.getMemVal(letter));
+                bCount++;
+
+                if (bCount >= 160) {
+                    bCount = 0;
+                    System.out.println();
+                }
+            }
+
             // Timer updates
             mmu.updateTimers(cycles);
 
             // GPU Operates/Updates
-            gpu.updateGraphics(mmu, cycles, regs);
-//            gpu.drawBlarg(mmu);
+//            gpu.updateGraphics(mmu, cycles, regs);
+
+
 
             // Handle Interrupts
             handleInterrupts();
@@ -69,8 +85,6 @@ public class CPU {
 //            System.out.println("Executed");
 //            String debug = "CPU Clock: " + clock_cycles + "\n" + regs.toString();
 //            System.out.println(debug);
-
-
         }
     }
 
@@ -80,19 +94,13 @@ public class CPU {
             byte irEnabled = mmu.getMemVal(0xFFFF);
 
             // Remove interrupt from queue
-            while (Interrupts.interrupts.size() > 0) {
-
-                // Check if the interruptEnable register has bits set to enable servicing
-                Interrupt ir = Interrupts.interrupts.peek();
-                byte irEnabledBit = (byte) (irEnabled >> ir.getPriority() & 0x1);
-
-                // Service and remove interrupt from queue
-                if (irEnabledBit == 1) {
+            for (Interrupt ir : Interrupts.interrupts)
+                // Check if the interruptEnable register has enabled servicing for this interrupt
+                if (BitUtils.testBit(irEnabled, ir.getPriority())) {
                     serviceInterrupt(ir);
                     Interrupts.interrupts.remove();
                 }
 
-            }
         }
     }
 
@@ -131,11 +139,19 @@ public class CPU {
             regs.incPC();
         }
 
-//        System.out.print("SP: " + Integer.toHexString(regs.getPC()) + " | Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug
+
+//        System.out.print("---\n| Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug
 //        for (int i : args) {
 //            System.out.print(Integer.toHexString(i) + " ");
 //        }
 //        System.out.println();
+//        System.out.println(regs.toString());
+//        System.out.println(mmu.toString());
+//        System.out.println("---");
+//
+//        if (opcode == 0xe0) {
+//            System.out.print("");
+//        }
 
         // Execute Instruction
         return opcodes.execute(opcode, regs, mmu, args);

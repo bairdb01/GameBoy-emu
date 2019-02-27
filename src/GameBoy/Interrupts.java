@@ -20,7 +20,7 @@ import java.util.PriorityQueue;
  *      corresponding interrupt bit is set to 1 to allow servicing of this particular interrupt.
  */
 public class Interrupts {
-    static boolean masterInterruptSwitch = true; // Tool used by GameBoy to enable servicing of an interrupt
+    static boolean masterInterruptSwitch = true; // Tool used by GameBoy to enable servicing of an interrupt.
     static PriorityQueue<Interrupt> interrupts = new PriorityQueue<>(new Comparator<Interrupt>() {
 
         @Override
@@ -45,10 +45,10 @@ public class Interrupts {
      * @param mmu The memory management unit with access to the interrupt request register
      * @param ir An interrupt
      */
-    static public void requestInterupt(MMU mmu, Interrupt ir) {
+    static public void requestInterrupt(MMU mmu, Interrupt ir) {
         if (!interrupts.contains(ir)) {
-            byte interruptRequestFlag = (byte) (mmu.getMemVal((short) 0xFF0F) | ir.getPriority()); // Sets the interrupt's flag in register
-            mmu.setMemVal((short) 0xFF0F, interruptRequestFlag);
+            byte interruptRequestFlag = (byte) (mmu.getMemVal(0xFF0F) | ir.getPriority()); // Sets the interrupt's flag in register
+            mmu.setMemVal(0xFF0F, interruptRequestFlag);
             interrupts.add(ir);
         }
     }

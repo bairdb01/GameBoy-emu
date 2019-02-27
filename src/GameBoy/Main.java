@@ -11,7 +11,8 @@ package GameBoy;
 public class Main {
 
     public static void main(String[] args) {
-        String filename = "tetris.GB";
+//        String filename = "tetris.gb";
+        String filename = "C:\\Users\\Ben\\Dropbox\\GameBoy\\gb-test-roms-blarg\\individual\\01-special.gb";
         GPU gpu = new GPU();
         CPU cpu = new CPU(filename);
         cpu.run(gpu);

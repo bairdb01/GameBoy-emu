@@ -46,14 +46,12 @@ public class Screen extends JPanel {
 
     }
 
-    public void createImageWithArray(byte[][] pixels) {
+    public void renderScreen(Pixel[][] pixels, int row) {
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics g = this.getGraphics();
         // Load each pixel into the bufferedImage
-        for (int i = 0; i < pixels.length; i++) {
-            for (int j = 0; j < pixels[0].length; j++) {
-                bufferedImage.setRGB(i, j, pixelColour(pixels[i][j]));
-            }
+        for (int j = 0; j < 160; j++) {
+            bufferedImage.setRGB(j, row, pixelColour(pixels[row][j]));
         }
         g.drawImage(bufferedImage, 0, 0, this);
     }
@@ -65,23 +63,23 @@ public class Screen extends JPanel {
      * @param pixel Colour of pixel in GameBoy (0-3)
      * @return RGB value of pixel
      */
-    public int pixelColour(byte pixel) {
+    public int pixelColour(Pixel pixel) {
         int rgb = 0;
-        switch (pixel) {
-            // Off
+        switch (pixel.colour) {
             case 0:
+                // White
                 rgb = 0xFFFFFF;
                 break;
-            // 25% On
             case 1:
+                // Light Grey
                 rgb = 0xC0C0C0;
                 break;
-            // 50% On
             case 2:
+                // Dark Grey
                 rgb = 0x404040;
                 break;
-            // 100% on
             case 3:
+                // Black
                 rgb = 0;
                 break;
         }

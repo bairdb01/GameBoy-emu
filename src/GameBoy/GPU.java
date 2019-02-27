@@ -14,7 +14,8 @@ import javax.swing.*;
 public class GPU {
     JFrame window = new JFrame("SwoleBoy");
     JFrame debugWindow = new JFrame("Debug");
-    Screen screen = new Screen(144, 160);
+
+    Screen screen = new Screen(160, 144);
     Screen debug = new Screen(300, 400);
 
     int lcdc = 0xFF40; /* LCD control register
@@ -91,7 +92,7 @@ public class GPU {
     int bg_data_0 = 0x9800; // ($9800 - $9BFF) for BG map 0
     int bg_data_1 = 0x9C00; // ($9C00 - $9FFF) for Bg map 1
 
-    byte[][] mainScreenPixels = new byte[144][160];
+    Pixel[][] mainScreenPixels = new Pixel[144][160];
 
 
     public GPU() {
@@ -106,14 +107,6 @@ public class GPU {
         debugWindow.setVisible(true);
     }
 
-//    public void draw(Registers regs, MMU mmu) {
-////        mainScreenPixels = screen.drawRow(mainScreenPixels[i]);
-//        screen.createImageWithArray(mainScreenPixels);
-////        debug.displayText(regs.toString());
-//
-//    }
-
-    int drawRow = 0;
     int clockCounter = 0; // Keeps track of the number of CPU cycles passed, to keep CPU/GPU in sync
 
     public boolean isLCDEnabled(MMU mmu) {
@@ -141,24 +134,23 @@ public class GPU {
             clockCounter = 0;
 
             // Move to next scanline
-            mmu.incScanline();  // May need to move this to after execution
-            byte curScanline = mmu.getMemVal(this.ly);
+            int curScanline = mmu.getMemVal(this.ly) & 0xFF;
 
             // V-Blank period, send interrupt
-            if (curScanline == (byte) 144) {
+            if (curScanline == 144) {
                 Interrupts.requestInterrupt(mmu, new Interrupt("V-Blank", "GPU", 0));
 
-            } else if (curScanline > (byte) 153) {
+            } else if (curScanline > 153) {
                 // Finished all scanlines, reset
                 mmu.setMemVal(this.ly, (byte) 0);
 
-            } else if (curScanline < (byte) 144) {
+            } else if (curScanline < 144) {
                 // Draw visible scanline
                 drawScanline(mmu);
             }
+            mmu.incScanline();
         }
-        screen.createImageWithArray(mainScreenPixels);
-        debug.displayText(regs.toString());
+//        debug.displayText(regs.toString());
 
     }
 
@@ -176,30 +168,29 @@ public class GPU {
 
         if (lcdMode != mode) {
             // When LCD status changes to 0, 1, or 2 an LCD interrupt Request can happen
-
             if (mode == (byte) 0) {
-                int irFlag = ((lcdStatus >> 3) & 0x1);
-                if (irFlag == 1) {
+                if (BitUtils.testBit(lcdStatus, 3)) {
                     Interrupts.requestInterrupt(mmu, new Interrupt("LCD Interrupt", "Switched to mode 0 (H-Blank)", 1));
                 }
+                mmu.setMemVal(this.stat, (byte) (((lcdStatus & 0xFC) + (mode & 3))));
             } else if (mode == (byte) 1) {
-                int irFlag = ((lcdStatus >> 4) & 0x1);
-                if (irFlag == 1) {
+                if (BitUtils.testBit(lcdStatus, 4)) {
                     Interrupts.requestInterrupt(mmu, new Interrupt("LCD Interrupt", "Switched to mode 1 (V-Blank)", 1));
                 }
+                mmu.setMemVal(this.stat, (byte) (((lcdStatus & 0xFC) + (mode & 3))));
             } else if (mode == (byte) 2) {
-                int irFlag = ((lcdStatus >> 5) & 0x1);
-                if (irFlag == 1) {
+                if (BitUtils.testBit(lcdStatus, 5)) {
                     Interrupts.requestInterrupt(mmu, new Interrupt("LCD Interrupt", "Switched to Mode 2 (OAM)", 1));
                 }
+                mmu.setMemVal(this.stat, (byte) (((lcdStatus & 0xFC) + (mode & 3))));
             } else if (mode == (byte) 4) {
-                int irFlag = (lcdStatus >> 6) & 0x1;
-                if (irFlag == 1) {
+                if (BitUtils.testBit(lcdStatus, 6)) {
                     Interrupts.requestInterrupt(mmu, new Interrupt("LCD Interrupt", "Coincidence (0xFF44 == 0xFF45)", 1));
                 }
+                mmu.setMemVal(this.stat, (byte) (((lcdStatus & 0xFB) + (mode & 4))));
             }
         }
-        mmu.setMemVal(this.stat, (byte) ((lcdMode + mode)));
+
     }
 
     /**
@@ -250,12 +241,9 @@ public class GPU {
         byte lcdStatus = mmu.getMemVal(this.stat);
 
         // Bit 2 of stat is set to 1 if 0xFF44 == 0xFF45, else set to 0
-        int coincidenceFlag = 0b0000;
         byte curScanline = mmu.getMemVal(this.ly);
-        if (curScanline == mmu.getMemVal(this.lyc)) {
-            coincidenceFlag = 0b0100;
-        }
-        mmu.setMemVal(this.stat, (byte) ((curScanline & 0xFB) + coincidenceFlag));
+        int coincidenceFlag = (curScanline == mmu.getMemVal(this.lyc)) ? 0x4 : 0;
+        mmu.setMemVal(this.stat, (byte) ((lcdStatus & 0xFB) + coincidenceFlag));
 
         setLCDMode(mmu, (byte) 4, 0x4);
     }
@@ -277,8 +265,8 @@ public class GPU {
         if (BitUtils.testBit(lcdControl, 1)) {
             renderSprites(mmu, lcdControl);
         }
-
-        screen.createImageWithArray(mainScreenPixels);
+        int curScanline = mmu.getMemVal(this.ly) & 0xFF;
+        screen.renderScreen(mainScreenPixels, curScanline);
     }
 
     /**
@@ -296,6 +284,15 @@ public class GPU {
         // X,Y positions of the window area to start drawing the window from
         byte windowY = mmu.getMemVal(this.wy);
         byte windowX = (byte)(mmu.getMemVal(this.wx) - 7);      // value of wx is offset by 7 to allow scrolling in, 7 <= windowX <=166
+
+        // Grab the colour palette
+        byte bgPalette = mmu.getMemVal(this.bgp);
+        byte[] palette = new byte[4];
+        for (int i = 0; i <= 6; i += 2) {
+            // Shift over i bits and read 2 bits for colour
+            int colourBits = bgPalette >> i;
+            palette[i / 2] = (byte) (colourBits & 0x3);
+        }
 
         // Check if loading normal Background Tiles or window background tiles
         int bgDataAdr;
@@ -331,7 +328,7 @@ public class GPU {
 
         // Draw tiles at the current scanline (LY)
         Tile tile;
-        int curScanline = mmu.getMemVal(ly);
+        int curScanline = mmu.getMemVal(this.ly) & 0xFF;
         int curRow = (curScanline) / 8; // Account for the block size of 8 (18 blocks)
         for (int curCol = 0; curCol < 20; curCol++) {
             // Find current block/tile
@@ -352,8 +349,8 @@ public class GPU {
             int blockNum = blockY + blockX;
 
             // Load CHR_CODE
-            int chrCode = (tileDataAdr + blockNum);
-            tile = new Tile(mmu.getMemVal(chrCode));
+            int chrCode = mmu.getMemVal(tileDataAdr + blockNum) & 0xFF;
+            tile = new Tile(chrCode);
 
             // Check if CHR_CODE will be signed
             if (signed) {
@@ -369,7 +366,7 @@ public class GPU {
             tile.setBitmap(bitmap);
 
             // Tile is ready to be drawn in it's 8x8 location
-            drawTile(tile, curRow % 8, curCol * 8);
+            drawTile(tile, curScanline, curCol * 8, palette, false);
         }
     }
 
@@ -389,6 +386,16 @@ public class GPU {
             byte x_coord = mmu.getMemVal((spriteAdr + 1));                           // Byte 2: LCD x_coordinate
             byte chr_code = (byte) ((mmu.getMemVal((spriteAdr + 2)) >> 1) << 1);    // Byte 3: CHR_CODE or tile code. Odd CHR_CODES get rounded down. 1->0. 3->2.
             byte attributes = mmu.getMemVal((spriteAdr + 3));                        // Byte 4: Attribute flag - Palette, Horizontal/Vertical Flip Flag, and Priority
+            int paletteSelection = (BitUtils.testBit(attributes, 4)) ? this.obp0 : this.obp1;
+
+            // Grab the colour palette
+            byte objPalette = mmu.getMemVal(paletteSelection);
+            byte[] palette = new byte[4];
+            for (int i = 0; i <= 6; i += 2) {
+                // Shift over i bits and read 2 bits for colour
+                int colourBits = objPalette >> i;
+                palette[i / 2] = (byte) (colourBits & 0x3);
+            }
 
             // Load Bitmap from sprite address and CHR_CODE
             byte [] bitmap = new byte[height * 2];
@@ -401,7 +408,7 @@ public class GPU {
             sprite.setBitmap(bitmap);
 
             // Draw sprite
-            drawTile(sprite, y_coord, x_coord);
+            drawTile(sprite, y_coord, x_coord, palette, true);
         }
     }
 
@@ -413,9 +420,13 @@ public class GPU {
      * @param scanlineY The current scanline we are drawing (0-143)
      * @param col The position of the tile within the row.
      */
-    public void drawTile(Tile t, int scanlineY, int col) {
+    public void drawTile(Tile t, int scanlineY, int col, byte[] palette, boolean isSprite) {
         for (int i = 0; i < 8; i++) {
-            mainScreenPixels[scanlineY][col + i] = t.getPixel(scanlineY % 8, col + i);
+            byte colour = palette[t.getPixel(scanlineY % 8, i)];
+            if (isSprite && colour == 0) {
+                continue;
+            }
+            mainScreenPixels[scanlineY][col + i] = new Pixel(colour);
         }
     }
 

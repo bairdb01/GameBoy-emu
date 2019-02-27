@@ -156,21 +156,7 @@ public class Registers {
         setRegPair(H, L, val);
     }
 
-    byte getCFlag() {
-        return (byte) ((this.registers[F] >> this.c_pos) & 0x1);
-    }
 
-    byte getHFlag() {
-        return (byte) ((this.registers[F] >> this.h_pos) & 0x1);
-    }
-
-    byte getNFlag() {
-        return (byte) ((this.registers[F] >> this.n_pos) & 0x1);
-    }
-
-    byte getZFlag() {
-        return (byte) ((this.registers[F] >> this.z_pos) & 0x1);
-    }
     /*
      * Flag set/clear methods
      */
@@ -179,28 +165,45 @@ public class Registers {
         registers[F] = BitUtils.setBit(registers[F], z_pos);
     }
 
-    void clearZFlag() {
-        registers[F] = BitUtils.clearBit(registers[F], z_pos);
-    }
-
     void setNFlag() {
         registers[F] = BitUtils.setBit(registers[F], n_pos);
-    }
-
-    void clearNFlag() {
-        registers[F] = BitUtils.clearBit(registers[F], n_pos);
     }
 
     void setHFlag() {
         registers[F] = BitUtils.setBit(registers[F], h_pos);
     }
 
-    void clearHFlag() {
-        registers[F] = BitUtils.clearBit(registers[F], h_pos);
-    }
-
     void setCFlag() {
         registers[F] = BitUtils.setBit(registers[F], c_pos);
+    }
+
+
+    byte getZFlag() {
+        return (byte) ((this.registers[F] >> this.z_pos) & 0x1);
+    }
+
+    byte getNFlag() {
+        return (byte) ((this.registers[F] >> this.n_pos) & 0x1);
+    }
+
+    byte getCFlag() {
+        return (byte) ((this.registers[F] >> this.c_pos) & 0x1);
+    }
+
+    byte getHFlag() {
+        return (byte) ((this.registers[F] >> this.h_pos) & 0x1);
+    }
+
+    void clearZFlag() {
+        registers[F] = BitUtils.clearBit(registers[F], z_pos);
+    }
+
+    void clearNFlag() {
+        registers[F] = BitUtils.clearBit(registers[F], n_pos);
+    }
+
+    void clearHFlag() {
+        registers[F] = BitUtils.clearBit(registers[F], h_pos);
     }
 
     void clearCFlag() {
@@ -208,25 +211,22 @@ public class Registers {
     }
 
     void incPC() {
-
-        this.PC++;
-        if (this.PC < (short) 0xFFFF) {
+        short oldPC = this.PC;
+        this.PC += 1;
+        if (oldPC > this.PC) {
             this.PC--;
         }
     }
 
     public String toString() {
         String s = "";
-        s += "Register A: " + String.format("0x%02X", getA()) + "\n";
-        s += "Register B: " + String.format("0x%02X", getB()) + "\n";
-        s += "Register C: " + String.format("0x%02X", getC()) + "\n";
-        s += "Register D: " + String.format("0x%02X", getD()) + "\n";
-        s += "Register E: " + String.format("0x%02X", getE()) + "\n";
-        s += "Register H: " + String.format("0x%02X", getH()) + "\n";
-        s += "Register L: " + String.format("0x%02X", getL()) + "\n\n";
+        s += "Register AF: " + String.format("0x%04X", getAF()) + "\n";
+        s += "Register BC: " + String.format("0x%04X", getBC()) + "\n";
+        s += "Register DE: " + String.format("0x%04X", getDE()) + "\n";
+        s += "Register HL: " + String.format("0x%04X", getHL()) + "\n";
 
-        s += "PC = " + String.format("0x%04X", getPC()) + "\n\n";
-        s += "SP = " + String.format("0x%04X", getSP()) + "\n\n";
+        s += "PC = " + String.format("0x%04X", getPC()) + "\n";
+        s += "SP = " + String.format("0x%04X", getSP()) + "\n";
         s += "Z Flag: " + getZFlag() + "\n";
         s += "N Flag: " + getNFlag() + "\n";
         s += "H Flag: " + getHFlag() + "\n";
