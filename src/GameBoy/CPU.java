@@ -54,6 +54,8 @@ public class CPU {
 
         int bCount = 0;
 
+        Debugger debugger = new Debugger(mmu, regs);
+
         while (clock_cycles < maxCycles) {
             // CPU Operates
             int cycles = runNextOpCode(regs, mmu);
@@ -85,6 +87,7 @@ public class CPU {
 //            System.out.println("Executed");
 //            String debug = "CPU Clock: " + clock_cycles + "\n" + regs.toString();
 //            System.out.println(debug);
+            debugger.draw();
         }
     }
 

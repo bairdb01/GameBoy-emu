@@ -12,7 +12,7 @@ public class Main {
 
     public static void main(String[] args) {
 //        String filename = "tetris.gb";
-        String filename = "C:\\Users\\Ben\\Dropbox\\GameBoy\\gb-test-roms-blarg\\individual\\01-special.gb";
+        String filename = "C:\\Users\\Ben\\Dropbox\\GameBoy\\test-roms\\cpu_instrs\\individual\\03-op sp,hl.gb";
         GPU gpu = new GPU();
         CPU cpu = new CPU(filename);
         cpu.run(gpu);

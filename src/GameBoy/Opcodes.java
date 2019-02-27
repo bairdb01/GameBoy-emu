@@ -361,7 +361,7 @@ public class Opcodes {
 
         // Decimal adjust register A
         // TODO DECIMAL ADJUST REGISTER
-//        setOpCode(std_opcodes, "DAA", 27, 4, (regs, mmu, args) -> regs.daa());
+        setOpCode(std_opcodes, "DAA", 0x27, 4, (regs, mmu, args) -> Commands.daa());
 
         // Complement A register
         setOpCode(std_opcodes, "CPL", 0x2F, 4, (regs, mmu, args) -> Commands.cpl(regs));
@@ -377,8 +377,9 @@ public class Opcodes {
         });
 
         setOpCode(std_opcodes, "NOP", 0x00, 4, (regs, mmu, args) -> Commands.nop());
-//        setOpCode(std_opcodes, "HALT", 76, 4, (regs, mmu, args) -> regs.halt());
-//        setOpCode(std_opcodes, "STOP", 0x1000, 4, (regs, mmu, args) -> regs.stop());
+        // TODO: HALT AND STOP
+        setOpCode(std_opcodes, "HALT", 0x76, 4, (regs, mmu, args) -> Commands.halt());
+        setOpCode(std_opcodes, "STOP", 0x10, 4, (regs, mmu, args) -> Commands.stop());
 
         // Disable Interrupts
         setOpCode(std_opcodes, "DI", 0xF3, 4, (regs, mmu, args) -> Commands.disableInterrupts(mmu));

@@ -685,4 +685,14 @@ public class MMU {
                 "stat:" + String.format("0x%02X", this.mem[0xFF41]) + " " +
                 "ly:" + String.format("0x%02X", this.mem[0xFF44]) + " ";
     }
+
+    public String stringify() {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < 0x10000; i++) {
+            sb.append(String.format("0x%04X: ", i));
+            sb.append(String.format("0x%02X\n", getMemVal(i)));
+        }
+        return sb.toString();
+    }
 }

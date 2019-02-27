@@ -13,10 +13,8 @@ import javax.swing.*;
  */
 public class GPU {
     JFrame window = new JFrame("SwoleBoy");
-    JFrame debugWindow = new JFrame("Debug");
 
     Screen screen = new Screen(160, 144);
-    Screen debug = new Screen(300, 400);
 
     int lcdc = 0xFF40; /* LCD control register
                     Bit 0:
@@ -101,10 +99,6 @@ public class GPU {
         window.setSize(200, 200);
         window.setVisible(true);
 
-        debugWindow.getContentPane().add(debug);
-        debugWindow.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        debugWindow.setSize(320, 400);
-        debugWindow.setVisible(true);
     }
 
     int clockCounter = 0; // Keeps track of the number of CPU cycles passed, to keep CPU/GPU in sync
