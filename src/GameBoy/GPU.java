@@ -1,7 +1,6 @@
 package GameBoy;
 
 import javax.swing.*;
-import java.util.ArrayList;
 
 /**
  * Author: Benjamin Baird
@@ -147,7 +146,7 @@ public class GPU {
 
             // V-Blank period, send interrupt
             if (curScanline == (byte) 144) {
-                Interrupts.requestInterupt(mmu, new Interrupt("V-Blank", "GPU", 0));
+                Interrupts.requestInterrupt(mmu, new Interrupt("V-Blank", "GPU", 0));
 
             } else if (curScanline > (byte) 153) {
                 // Finished all scanlines, reset
@@ -159,7 +158,6 @@ public class GPU {
             }
         }
         screen.createImageWithArray(mainScreenPixels);
-        System.out.println(regs.toString());
         debug.displayText(regs.toString());
 
     }
@@ -170,6 +168,7 @@ public class GPU {
      *
      * @param mmu  Memory management unit containing the LCD status register
      * @param mode Mode to change the lcd to ( 0 - 3)
+     * @param mask Bitmasks LCD status to use remaining bits as mode
      */
     public void setLCDMode(MMU mmu, byte mode, int mask) {
         byte lcdStatus = mmu.getMemVal(this.stat);
@@ -181,22 +180,22 @@ public class GPU {
             if (mode == (byte) 0) {
                 int irFlag = ((lcdStatus >> 3) & 0x1);
                 if (irFlag == 1) {
-                    Interrupts.requestInterupt(mmu, new Interrupt("LCD Interrupt", "Switched to mode 0 (H-Blank)", 1));
+                    Interrupts.requestInterrupt(mmu, new Interrupt("LCD Interrupt", "Switched to mode 0 (H-Blank)", 1));
                 }
             } else if (mode == (byte) 1) {
                 int irFlag = ((lcdStatus >> 4) & 0x1);
                 if (irFlag == 1) {
-                    Interrupts.requestInterupt(mmu, new Interrupt("LCD Interrupt", "Switched to mode 1 (V-Blank)", 1));
+                    Interrupts.requestInterrupt(mmu, new Interrupt("LCD Interrupt", "Switched to mode 1 (V-Blank)", 1));
                 }
             } else if (mode == (byte) 2) {
                 int irFlag = ((lcdStatus >> 5) & 0x1);
                 if (irFlag == 1) {
-                    Interrupts.requestInterupt(mmu, new Interrupt("LCD Interrupt", "Switched to Mode 2 (OAM)", 1));
+                    Interrupts.requestInterrupt(mmu, new Interrupt("LCD Interrupt", "Switched to Mode 2 (OAM)", 1));
                 }
             } else if (mode == (byte) 4) {
                 int irFlag = (lcdStatus >> 6) & 0x1;
                 if (irFlag == 1) {
-                    Interrupts.requestInterupt(mmu, new Interrupt("LCD Interrupt", "Coincidence (0xFF44 == 0xFF45)", 1));
+                    Interrupts.requestInterrupt(mmu, new Interrupt("LCD Interrupt", "Coincidence (0xFF44 == 0xFF45)", 1));
                 }
             }
         }
@@ -213,7 +212,7 @@ public class GPU {
 
         // If LCD is disabled, mode must be 1, clock cycle counter and current scanline must be reset
         if (!isLCDEnabled(mmu)) {
-            setLCDMode(mmu, (byte) 1, 0xFC);
+            setLCDMode(mmu, (byte) 1, 0x3);
             clockCounter = 0;
             mmu.setMemVal(this.ly, (byte) 0);
             return;
@@ -224,13 +223,13 @@ public class GPU {
         int mode3Length = 172;
         if (clockCounter < mode2Length) {
             // Searching OAM RAM (OAM being used by LCD controller, inaccessible to CPU) (Mode 2)
-            setLCDMode(mmu, (byte) 2, 0xFC);
+            setLCDMode(mmu, (byte) 2, 0x3);
         } else if (clockCounter < (mode2Length + mode3Length)) {
             // Transferring data to LCD driver. (Mode 3)
-            setLCDMode(mmu, (byte) 3, 0xFC);
+            setLCDMode(mmu, (byte) 3, 0x3);
         } else {
             // Enable CPU access to all display RAM (H-Blank period)
-            setLCDMode(mmu, (byte) 0, 0xFC);
+            setLCDMode(mmu, (byte) 0, 0x3);
         }
 
         // Perform coincidence check
@@ -258,7 +257,7 @@ public class GPU {
         }
         mmu.setMemVal(this.stat, (byte) ((curScanline & 0xFB) + coincidenceFlag));
 
-        setLCDMode(mmu, (byte) 4, 0xFB);
+        setLCDMode(mmu, (byte) 4, 0x4);
     }
 
     /**
@@ -420,20 +419,5 @@ public class GPU {
         }
     }
 
-    int bCount = 0;
-
-    public void drawBlarg(MMU mmu) {
-        if (mmu.getMemVal(0xFF02) == (byte) 0x81) {
-            char letter = Character.forDigit(0xFF01, 16);
-            System.out.print(mmu.getMemVal(letter));
-            bCount++;
-        }
-
-
-        if (bCount >= 160) {
-            bCount = 0;
-            System.out.println();
-        }
-    }
 }
 
