@@ -143,16 +143,16 @@ public class Commands {
         // N Flag
         regs.setNFlag();
 
-        // H Flag set if no borrow, clear if borrow from bit 4
-        System.out.println((((a & 0xF) - (val & 0xF))));
-        if (((a & 0xF) - (val & 0xF)) < 0) {
-            regs.clearHFlag();
-        } else {
+        // H Flag set if borrow
+        if (((a & 0xF) < (val & 0xF))) {
             regs.setHFlag();
+        } else {
+            regs.clearHFlag();
         }
 
         // C Flag
-        if ((a - val) < 0) {
+
+        if ((a & 0xFF) + (val & 0xFF) >= 0x100) {
             regs.setCFlag();
         } else {
             regs.clearCFlag();
@@ -273,7 +273,7 @@ public class Commands {
             regs.setHFlag();
         }
 
-        val += 1;
+        val -= 1;
 
         // Z and N Flags
         if (val == 0) {
