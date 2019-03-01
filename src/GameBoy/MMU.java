@@ -771,6 +771,11 @@ public class MMU {
         System.out.println("Loaded ROM: " + filename);
     }
 
+    /**
+     * Loads the home rom bank (rom0) into 0x0000 - 0x3FFF
+     *
+     * @param fp A file pointer to the game cartridge.
+     */
     void loadHomeRom(RandomAccessFile fp) {
         // First 16k is always stored in memory $0000 - $3FFF after booting
         byte b;
@@ -786,7 +791,16 @@ public class MMU {
         }
     }
 
-    void loadBank(RandomAccessFile fp, int bank) {
+    /**
+     * Loads a new rom bank into paged memory 0x4000 - 0x7FFF.
+     *
+     * @param fp   The file pointer to the game cartridge.
+     * @param bank The rom bank to load. Bank=0 will not be loaded.
+     */
+    private void loadBank(RandomAccessFile fp, int bank) {
+        if (bank == 0) {
+            return;
+        }
         byte b;
         try {
             fp.seek(0x4000 * bank);
@@ -1021,13 +1035,50 @@ public class MMU {
                 "ly:" + String.format("0x%02X", this.mem[0xFF44]) + " ";
     }
 
+    /**
+     * Stringifies the memory.
+     * @return A string representation of the memory.
+     */
     String stringify() {
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < 0x10000; i++) {
+            if (i < 0x4000) {
+                sb.append("(ROM0) ");
+            } else if (i < 0x8000) {
+                sb.append("(ROM1)");
+            } else if (i < 0xA000) {
+                sb.append("(VRAM) ");
+            } else if (i < 0xC000) {
+                sb.append("(RAM) ");
+            } else if (i < 0xE000) {
+                sb.append("(WRAM) ");
+            } else if (i < 0xFE00) {
+                sb.append("(DUPE) ");
+            } else if (i < 0xFEA0) {
+                sb.append("(OAM) ");
+            } else if (i < 0xFF00) {
+                sb.append("(N/A) ");
+            } else if (i < 0xFF80) {
+                sb.append("(I/O) ");
+            } else if (i < 0xFFFF) {
+                sb.append("(HRAM) ");
+            }
             sb.append(String.format("0x%04X: ", i));
             sb.append(String.format("0x%02X\n", getMemVal(i)));
         }
         return sb.toString();
     }
 }
+//     *$0000-$7FFF stores pages from a GameBoy cartridge
+//             *($0000-$3FFF)first 16k bank of cartridge(HOME BANK).Is always accessible here.
+//             *($0100)Stores the games HEADER
+//             *$8000-$9FFF is video RAM.($8000-97FF is for Character Data bank 0+1,split evenly)($9800-$9FFF is for background(BG)data)
+//             *$A000-$BFFF is cartridge/external RAM,if a cartridge HAS any RAM on it.NULL and VOID if no RAM on cartridge.
+//             *$C000-$DFFF is internal work RAM(WRAM)for most runtime variables.Other variables will be saved on the cartridge's RAM
+//             *$E000-$FDFF specified to copy contents of $C000-$DDFF,but DO NOT USE FOR ANYTHING.
+//             *$FE00-$FE9F for object attribute memory(Sprite RAM)(40sprites max.)Two modes:8x8 and 8x16,these modes will apply to ALL sprites.
+//             *$FEA0-$FEFF is unusable address space.
+//             *$FF00-$FFFE is the ZERO page.Lower 64bytes is memory-mapped I/O.Upper 63bytes is High RAM(HRAM).
+//             *$FFFF is a single memory-mapped I/O register.
+//             */

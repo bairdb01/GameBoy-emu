@@ -29,6 +29,9 @@ public class CPU {
     int clockCycles = 0;   // Number of cycles performed during each update
     final int maxCycles = 69905;    // 1 frame per second, aim for 60fps
 
+    /**
+     * Handles all interrupts if their respective flags are set.
+     */
     void handleInterrupts() {
         // Make sure the system is allowing interrupts
         if (Interrupts.masterInterruptSwitch) {
@@ -45,6 +48,11 @@ public class CPU {
         }
     }
 
+    /**
+     * Services an interrupt.
+     *
+     * @param ir An iterrupt to service
+     */
     private void serviceInterrupt(Interrupt ir) {
         Interrupts.masterInterruptSwitch = false;   // Need to set to true once interrupts are done
         byte interruptRequest = (byte) (mmu.getMemVal(0xFF0F) | ir.getPriority());  // Clear interrupt request bit
@@ -59,6 +67,10 @@ public class CPU {
 
     }
 
+    /**
+     * Executes the next opcode
+     * @return The number of cycles the opcode took.
+     */
     int runNextOpCode() {
         byte[] args = new byte[2];
 

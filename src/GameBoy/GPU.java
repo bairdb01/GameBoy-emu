@@ -254,7 +254,7 @@ public class GPU {
             renderSprites(lcdControl);
         }
         int curScanline = mmu.getMemVal(this.ly) & 0xFF;
-        screen.renderScreen(mainScreenPixels, curScanline);
+        screen.renderScreen(mainScreenPixels[curScanline], curScanline);
     }
 
     /**

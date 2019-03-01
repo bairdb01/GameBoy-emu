@@ -17,39 +17,48 @@ public class Screen extends JPanel {
     int height;
     BufferedImage bufferedImage;
 
+    /**
+     * Constructor
+     *
+     * @param width  Width of the screen
+     * @param height Height of the screen
+     */
     public Screen(int width, int height) {
         this.width = width;
         this.height = height;
         bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
     }
 
-    public void paint(Graphics g) {
-        // Do something
-    }
 
-    private Image createImageWithText(String text) {
-        Graphics g = bufferedImage.getGraphics();
-        int i = 0;
-        for (String s : text.split("\n")) {
-            g.drawString(s, 20, 20 + i);
-            i += 20;
-        }
-//        bufferedImage.setRGB(20, 10, 0xFF0000); // Sets a pixel at location to red
-        return bufferedImage;
-    }
+//    private Image createImageWithText(String text) {
+//        Graphics g = bufferedImage.getGraphics();
+//        int i = 0;
+//        for (String s : text.split("\n")) {
+//            g.drawString(s, 20, 20 + i);
+//            i += 20;
+//        }
+////        bufferedImage.setRGB(20, 10, 0xFF0000); // Sets a pixel at location to red
+//        return bufferedImage;
+//    }
+//
+//    public void displayText(String text) {
+//        Graphics g = this.getGraphics();
+//        Image img = createImageWithText(text);
+//        g.drawImage(img, 0, 0, this);
+//
+//    }
 
-    public void displayText(String text) {
-        Graphics g = this.getGraphics();
-        Image img = createImageWithText(text);
-        g.drawImage(img, 0, 0, this);
-
-    }
-
-    public void renderScreen(Pixel[][] pixels, int row) {
+    /**
+     * Draws a row of pixels to the screen
+     *
+     * @param pixels A row of pixels
+     * @param row    The current row of the screen (scanline) to draw to.
+     */
+    public void renderScreen(Pixel[] pixels, int row) {
         Graphics g = this.getGraphics();
         // Load each pixel into the bufferedImage
-        for (int j = 0; j < 160; j++) {
-            bufferedImage.setRGB(j, row, pixelColour(pixels[row][j]));
+        for (int j = 0; j < pixels.length; j++) {
+            bufferedImage.setRGB(j, row, pixelColour(pixels[j]));
         }
         g.drawImage(bufferedImage, 0, 0, this);
     }
