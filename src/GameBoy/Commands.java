@@ -4,7 +4,7 @@ package GameBoy;
  * Created on: 2018-12-23
  * Filename: Commands
  * Description: Operations for various opcodes. These may be broken down into ALU, Bit Operations, etc. in the future.
- *
+ * <p>
  * Flag decriptors: - means unaffected, 0/1 clears/sets the flag, and * means affected accordingly
  * TODO: Split this file up into smaller classes
  * TODO: Test subc, adc, PUSH, POP, swap, cpl, ccf, rotate and shift operations
@@ -92,8 +92,9 @@ public class Commands {
     /**
      * Add val to the value at a
      * Flags: Z=*, N=0, H=*,C=*
+     *
      * @param regs All registers, used to access register A
-     * @param val Value to add to register a
+     * @param val  Value to add to register a
      */
     public static byte addToA(Registers regs, byte val) {
         byte aVal = regs.getA();
@@ -126,8 +127,9 @@ public class Commands {
 
     /**
      * Subtract val from register A
+     *
      * @param regs Registers containing register A
-     * @param val value to subtract from A
+     * @param val  value to subtract from A
      */
     public static byte sub(Registers regs, byte val) {
         byte a = regs.getA();
@@ -166,7 +168,7 @@ public class Commands {
      * Logical AND A and S and store in register A
      *
      * @param regs Registers
-     * @param s 8bit value
+     * @param s    8bit value
      */
     public static void AND(Registers regs, byte s) {
         regs.setA((byte) (regs.getA() & s));
@@ -185,7 +187,7 @@ public class Commands {
      * Logical OR register A and 8 bit value
      *
      * @param regs All registers
-     * @param s 8bit value
+     * @param s    8bit value
      */
     public static void OR(Registers regs, byte s) {
         regs.setA((byte) (regs.getA() | s));
@@ -203,7 +205,7 @@ public class Commands {
      * Logical XOR register A and s
      *
      * @param regs All registers
-     * @param s 8 bit value
+     * @param s    8 bit value
      */
     public static void XOR(Registers regs, byte s) {
         regs.setA((byte) (regs.getA() ^ s));
@@ -220,8 +222,9 @@ public class Commands {
     /**
      * Compare 8bit value with register A (Same as subtract, but results thrown away) Flags affected
      * Z=*, N=1, H=*, C=*
+     *
      * @param regs All registers
-     * @param s 8bit value
+     * @param s    8bit value
      */
     public static void cp(Registers regs, byte s) {
         byte a = regs.getA();
@@ -234,7 +237,7 @@ public class Commands {
      * Z-Flag affected, N-Flag reset, H-Flag set if carry from bit 3, C-Flag not affected
      *
      * @param regs All registers
-     * @param val 8bit register to increment (r, (HL))
+     * @param val  8bit register to increment (r, (HL))
      * @return val + 1, if val > byte.MAX_VAL then overflowed value returned.
      */
     public static byte inc(Registers regs, byte val) {
@@ -264,7 +267,7 @@ public class Commands {
      * Z-Flag set if 0, N-Flag set, H-Flag set if no borrow from bit 4, C-Flag not affected
      *
      * @param regs All registers
-     * @param val 8bit register to decrement (r, (HL))
+     * @param val  8bit register to decrement (r, (HL))
      * @return val - 1
      */
     public static byte dec(Registers regs, byte val) {
@@ -298,8 +301,8 @@ public class Commands {
      * Flags: Z=-,N=0, H=*,C=*
      *
      * @param regs List of all the registers
-     * @param a first number to add
-     * @param b second number to add
+     * @param a    first number to add
+     * @param b    second number to add
      * @return the register
      */
     public static short add(Registers regs, short a, short b) {
@@ -336,6 +339,7 @@ public class Commands {
 
     /**
      * Decrement value and returns the decremented value, modifying flags. Does not store result.
+     *
      * @param val 16bit value to decrease
      * @return val - 1
      */
@@ -349,6 +353,7 @@ public class Commands {
     /**
      * Swaps nibbles of register
      * Z=*, N=0, H=0, C=0
+     *
      * @param reg an 8bit register to swap (8bit register, (HL))
      */
     public static byte swap(Registers regs, byte reg) {
@@ -631,6 +636,7 @@ public class Commands {
      ******************************************************
      *  Jumps
      ******************************************************/
+
     /**
      * Jumps to adr if flag condition is met
      *
@@ -725,6 +731,14 @@ public class Commands {
         regs.setPC((short) adr);
     }
 
+    /**
+     * If condition is met the PC is pushed onto the stack and PC is then set to adr
+     *
+     * @param regs      Registers containing the PC
+     * @param mmu       Memory management unit containing stack
+     * @param adr       Address to jump to
+     * @param condition Condition to check "Z"=zero flag set, "NZ"=zero flag NOT set, "C"=carry flag set, "NC'= carry flag NOT set
+     */
     public static void callIf(Registers regs, MMU mmu, int adr, String condition) {
         switch (condition) {
             case "Z":
@@ -750,21 +764,35 @@ public class Commands {
         }
     }
 
-    public static void setReg(int reg, int val) {
-        reg = val;
-    }
-
-    public static void restart(Registers regs, MMU mmu, short offset) {
+    /**
+     * Pushes PC to stack and sets the PC to $0000 + offset
+     *
+     * @param regs   Registers containing PC.
+     * @param mmu    Memory management unit containing the stack.
+     * @param offset PC=0x0000 + offset.
+     */
+    public static void restart(Registers regs, MMU mmu, byte offset) {
         mmu.push(regs.getSP() & 0xFFFF, regs.getPC());
         regs.setSP((short) (regs.getSP() - 2));
-        regs.setPC(offset);
+        regs.setPC((short) (offset & 0xFF));
     }
 
+    /**
+     * Pops an address off of the stack and stores in PC.
+     * @param regs Registers containing PC and SP.
+     * @param mmu Memory management unit containing the stack.
+     */
     public static void ret(Registers regs, MMU mmu) {
-        mmu.pop(regs.getSP() & 0xFFFF);
-        regs.setPC((short) (regs.getSP() + 2));
+        regs.setPC(mmu.pop(regs.getSP() & 0xFFFF));
+        regs.setSP((short) (regs.getSP() + 2));
     }
 
+    /**
+     * If condition of cc is met, pops an address off of the stack and stores in PC.
+     * @param regs Registers containing flags, SP, PC
+     * @param mmu memory management unit containing the stack
+     * @param cc Condition to meet. "Z", "NZ", "C", "NC". Checks if Z/C flag is set or NOT set.
+     */
     public static void retIf(Registers regs, MMU mmu, String cc) {
         switch (cc) {
             case "Z":
@@ -790,7 +818,12 @@ public class Commands {
         }
     }
 
-
+    /**
+     * Tests a bit of a specified register and sets respective flags.
+     * @param regs Registers
+     * @param reg Register id: A=0 ... L=7
+     * @param bitPos Bit position to test
+     */
     public static void testBit(Registers regs, byte reg, byte bitPos) {
         if (BitUtils.testBit(reg, bitPos)) {
             regs.clearZFlag();
@@ -801,12 +834,17 @@ public class Commands {
         regs.setHFlag();
     }
 
-    // Literally does nothing
+    /**
+     * Does nothing. Used to skip CPU cycles.
+     */
     public static void nop() {
         return;
     }
 
-    // Stops CPU until an interrupt occurs
+    /**
+     * Stops CPU until an interrupt occurs
+     * TODO HALT function
+     */
     public static void halt() {
 
         // Two nop's for GameBoy hardware bug
@@ -814,14 +852,27 @@ public class Commands {
         nop();
     }
 
+    /**
+     * Halts CPU unitl a button is pressed. GB screen goes white with a single dark horizontal line.
+     * TODO stop function
+     */
     public static void stop() {
 
     }
 
+    /**
+     * Disables interrupts by setting register 0xFFFF
+     * @param mmu Memory management unit containing interrupt register
+     */
     public static void disableInterrupts(MMU mmu) {
         mmu.setMemVal(0xFFFF, (byte) 0);
     }
 
+    /**
+     * Enables interrupts at by setting register 0xFFFF
+     * @param mmu Memory management unit containing interrupt register
+
+     */
     public static void enableInterrupts(MMU mmu) {
         mmu.setMemVal(0xFFFF, (byte) 1);
     }

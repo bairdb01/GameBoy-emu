@@ -577,14 +577,14 @@ public class Opcodes {
          * Restarts
          */
         // Jump to address $0000 + n. 0x00, 0x08, ...
-        setOpCode(std_opcodes, "RST 0x00", 0xC7, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (short) 0x00));
-        setOpCode(std_opcodes, "RST 0x08", 0xCF, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (short) 0x08));
-        setOpCode(std_opcodes, "RST 0x10", 0xD7, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (short) 0x10));
-        setOpCode(std_opcodes, "RST 0x18", 0xDF, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (short) 0x18));
-        setOpCode(std_opcodes, "RST 0x20", 0xE7, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (short) 0x20));
-        setOpCode(std_opcodes, "RST 0x28", 0xEF, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (short) 0x28));
-        setOpCode(std_opcodes, "RST 0x30", 0xF7, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (short) 0x30));
-        setOpCode(std_opcodes, "RST 0x38", 0xFF, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (short) 0x38));
+        setOpCode(std_opcodes, "RST 0x00", 0xC7, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (byte) 0x00));
+        setOpCode(std_opcodes, "RST 0x08", 0xCF, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (byte) 0x08));
+        setOpCode(std_opcodes, "RST 0x10", 0xD7, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (byte) 0x10));
+        setOpCode(std_opcodes, "RST 0x18", 0xDF, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (byte) 0x18));
+        setOpCode(std_opcodes, "RST 0x20", 0xE7, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (byte) 0x20));
+        setOpCode(std_opcodes, "RST 0x28", 0xEF, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (byte) 0x28));
+        setOpCode(std_opcodes, "RST 0x30", 0xF7, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (byte) 0x30));
+        setOpCode(std_opcodes, "RST 0x38", 0xFF, 32, (regs, mmu, args) -> Commands.restart(regs, mmu, (byte) 0x38));
 
         /*
          * Returns

@@ -65,7 +65,7 @@ public class Screen extends JPanel {
         int rgb = 0;
         switch (pixel.colour) {
             case 0:
-                // White
+                // White (Off)
                 rgb = 0xFFFFFF;
                 break;
             case 1:

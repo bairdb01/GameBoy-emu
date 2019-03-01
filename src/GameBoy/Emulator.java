@@ -27,18 +27,19 @@ public class Emulator {
         // Load ROM
         mmu.load(filename);
 
+        // Execute ROM
         while (true) {
-            final int maxCycles = 69905;    // 1 frame per second, aim for 60fps
-
             while (cpu.clockCycles < cpu.maxCycles) {
                 step();
             }
             cpu.clockCycles = 0;
-
         }
 
     }
 
+    /**
+     * Performs a single instruction, updating the timers, graphics, and handling any interrupts as needed.
+     */
     private static void step() {
         int cycles = cpu.runNextOpCode();
 //        if (debugger.isDisplayable()) debugger.draw();
