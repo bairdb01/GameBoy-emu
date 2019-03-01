@@ -18,6 +18,10 @@ public class Interrupt {
     private int priority = 0;   // Flag's Bit position @ 0xFF0F
     private short serviceAdr;
 
+    public Interrupt() {
+        priority = -1;
+    }
+
     public Interrupt(String name, String origin, int priority) {
         this.name = name;
         this.origin = origin;
@@ -69,7 +73,7 @@ public class Interrupt {
     @Override
     public boolean equals(Object obj) {
         Interrupt ir = (Interrupt) obj;
-
         return ((this.priority == ir.priority) && this.name.equals(ir.name));
     }
+
 }

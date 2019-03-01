@@ -29,43 +29,9 @@ public class CPU {
     int clockCycles = 0;   // Number of cycles performed during each update
     final int maxCycles = 69905;    // 1 frame per second, aim for 60fps
 
-    /**
-     * Handles all interrupts if their respective flags are set.
-     */
-    void handleInterrupts() {
-        // Make sure the system is allowing interrupts
-        if (Interrupts.masterInterruptSwitch) {
-            byte irEnabled = mmu.getMemVal(0xFFFF);
 
-            // Remove interrupt from queue
-            for (Interrupt ir : Interrupts.interrupts)
-                // Check if the interruptEnable register has enabled servicing for this interrupt
-                if (BitUtils.testBit(irEnabled, ir.getPriority())) {
-                    serviceInterrupt(ir);
-                    Interrupts.interrupts.remove();
-                }
 
-        }
-    }
 
-    /**
-     * Services an interrupt.
-     *
-     * @param ir An iterrupt to service
-     */
-    private void serviceInterrupt(Interrupt ir) {
-        Interrupts.masterInterruptSwitch = false;   // Need to set to true once interrupts are done
-        byte interruptRequest = (byte) (mmu.getMemVal(0xFF0F) | ir.getPriority());  // Clear interrupt request bit
-        mmu.setMemVal(0xFF0F, interruptRequest);
-
-        // Push PC to stack
-        mmu.push(regs.getSP(), regs.getPC());
-        regs.setSP((short) (regs.getSP() - 2));
-
-        // Set program counter to interrupt handler
-        regs.setPC(ir.getServiceAdr());
-
-    }
 
     /**
      * Executes the next opcode
@@ -92,15 +58,15 @@ public class CPU {
             regs.incPC();
         }
 
-
-        System.out.print("---\n| Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug print out
-        for (int i : args) {
-            System.out.print(Integer.toHexString(i) + " ");
-        }
-        System.out.println();
-        System.out.println(regs.toString());
-        System.out.println(mmu.toString());
-        System.out.println("---");
+//
+//        System.out.print("---\n| Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug print out
+//        for (int i : args) {
+//            System.out.print(Integer.toHexString(i) + " ");
+//        }
+//        System.out.println();
+//        System.out.println(regs.toString());
+//        System.out.println(mmu.toString());
+//        System.out.println("---");
 
 
         // Execute Instruction

@@ -13,7 +13,7 @@ public class Emulator {
     static CPU cpu = new CPU();
     static MMU mmu = new MMU();    // memory management unit
     static Registers regs = new Registers();
-    static Debugger debugger = new Debugger(mmu, regs);
+//    static Debugger debugger = new Debugger(mmu, regs);
 
     public static void main(String[] args) {
 //        String filename = "tetris.gb";
@@ -42,7 +42,7 @@ public class Emulator {
      */
     private static void step() {
         int cycles = cpu.runNextOpCode();
-        if (debugger.isDisplayable()) debugger.draw();
+//        if (debugger.isDisplayable()) debugger.draw();
 
         cpu.clockCycles += cycles;
 
@@ -53,6 +53,6 @@ public class Emulator {
         gpu.updateGraphics(cycles);
 
         // Handle Interrupts
-        cpu.handleInterrupts();
+        Interrupts.handleInterrupts(mmu, regs);
     }
 }

@@ -1,6 +1,7 @@
 package GameBoy;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.PriorityQueue;
 
 /**
@@ -21,22 +22,7 @@ import java.util.PriorityQueue;
  */
 public class Interrupts {
     static boolean masterInterruptSwitch = true; // Tool used by GameBoy to enable servicing of an interrupt.
-    static PriorityQueue<Interrupt> interrupts = new PriorityQueue<>(new Comparator<Interrupt>() {
-
-        @Override
-        public int compare(Interrupt o1, Interrupt o2) {
-            if (o1.getPriority() < o2.getPriority()) {
-                return -1;
-            } else if (o1.getPriority() > o2.getPriority()) {
-                return 1;
-            }
-            return 0;
-        }
-    });
-
-    static public Interrupt retreiveInterrupt(MMU mmu) {
-        return interrupts.remove();
-    }
+    static Interrupt[] interrupts = new Interrupt[4];
 
     /**
      * Add an interrupt to the queue if not already in and
@@ -46,11 +32,54 @@ public class Interrupts {
      * @param ir An interrupt
      */
     static public void requestInterrupt(MMU mmu, Interrupt ir) {
-        if (!interrupts.contains(ir)) {
-            byte interruptRequestFlag = (byte) (mmu.getMemVal(0xFF0F) | ir.getPriority()); // Sets the interrupt's flag in register
-            mmu.setMemVal(0xFF0F, interruptRequestFlag);
-            interrupts.add(ir);
+        int priority = ir.getPriority();
+        byte interruptRequestFlag = BitUtils.setBit(mmu.getMemVal(0xFF0F), priority); // Sets the interrupt's flag in register
+        interrupts[priority] = ir;
+        mmu.setMemVal(0xFF0F, interruptRequestFlag);
+    }
+
+    /**
+     * Handles all interrupts if their respective flags are set.
+     */
+    static void handleInterrupts(MMU mmu, Registers regs) {
+        // Make sure the system is allowing interrupts
+        if (Interrupts.masterInterruptSwitch) {
+            byte irEnabled = mmu.getMemVal(0xFFFF);
+
+            if (irEnabled != 0) {
+                byte irRequest = mmu.getMemVal(0xFF0F);
+
+                // Remove interrupt from queue
+                for (int i = 0; i < 4; i++) {
+                    // Check if the interruptEnable register has enabled servicing for this interrupt
+                    int priority = interrupts[i].getPriority();
+                    if (priority != -1) {
+                        if (BitUtils.testBit(irRequest, priority) && BitUtils.testBit(irEnabled, priority)) {
+                            serviceInterrupt(interrupts[i], mmu, regs);
+                            interrupts[i] = new Interrupt();
+                        }
+                    }
+                }
+            }
         }
     }
 
+    /**
+     * Services an interrupt.
+     *
+     * @param ir An iterrupt to service
+     */
+    static private void serviceInterrupt(Interrupt ir, MMU mmu, Registers regs) {
+        Interrupts.masterInterruptSwitch = false;   // Need to set to true once interrupts are done
+        byte interruptRequest = (byte) (mmu.getMemVal(0xFF0F) | ir.getPriority());  // Clear interrupt request bit
+        mmu.setMemVal(0xFF0F, interruptRequest);
+
+        // Push PC to stack
+        mmu.push(regs.getSP(), regs.getPC());
+        regs.setSP((short) (regs.getSP() - 2));
+
+        // Set program counter to interrupt handler
+        regs.setPC(ir.getServiceAdr());
+
+    }
 }

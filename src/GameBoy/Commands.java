@@ -408,7 +408,7 @@ public class Commands {
     /**
      * Rotates LEFT a byte through the carry flag and returns the new byte. The MSB is shifted into the carry flag and the LSB.
      * Flags: Z=*, N=0, H=0, C=*
-     *
+     * TODO BUG CHECK
      * @param regs Registers containing the flags
      * @param reg  the value of a byte
      * @return The shifted value of reg. The C flag is set.
@@ -440,7 +440,7 @@ public class Commands {
     /**
      * Rotates LEFT and returns a byte. The MSB is shifted into the carry flag. The carry flag is shifted into the LSB.
      * Flags: Z=*, N=0, H=0, C=*
-     *
+     * TODO BUG CHECK
      * @param regs  Registers containing the flags
      * @param value the value of a byte
      * @return The shifted value of reg. The C flag is set.
@@ -861,20 +861,20 @@ public class Commands {
     }
 
     /**
-     * Disables interrupts by setting register 0xFFFF
+     * Disables interrupts by setting the master interrupt.
      * @param mmu Memory management unit containing interrupt register
      */
     public static void disableInterrupts(MMU mmu) {
-        mmu.setMemVal(0xFFFF, (byte) 0);
+        Interrupts.masterInterruptSwitch = false;
     }
 
     /**
-     * Enables interrupts at by setting register 0xFFFF
+     * Enables interrupts by setting the master interrupt.
      * @param mmu Memory management unit containing interrupt register
 
      */
     public static void enableInterrupts(MMU mmu) {
-        mmu.setMemVal(0xFFFF, (byte) 1);
+        Interrupts.masterInterruptSwitch = true;
     }
 
 }

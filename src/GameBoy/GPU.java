@@ -101,6 +101,11 @@ public class GPU {
         window.setSize(200, 200);
         window.setVisible(true);
 
+        for (int i = 0; i < 144; i++) {
+            for (int j = 0; j < 160; j++) {
+                mainScreenPixels[i][j] = new Pixel();
+            }
+        }
     }
 
     int clockCounter = 0; // Keeps track of the number of CPU cycles passed, to keep CPU/GPU in sync
@@ -411,7 +416,7 @@ public class GPU {
             if (isSprite && colour == 0) {
                 continue;
             }
-            mainScreenPixels[scanlineY][col + i] = new Pixel(colour);
+            mainScreenPixels[scanlineY][col + i].colour = colour;
         }
     }
 

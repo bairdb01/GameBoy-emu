@@ -427,31 +427,6 @@ public class MMU {
 //        setMemVal(0xFFFF, (byte) 0x00);
     }
 
-    public void tempSetMemVal(int adr, byte val) {
-        if (adr == 0xFF07) {
-            // Timer Controller
-            if (val != getClockFreq()) {
-                mem[adr] = val;
-                setClockFreq();
-            }
-        } else if (adr == 0xFF46) {
-            // Direct Memory Access (DMA)
-            DMATransfer(val);
-        } else if (adr == 0xFFFF) {
-            interruptEnabled = val;
-        } else {
-            mem[adr] = val;
-        }
-    }
-
-    public byte tempGetMemVal(int adr) {
-        if (adr == (short) 0xFFFF) {
-            return interruptEnabled;
-        } else {
-            return mem[adr];
-        }
-    }
-
     /**
      * Gets a byte from memory
      *
@@ -463,7 +438,11 @@ public class MMU {
         if ((adr >= 0xA000) && (adr < 0xC000)) {
             return ramBanks[(adr - 0xA000) + (currentRAMBank * 0x2000)];
         } else {
-            return tempGetMemVal(adr);
+            if (adr == (short) 0xFFFF) {
+                return interruptEnabled;
+            } else {
+                return mem[adr];
+            }
         }
         // Split up to handle the varying types memory blocks
 //        switch (adr & 0xF000) {
@@ -567,7 +546,20 @@ public class MMU {
                 ramBanks[adr - 0xA000 + (currentRAMBank * 0x2000)] = val;
             }
         } else {
-            tempSetMemVal(adr, val);
+            if (adr == 0xFF07) {
+                // Timer Controller
+                if (val != getClockFreq()) {
+                    mem[adr] = val;
+                    setClockFreq();
+                }
+            } else if (adr == 0xFF46) {
+                // Direct Memory Access (DMA)
+                DMATransfer(val);
+            } else if (adr == 0xFFFF) {
+                interruptEnabled = val;
+            } else {
+                mem[adr] = val;
+            }
         }
         // Handles writing data to memory addresses
 //        switch (adr & 0xF000) {
@@ -723,7 +715,7 @@ public class MMU {
      * Increment the scanline register
      */
     public void incScanline() {
-        setMemVal(0xFF44, (byte) (tempGetMemVal(0xFF44) + 1));
+        setMemVal(0xFF44, (byte) (getMemVal(0xFF44) + 1));
 //        zram[0xFF44]++;
     }
 
