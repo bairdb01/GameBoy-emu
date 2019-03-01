@@ -685,8 +685,8 @@ public class MMU {
     public void setMemVal(int adr, short val) {
         byte upperByte = (byte) ((val >> 8) & 0xFF);
         byte lowerByte = (byte) (val & 0xFF);
-        setMemVal(adr, lowerByte);
-        setMemVal((adr + 1), upperByte);
+        setMemVal(adr - 1, lowerByte);
+        setMemVal(adr, upperByte);
     }
 
     /**
@@ -696,7 +696,8 @@ public class MMU {
      * @param val 16 bit value
      */
     public void push(int adr, short val) {
-        setMemVal((adr - 1), val);
+        adr &= 0xFFFF;
+        setMemVal(adr-1, val);
     }
 
     /**

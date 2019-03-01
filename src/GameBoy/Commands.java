@@ -389,7 +389,7 @@ public class Commands {
     /**
      * Flips the Carry flag bit
      *
-     * @param regs All registers
+     * @param regs Flag registers
      */
     public static void ccf(Registers regs) {
         if (regs.getCFlag() == 1) {
@@ -408,14 +408,13 @@ public class Commands {
     /**
      * Rotates LEFT a byte through the carry flag and returns the new byte. The MSB is shifted into the carry flag and the LSB.
      * Flags: Z=*, N=0, H=0, C=*
-     * TODO BUG CHECK
      * @param regs Registers containing the flags
-     * @param reg  the value of a byte
+     * @param value  the value of a byte
      * @return The shifted value of reg. The C flag is set.
      */
-    public static byte rlc(Registers regs, byte reg) {
-        byte msb = (byte) (reg >>> 7);
-        byte shiftedByte = (byte) (reg << 1);
+    public static byte rlc(Registers regs, byte value) {
+        byte msb = (byte) (value >>> 7);
+        byte shiftedByte = (byte) (value << 1);
 
         // Put MSB into LSB and C Flag
         shiftedByte += msb;
@@ -446,7 +445,7 @@ public class Commands {
      * @return The shifted value of reg. The C flag is set.
      */
     public static byte rl(Registers regs, byte value) {
-        byte msb = (byte) ((value >> 7) & 0x1);
+        byte msb = (byte) (value >>> 7);
         byte cFlag = regs.getCFlag();
         byte shiftedByte = (byte) (value << 1);
 
@@ -461,7 +460,7 @@ public class Commands {
         }
 
         // Z Flag updates
-        if (msb == 0) {
+        if (shiftedByte == 0) {
             regs.clearZFlag();
         } else {
             regs.setZFlag();
@@ -542,12 +541,12 @@ public class Commands {
      * Shift left arithmetically. Places a 0 in LSB. Places MSB into C flag.
      * Flags: Z=*, N=0, H=0, C=*
      *
-     * @param regs
-     * @param value
+     * @param regs Registers regs
+     * @param value Byte value to shift
      * @return value shifted left. Flags set.
      */
     public static byte sla(Registers regs, byte value) {
-        byte msb = (byte) ((value >> 7) & 0x1);
+        byte msb = (byte) ((value >>> 7));
         byte shiftedByte = (byte) (value << 1);
 
         // Shift MSB into C Flag
@@ -726,7 +725,7 @@ public class Commands {
      * @param adr  address to jump to
      */
     public static void call(Registers regs, MMU mmu, int adr) {
-        mmu.push(regs.getSP() & 0xFFFF, regs.getPC());
+        mmu.push(regs.getSP(), regs.getPC());
         regs.setSP((short) (regs.getSP() - 2));
         regs.setPC((short) adr);
     }
@@ -772,7 +771,7 @@ public class Commands {
      * @param offset PC=0x0000 + offset.
      */
     public static void restart(Registers regs, MMU mmu, byte offset) {
-        mmu.push(regs.getSP() & 0xFFFF, regs.getPC());
+        mmu.push(regs.getSP(), regs.getPC());
         regs.setSP((short) (regs.getSP() - 2));
         regs.setPC((short) (offset & 0xFF));
     }
@@ -783,7 +782,7 @@ public class Commands {
      * @param mmu Memory management unit containing the stack.
      */
     public static void ret(Registers regs, MMU mmu) {
-        regs.setPC(mmu.pop(regs.getSP() & 0xFFFF));
+        regs.setPC(mmu.pop(regs.getSP()));
         regs.setSP((short) (regs.getSP() + 2));
     }
 
@@ -821,11 +820,11 @@ public class Commands {
     /**
      * Tests a bit of a specified register and sets respective flags.
      * @param regs Registers
-     * @param reg Register id: A=0 ... L=7
+     * @param value Register id: A=0 ... L=7
      * @param bitPos Bit position to test
      */
-    public static void testBit(Registers regs, byte reg, byte bitPos) {
-        if (BitUtils.testBit(reg, bitPos)) {
+    public static void testBit(Registers regs, byte value, byte bitPos) {
+        if (BitUtils.testBit(value, bitPos)) {
             regs.clearZFlag();
         } else {
             regs.setZFlag();
