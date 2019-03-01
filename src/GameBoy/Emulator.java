@@ -34,7 +34,6 @@ public class Emulator {
             }
             cpu.clockCycles = 0;
         }
-
     }
 
     /**
