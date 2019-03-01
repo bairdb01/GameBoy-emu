@@ -20,15 +20,9 @@ public class Opcodes {
     final private Instructions[] cb_opcodes = new Instructions[0x100]; // GameBoy.Opcodes which have the CB prefix
     // CB prefix just means to use this table, then the CB is thrown out
 
-    int getNumArgs(int opcode) {
-        if (opcode < 0x100)
-            return std_opcodes[0xFF & opcode].numArgs;
-        else {
-            opcode &= 0xFF;
-            return cb_opcodes[0xFF & opcode].numArgs;
-        }
-    }
-
+    /**
+     * Initializes all opcodes and their functionality
+     */
     public Opcodes() {
         /*
          * 8-BIT LOADS
@@ -606,15 +600,40 @@ public class Opcodes {
 
     }
 
+    /**
+     * Adds the opcode's function to the array of opcode functions.
+     *
+     * @param opcodes Array containing the opcodes.
+     * @param label   The label for this opcode.
+     * @param opcode  The opcode.
+     * @param clocks  The number of cycles for the opcode to complete.
+     * @param op      The operation to perform.
+     */
     private void setOpCode(Instructions[] opcodes, String label, int opcode, int clocks, Operation op) {
         opcodes[opcode] = new Instructions(label, opcode, clocks, op);
     }
 
+    /**
+     * Adds the opcode's function to the array of opcode functions.
+     * @param opcodes Array containing the opcodes.
+     * @param label The label for this opcode.
+     * @param opcode The opcode.
+     * @param clocks The number of cycles for the opcode to complete.
+     * @param numArgs The number of arguments this opcode requires.
+     * @param op The operation to perform.
+     */
     private void setOpCode(Instructions[] opcodes, String label, int opcode, int clocks, int numArgs, Operation op) {
         opcodes[opcode] = new Instructions(label, opcode, clocks, numArgs, op);
     }
 
-
+    /**
+     * Executes an opcode.
+     * @param opcode An integer opcode.
+     * @param regs Registers.
+     * @param mmu Memory management unit.
+     * @param args Arguments for the opcode.
+     * @return The number of cycles it took to perform the opcode.
+     */
     int execute(int opcode, Registers regs, MMU mmu, byte[] args) {
         if (opcode < 0x100) {
             std_opcodes[0xFF & opcode].op.cmd(regs, mmu, args);
@@ -626,11 +645,31 @@ public class Opcodes {
         }
     }
 
+    /**
+     * Gets the assembly function that an opcode represents
+     * @param opcode An integer opcode
+     * @return A string of the assembly function's name.
+     */
     String getName(int opcode) {
         if (opcode < 0x100) {
             return std_opcodes[opcode].label;
         } else {
             return cb_opcodes[0xFF & opcode].label;
+        }
+    }
+
+    /**
+     * Returns the number of arguments an opcode requires.
+     *
+     * @param opcode An integer opcode
+     * @return An intger number of arugments
+     */
+    int getNumArgs(int opcode) {
+        if (opcode < 0x100)
+            return std_opcodes[0xFF & opcode].numArgs;
+        else {
+            opcode &= 0xFF;
+            return cb_opcodes[0xFF & opcode].numArgs;
         }
     }
 }
