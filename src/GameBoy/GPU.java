@@ -2,6 +2,8 @@ package GameBoy;
 
 import javax.swing.*;
 
+import static GameBoy.Emulator.mmu;
+
 /**
  * Author: Benjamin Baird
  * Date: 2019-01-16
@@ -103,29 +105,31 @@ public class GPU {
 
     int clockCounter = 0; // Keeps track of the number of CPU cycles passed, to keep CPU/GPU in sync
 
-    public boolean isLCDEnabled(MMU mmu) {
+    public boolean isLCDEnabled() {
         return BitUtils.testBit(mmu.getMemVal(this.lcdc), 7);
     }
 
     /**
      * Performs a batch update of the graphics after every 456 CPU cycles.
      *
-     * @param mmu    Memory management unit containing graphics registers
      * @param cycles The number of CPU cycles of the last OP code performed
      */
-    public void updateGraphics(MMU mmu, int cycles, Registers regs) {
-        updateLCDStatus(mmu);
+    public void updateGraphics(int cycles) {
+        updateLCDStatus();
 
-        if (isLCDEnabled(mmu)) {
+        if (isLCDEnabled()) {
             clockCounter += cycles;
         } else {
             // No need to do anything if LCD isn't enabled
             return;
         }
 
-        // It takes the GPU 456 CPU cycles to draw one scanline
+        // It takes the GPU 456 CPU cycles to draw one scanline. Don't draw anything if "GPU" isn't ready.
         if (clockCounter >= 456) {
             clockCounter = 0;
+
+            // Scanline increments before drawing a scanline
+            mmu.incScanline();
 
             // Move to next scanline
             int curScanline = mmu.getMemVal(this.ly) & 0xFF;
@@ -140,23 +144,19 @@ public class GPU {
 
             } else if (curScanline < 144) {
                 // Draw visible scanline
-                drawScanline(mmu);
+                drawScanline();
             }
-            mmu.incScanline();
         }
-//        debug.displayText(regs.toString());
-
     }
 
     /**
      * Sets the mode of LCD status register to val, if this changes the mode
      * an interrupt will be attempted.
      *
-     * @param mmu  Memory management unit containing the LCD status register
      * @param mode Mode to change the lcd to ( 0 - 3)
      * @param mask Bitmasks LCD status to use remaining bits as mode
      */
-    public void setLCDMode(MMU mmu, byte mode, int mask) {
+    public void setLCDMode(byte mode, int mask) {
         byte lcdStatus = mmu.getMemVal(this.stat);
         byte lcdMode = (byte) (lcdStatus & mask);
 
@@ -184,20 +184,16 @@ public class GPU {
                 mmu.setMemVal(this.stat, (byte) (((lcdStatus & 0xFB) + (mode & 4))));
             }
         }
-
     }
 
     /**
      * Updates the LCD status register and requests interruptes if applicable.
      *
-     * @param mmu Location of GPU registers
      */
-    private void updateLCDStatus(MMU mmu) {
-        byte lcdStatus = mmu.getMemVal(this.stat);
-
+    private void updateLCDStatus() {
         // If LCD is disabled, mode must be 1, clock cycle counter and current scanline must be reset
-        if (!isLCDEnabled(mmu)) {
-            setLCDMode(mmu, (byte) 1, 0x3);
+        if (!isLCDEnabled()) {
+            setLCDMode((byte) 1, 0x3);
             clockCounter = 0;
             mmu.setMemVal(this.ly, (byte) 0);
             return;
@@ -208,17 +204,17 @@ public class GPU {
         int mode3Length = 172;
         if (clockCounter < mode2Length) {
             // Searching OAM RAM (OAM being used by LCD controller, inaccessible to CPU) (Mode 2)
-            setLCDMode(mmu, (byte) 2, 0x3);
+            setLCDMode((byte) 2, 0x3);
         } else if (clockCounter < (mode2Length + mode3Length)) {
             // Transferring data to LCD driver. (Mode 3)
-            setLCDMode(mmu, (byte) 3, 0x3);
+            setLCDMode((byte) 3, 0x3);
         } else {
             // Enable CPU access to all display RAM (H-Blank period)
-            setLCDMode(mmu, (byte) 0, 0x3);
+            setLCDMode((byte) 0, 0x3);
         }
 
         // Perform coincidence check
-        LCDCoincidenceCheck(mmu);
+        LCDCoincidenceCheck();
     }
 
     /**
@@ -229,9 +225,8 @@ public class GPU {
      * Sets corresponding bit in lcd status register.
      * Interrupt request if applicable.
      *
-     * @param mmu Location of GPU registers.
      */
-    private void LCDCoincidenceCheck(MMU mmu) {
+    private void LCDCoincidenceCheck() {
         byte lcdStatus = mmu.getMemVal(this.stat);
 
         // Bit 2 of stat is set to 1 if 0xFF44 == 0xFF45, else set to 0
@@ -239,25 +234,24 @@ public class GPU {
         int coincidenceFlag = (curScanline == mmu.getMemVal(this.lyc)) ? 0x4 : 0;
         mmu.setMemVal(this.stat, (byte) ((lcdStatus & 0xFB) + coincidenceFlag));
 
-        setLCDMode(mmu, (byte) 4, 0x4);
+        setLCDMode((byte) 4, 0x4);
     }
 
     /**
      * Draws one row of pixels to the screen.
      *
-     * @param mmu Memory management unit which contains the LCDC, VRAM, and OAM
      */
-    public void drawScanline(MMU mmu) {
+    public void drawScanline() {
         byte lcdControl = mmu.getMemVal(this.lcdc);
 
         // Draw background/window tiles
         if (BitUtils.testBit(lcdControl, 0)) {
-            renderTiles(mmu, lcdControl);
+            renderTiles(lcdControl);
         }
 
         // Draw sprites
         if (BitUtils.testBit(lcdControl, 1)) {
-            renderSprites(mmu, lcdControl);
+            renderSprites(lcdControl);
         }
         int curScanline = mmu.getMemVal(this.ly) & 0xFF;
         screen.renderScreen(mainScreenPixels, curScanline);
@@ -266,10 +260,10 @@ public class GPU {
     /**
      * Renders the background/window tiles (8x8 pixels).
      * TODO: Take into account window_y and window_x.
-     * @param mmu The memory management unit containing the VRAM
+     *
      * @param lcdControl The LCD control register's value
      */
-    public void renderTiles(MMU mmu, byte lcdControl) {
+    public void renderTiles(byte lcdControl) {
 
         // Upper left starting position of the background to be displayed
         byte scrollX = mmu.getMemVal(this.scroll_x);
@@ -308,7 +302,6 @@ public class GPU {
         } else {
             bgDataAdr = bg_data_0;
         }
-
 
         // Check where the Bitmap/tile data is located
         int tileMapAdr;
@@ -366,10 +359,10 @@ public class GPU {
 
     /**
      * Renders a row of sprites onto the LCD screen.
-     * @param mmu Memory management unit containing the OAM and VRAM.
+     *
      * @param lcdControl The LCDC register's value.
      */
-    public void renderSprites(MMU mmu, byte lcdControl){
+    public void renderSprites(byte lcdControl) {
         int height = BitUtils.testBit(lcdControl, 2)? 16 : 8;   // LCDC Bit 2 - OBJ (Sprite) Size (0=8x8, 1=8x16)
         for (int spriteNumber = 0; spriteNumber < 40; spriteNumber++) {
             // All 40 sprites are stored at 0xFE00 to 0xFE9F and consist of 4 bytes
@@ -408,8 +401,6 @@ public class GPU {
 
     /**
      * Draws a tile to the LCD's current scanline.
-     * TODO: Account for priority when drawing.
-     * TODO: Account for palette selection.
      * @param t The tile to draw.
      * @param scanlineY The current scanline we are drawing (0-143)
      * @param col The position of the tile within the row.

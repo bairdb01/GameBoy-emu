@@ -15,10 +15,12 @@ import java.awt.image.BufferedImage;
 public class Screen extends JPanel {
     int width;
     int height;
+    BufferedImage bufferedImage;
 
     public Screen(int width, int height) {
         this.width = width;
         this.height = height;
+        bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
     }
 
     public void paint(Graphics g) {
@@ -26,15 +28,12 @@ public class Screen extends JPanel {
     }
 
     private Image createImageWithText(String text) {
-        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics g = bufferedImage.getGraphics();
         int i = 0;
         for (String s : text.split("\n")) {
             g.drawString(s, 20, 20 + i);
             i += 20;
         }
-
-
 //        bufferedImage.setRGB(20, 10, 0xFF0000); // Sets a pixel at location to red
         return bufferedImage;
     }
@@ -47,7 +46,6 @@ public class Screen extends JPanel {
     }
 
     public void renderScreen(Pixel[][] pixels, int row) {
-        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics g = this.getGraphics();
         // Load each pixel into the bufferedImage
         for (int j = 0; j < 160; j++) {

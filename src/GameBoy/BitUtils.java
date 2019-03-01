@@ -24,6 +24,6 @@ public class BitUtils {
     }
 
     static short mergeBytes(byte upper, byte lower) {
-        return (short) (((upper << 8) + (lower & 0xFF)) & 0xFFFF);
+        return (short) ((upper << 8) + (lower & 0xFF));
     }
 }

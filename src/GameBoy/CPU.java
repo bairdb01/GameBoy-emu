@@ -1,5 +1,8 @@
 package GameBoy;
 
+import static GameBoy.Emulator.mmu;
+import static GameBoy.Emulator.regs;
+
 /**
  * Author: Benjamin Baird
  * Created on: 2018-08-28
@@ -20,78 +23,13 @@ package GameBoy;
  */
 
 // TODO: Interrupts. Interrupts can't happen during a CB opcode.
-// TODO: Restructure CPU/GPU/etc to an emulator class to perform updates
 
 public class CPU {
-
-    private Registers regs = new Registers();
     private Opcodes opcodes = new Opcodes();
-    private MMU mmu = new MMU();    // memory management unit
+    int clockCycles = 0;   // Number of cycles performed during each update
+    final int maxCycles = 69905;    // 1 frame per second, aim for 60fps
 
-
-    public CPU(String filename) {
-        mmu.load(filename);
-    }
-    /**
-     * Main loop for the CPU
-     * To execute an opcode:
-     *      opcodes.execute(0x3E, regs, mmu, args);
-     */
-    public void run(GPU gpu) {
-        boolean exit = false;
-        final int maxCycles = 69905;
-        while (!exit) {
-            update(gpu);
-//            exit = true;
-        }
-
-    }
-
-    private void update(GPU gpu) {
-        final int maxCycles = 69905;
-        int clock_cycles = 0;   // Number of cycles performed during this update
-
-
-        int bCount = 0;
-
-        Debugger debugger = new Debugger(mmu, regs);
-
-        while (clock_cycles < maxCycles) {
-            // CPU Operates
-            int cycles = runNextOpCode(regs, mmu);
-            clock_cycles += cycles;
-
-            // Blarg test print out
-            if (mmu.getMemVal(0xFF02) == (byte) 0x81) {
-                char letter = Character.forDigit(0xFF01, 16);
-                System.out.print(mmu.getMemVal(letter));
-                bCount++;
-
-                if (bCount >= 160) {
-                    bCount = 0;
-                    System.out.println();
-                }
-            }
-
-            // Timer updates
-            mmu.updateTimers(cycles);
-
-            // GPU Operates/Updates
-//            gpu.updateGraphics(mmu, cycles, regs);
-
-
-
-            // Handle Interrupts
-            handleInterrupts();
-
-//            System.out.println("Executed");
-//            String debug = "CPU Clock: " + clock_cycles + "\n" + regs.toString();
-//            System.out.println(debug);
-            debugger.draw();
-        }
-    }
-
-    private void handleInterrupts() {
+    void handleInterrupts() {
         // Make sure the system is allowing interrupts
         if (Interrupts.masterInterruptSwitch) {
             byte irEnabled = mmu.getMemVal(0xFFFF);
@@ -121,7 +59,7 @@ public class CPU {
 
     }
 
-    private int runNextOpCode(Registers regs, MMU mmu) {
+    int runNextOpCode() {
         byte[] args = new byte[2];
 
         // Load an opcode
@@ -143,18 +81,15 @@ public class CPU {
         }
 
 
-//        System.out.print("---\n| Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug
-//        for (int i : args) {
-//            System.out.print(Integer.toHexString(i) + " ");
-//        }
-//        System.out.println();
-//        System.out.println(regs.toString());
-//        System.out.println(mmu.toString());
-//        System.out.println("---");
-//
-//        if (opcode == 0xe0) {
-//            System.out.print("");
-//        }
+        System.out.print("---\n| Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug print out
+        for (int i : args) {
+            System.out.print(Integer.toHexString(i) + " ");
+        }
+        System.out.println();
+        System.out.println(regs.toString());
+        System.out.println(mmu.toString());
+        System.out.println("---");
+
 
         // Execute Instruction
         return opcodes.execute(opcode, regs, mmu, args);

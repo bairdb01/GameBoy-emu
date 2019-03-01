@@ -492,13 +492,12 @@ public class Opcodes {
         setOpCode(cb_opcodes, "SRL L", 0x3D, 8, (regs, mmu, args) -> regs.setL(Commands.srl(regs, regs.getL())));
         setOpCode(cb_opcodes, "SRL (HL)", 0x3E, 16, (regs, mmu, args) -> mmu.setMemVal(regs.getHL() & 0xFFFF, Commands.srl(regs, mmu.getMemVal(regs.getHL() & 0xFFFF))));
 
-
         /*
          * Bit GameBoy.Opcodes
          */
         // Test bit b in register r. Flags affected
         for (byte b = 0; b < 8; b++) {
-            final byte bit = b;
+            byte bit = b;
             setOpCode(cb_opcodes, "BIT " + b + ",A", 0x47 + (8 * b), 8, (regs, mmu, args) -> Commands.testBit(regs, regs.getA(), bit));
             setOpCode(cb_opcodes, "BIT " + b + ",B", 0x40 + (8 * b), 8, (regs, mmu, args) -> Commands.testBit(regs, regs.getB(), bit));
             setOpCode(cb_opcodes, "BIT " + b + ",C", 0x41 + (8 * b), 8, (regs, mmu, args) -> Commands.testBit(regs, regs.getC(), bit));
@@ -511,7 +510,7 @@ public class Opcodes {
 
         // Set bit b in register r.
         for (byte b = 0; b < 8; b++) {
-            final byte bit = b;
+            byte bit = b;
             setOpCode(cb_opcodes, "SET " + b + ",A", 0xC7 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setA(BitUtils.setBit(regs.getA(), bit)));
             setOpCode(cb_opcodes, "SET " + b + ",B", 0xC0 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setB(BitUtils.setBit(regs.getB(), bit)));
             setOpCode(cb_opcodes, "SET " + b + ",C", 0xC1 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setC(BitUtils.setBit(regs.getC(), bit)));
@@ -524,7 +523,7 @@ public class Opcodes {
 
         // RESET BIT B IN REGISTER r
         for (byte b = 0; b < 8; b++) {
-            final byte bit = b;
+            byte bit = b;
             setOpCode(cb_opcodes, "RES " + b + ",A", 0x87 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setA(BitUtils.clearBit(regs.getA(), bit)));
             setOpCode(cb_opcodes, "RES " + b + ",B", 0x80 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setB(BitUtils.clearBit(regs.getB(), bit)));
             setOpCode(cb_opcodes, "RES " + b + ",C", 0x81 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setC(BitUtils.clearBit(regs.getC(), bit)));
@@ -534,7 +533,6 @@ public class Opcodes {
             setOpCode(cb_opcodes, "RES " + b + ",L", 0x85 + (8 * b), 8, 1, (regs, mmu, args) -> regs.setL(BitUtils.clearBit(regs.getL(), bit)));
             setOpCode(cb_opcodes, "RES b,(HL)", 0x86 + (8 * b), 16, 1, (regs, mmu, args) -> mmu.setMemVal(regs.getHL() & 0xFFFF, BitUtils.clearBit(mmu.getMemVal(regs.getHL() & 0xFFFF), bit)));
         }
-
 
         /*
          * Jumps

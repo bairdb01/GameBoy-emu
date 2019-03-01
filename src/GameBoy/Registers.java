@@ -27,10 +27,15 @@ public class Registers {
 
     Registers() {
         // Register values after a real GameBoy boots through boot ROM
-        setAF((short) 0x01B0);
-        setBC((short) 0x0013);
-        setDE((short) 0x00D8);
-        setHL((short) (0x014D));
+//        setAF((short) 0x01B0);
+//        setBC((short) 0x0013);
+//        setDE((short) 0x00D8);
+//        setHL((short) (0x014D));
+        setAF((short) 0);
+        setBC((short) 0);
+        setDE((short) 0);
+        setHL((short) (0));
+        PC = 0x0000;
     }
 
     /*

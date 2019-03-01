@@ -23,7 +23,7 @@ public class Debugger {
         this.mmu = mmu;
         this.regs = regs;
 
-        window.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        window.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         window.setPreferredSize(new Dimension(700, 600));
         container.setLayout(new BorderLayout());
 
@@ -48,4 +48,7 @@ public class Debugger {
         window.pack();
     }
 
+    public boolean isDisplayable() {
+        return window.isDisplayable();
+    }
 }
