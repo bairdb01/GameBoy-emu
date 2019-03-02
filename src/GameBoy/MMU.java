@@ -709,7 +709,7 @@ public class MMU {
     public short pop(int adr) {
         byte valLower = getMemVal(adr & 0xFFFF);
         byte valUpper = getMemVal((adr + 1) & 0xFFFF);
-        return BitUtils.mergeBytes(valLower, valUpper);
+        return BitUtils.mergeBytes(valUpper, valLower);
     }
 
     /**
