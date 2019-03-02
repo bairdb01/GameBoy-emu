@@ -19,11 +19,6 @@ public class Emulator {
 //        String filename = "tetris.gb";
         String filename = "C:\\Users\\Ben\\Dropbox\\GameBoy\\test-roms\\cpu_instrs\\individual\\03-op sp,hl.gb";
 
-        // Boot Sequence
-        while (regs.getPC() != 0x100) {
-            step();
-        }
-
         // Load ROM
         mmu.load(filename);
 

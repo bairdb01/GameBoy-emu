@@ -470,7 +470,7 @@ public class MMU {
         // First 16k is always stored in memory $0000 - $3FFF after booting
         byte b;
         try {
-            for (int i = 0; i < 0x4000; i++) {
+            for (int i = 0x100; i < 0x4000; i++) {
                 b = fp.readByte();
                 mem[i] = b;
             }

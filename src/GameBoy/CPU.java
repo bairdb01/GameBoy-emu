@@ -58,23 +58,26 @@ public class CPU {
             regs.incPC();
         }
 
-
-        System.out.print("---\n| Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug print out
-        for (int i : args) {
-            System.out.print(Integer.toHexString(i) + " ");
-        }
-        System.out.println();
-        System.out.println(regs.toString());
-        System.out.println(mmu.toString());
-        System.out.println("---");
-
-
-        if ((regs.getPC() & 0xFFFF) == 0x0034) {
+        if ((regs.getPC() & 0xFFFF) == 0x0056) {
             System.out.print("");
+            debug = true;
         }
+
+        if (debug) {
+            System.out.print("---\n| Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug print out
+            for (int i : args) {
+                System.out.print(Integer.toHexString(i) + " ");
+            }
+            System.out.println();
+            System.out.println(regs.toString());
+            System.out.println(mmu.toString());
+            System.out.println("---");
+        }
+
+
 
         // Execute Instruction
         return opcodes.execute(opcode, regs, mmu, args);
     }
-
+    boolean debug = false;
 }
