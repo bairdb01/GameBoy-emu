@@ -146,15 +146,14 @@ public class Commands {
         regs.setNFlag();
 
         // H Flag set if borrow
-        if (((a & 0xF) < (val & 0xF))) {
+        if (((a & 0xF) - (val & 0xF)) < 0) {
             regs.setHFlag();
         } else {
             regs.clearHFlag();
         }
 
         // C Flag
-
-        if ((a & 0xFF) + (val & 0xFF) >= 0x100) {
+        if ((a + val) < 0) {
             regs.setCFlag();
         } else {
             regs.clearCFlag();

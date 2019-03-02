@@ -68,8 +68,9 @@ public class CPU {
         System.out.println(mmu.toString());
         System.out.println("---");
 
-        if ((regs.getPC() & 0xFFFF) > 0x000C) {
-            System.out.println("");
+
+        if ((regs.getPC() & 0xFFFF) == 0x0034) {
+            System.out.print("");
         }
 
         // Execute Instruction
