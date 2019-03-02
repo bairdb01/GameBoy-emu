@@ -546,13 +546,13 @@ public class Opcodes {
         setOpCode(std_opcodes, "JP HL", 0xE9, 4, (regs, mmu, args) -> regs.setPC(regs.getHL()));
 
         // Add n to current address and jump to it
-        setOpCode(std_opcodes, "JR n", 0x18, 8, 1, (regs, mmu, args) -> regs.setPC((short) (regs.getPC() + (args[0] & 0xFF)))); // Fix function
+        setOpCode(std_opcodes, "JR n", 0x18, 8, 1, (regs, mmu, args) -> Commands.jr(regs, args[0])); // Fix function
 
 //        // Conditional jump + add
-        setOpCode(std_opcodes, "JR NZ, PC+n", 0x20, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, (args[0]), "NZ"));
-        setOpCode(std_opcodes, "JR Z, PC+n", 0x28, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, (args[0]), "Z"));
-        setOpCode(std_opcodes, "JR NC, PC+n", 0x30, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, (args[0]), "NC"));
-        setOpCode(std_opcodes, "JR C,PC+n", 0x38, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, (args[0]), "C"));
+        setOpCode(std_opcodes, "JR NZ, PC+n", 0x20, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, args[0], "NZ"));
+        setOpCode(std_opcodes, "JR Z, PC+n", 0x28, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, args[0], "Z"));
+        setOpCode(std_opcodes, "JR NC, PC+n", 0x30, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, args[0], "NC"));
+        setOpCode(std_opcodes, "JR C,PC+n", 0x38, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, args[0], "C"));
 
 
         /*
