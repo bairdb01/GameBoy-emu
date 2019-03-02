@@ -35,8 +35,8 @@ public class Tile {
     public void setBitmap(byte [] data) {
         for (int i = 0; i < data.length; i+=2) {
             for (int j = 0; j < 8; j++) {
-                bitmap[i/2][j] = (((data[i+1] >> j) & 0x1) << 1); // Set upper bit of colour
-                bitmap[i/2][j] = (0x1 & (data[i] >> j));    // Set lower bit of colour
+                bitmap[i / 2][j] = ((data[i + 1] >> (j - 1)) & 0b10); // Set upper bit of colour
+                bitmap[i / 2][j] += ((data[i] >> j) & 0b01);    // Set lower bit of colour
             }
 
         }
