@@ -1,5 +1,7 @@
 package GameBoy;
 
+import java.util.Scanner;
+
 /**
  * Created on: 2018-12-23
  * Filename: Commands
@@ -78,7 +80,7 @@ public class Commands {
             regs.clearHFlag();
         }
 
-        if (((regs.getSP() & 0xFF) + (offset & 0xFF)) > 0xFF) {
+        if (((regs.getSP() & 0xFFFF) + offset) > 0xFFFF) {
             regs.setCFlag();
         } else {
             regs.clearCFlag();
@@ -145,18 +147,18 @@ public class Commands {
         // N Flag
         regs.setNFlag();
 
-        // H Flag set if borrow
+        // H Flag set if NO borrow
         if (((a & 0xF) - (val & 0xF)) < 0) {
-            regs.setHFlag();
-        } else {
             regs.clearHFlag();
+        } else {
+            regs.setHFlag();
         }
 
-        // C Flag
-        if ((a + val) < 0) {
-            regs.setCFlag();
-        } else {
+        // C Flag set if NO carry
+        if ((a & 0xFF) < (val & 0xFF)) {
             regs.clearCFlag();
+        } else {
+            regs.setCFlag();
         }
 
         regs.setA(result);
@@ -855,7 +857,8 @@ public class Commands {
      * TODO stop function
      */
     public static void stop() {
-
+        Scanner scanner = new Scanner(System.in);
+        scanner.nextLine();
     }
 
     /**
