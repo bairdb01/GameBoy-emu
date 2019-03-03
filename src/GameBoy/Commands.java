@@ -534,9 +534,9 @@ public class Commands {
 
         // ZFlag updates
         if (shiftedByte == 0) {
-            regs.clearZFlag();
-        } else {
             regs.setZFlag();
+        } else {
+            regs.clearZFlag();
         }
 
         regs.clearHFlag();
@@ -567,9 +567,9 @@ public class Commands {
 
         // ZFlag updates
         if (shiftedByte == 0) {
-            regs.clearZFlag();
-        } else {
             regs.setZFlag();
+        } else {
+            regs.clearZFlag();
         }
 
         regs.clearHFlag();
@@ -590,7 +590,7 @@ public class Commands {
         byte shiftedByte = (byte) (value << 1);
 
         // Shift MSB into C Flag
-        if (msb == 0) {
+        if (shiftedByte == 0) {
             regs.clearCFlag();
         } else {
             regs.setCFlag();
@@ -598,9 +598,9 @@ public class Commands {
 
         // Setting remaining flags
         if (shiftedByte == 0) {
-            regs.clearZFlag();
-        } else {
             regs.setZFlag();
+        } else {
+            regs.clearZFlag();
         }
         regs.clearHFlag();
         regs.clearNFlag();
@@ -621,10 +621,10 @@ public class Commands {
         byte shiftedByte = (byte) (value >> 1);
 
         // Shift LSB into C Flag
-        if (lsb == 0) {
-            regs.clearCFlag();
-        } else {
+        if (shiftedByte == 0) {
             regs.setCFlag();
+        } else {
+            regs.clearCFlag();
         }
 
         // Setting remaining flags
