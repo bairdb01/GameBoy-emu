@@ -96,7 +96,7 @@ public class Commands {
      * Flags: Z=*, N=0, H=*,C=*
      *
      * @param regs All registers, used to access register A
-     * @param val  Value to add to register a
+     * @param val  Value to addShorts to register a
      */
     public static byte addToA(Registers regs, byte val) {
         byte aVal = regs.getA();
@@ -298,38 +298,71 @@ public class Commands {
      ****************************************/
 
     /**
-     * Adds val to the value stored at reg
+     * Adds two short values together and returns the results setting flags
      * Flags: Z=-,N=0, H=*,C=*
      *
-     * @param regs List of all the registers
-     * @param a    first number to add
-     * @param b    second number to add
-     * @return the register
+     * @param regs Registers containing flags
+     * @param a    first number to addShorts
+     * @param b    second number to addShorts
+     * @return (short)(a + b)
      */
-    public static short add(Registers regs, short a, short b) {
+    public static short addShorts(Registers regs, short a, short b) {
         short sum = 0;
+        sum = (short) (a + b);
 
         // Setting flags
         regs.clearNFlag();
-        if (((a & 0xF) + (b & 0xF)) > 0xF) {
+        if ((((a & 0xFFF) + (b & 0xFFF)) & 0x1000) == 0x1000) {
             regs.setHFlag();
         } else {
             regs.clearHFlag();
         }
 
 
-        if ((a + b) > 0xFF) {
+        if ((((a & 0xFFFF) + (b & 0xFFFF)) & 0x10000) == 0x10000) {
             regs.setCFlag();
         } else {
             regs.clearCFlag();
         }
 
-        sum = (short) (a + b);
+
         return sum;
     }
 
     /**
-     * Increments val and changes flags. Does not store results, only returns them.
+     * Adds offset to the stack pointer and returns the value. SP is modified.
+     * Flags: Z=0, N=0, H=*, C=*
+     *
+     * @param regs
+     * @param sp
+     * @param offset
+     * @return
+     */
+    public static short addToSP(Registers regs, short sp, byte offset) {
+        short sum = 0;
+        sum = (short) (sp + offset);
+
+        // Setting flags
+        regs.clearZFlag();
+        regs.clearNFlag();
+
+        if ((((sp & 0xFFF) + (offset & 0xFFF)) & 0x1000) == 0x1000) {
+            regs.setHFlag();
+        } else {
+            regs.clearHFlag();
+        }
+
+        if ((((sp & 0xFFFF) + (offset & 0xFFFF)) & 0x10000) == 0x10000) {
+            regs.setCFlag();
+        } else {
+            regs.clearCFlag();
+        }
+
+        regs.setSP(sum);
+        return sum;
+    }
+    /**
+     * Increments val and changes flags. Does not store results, only returns them. Flags not affected.
      *
      * @param val 16bit value
      * @return val + 1
@@ -358,7 +391,9 @@ public class Commands {
      * @param reg an 8bit register to swap (8bit register, (HL))
      */
     public static byte swap(Registers regs, byte reg) {
-        byte result = (byte) ((reg << 4) | (reg >>> 4));
+        byte upperNibble = (byte) ((reg << 4) & 0xF0);
+        byte lowerNibble = (byte) ((reg >> 4) & 0x0F);
+        byte result = (byte) (upperNibble + lowerNibble);
         if (result == 0) {
             regs.setZFlag();
         } else {
@@ -371,6 +406,9 @@ public class Commands {
         return result;
     }
 
+    /**
+     * Converts a number with a decimal point into binary form
+     */
     public static void daa() {
 
     }

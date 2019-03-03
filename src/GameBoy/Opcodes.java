@@ -320,13 +320,13 @@ public class Opcodes {
          */
 
         // ADD TO HL
-        setOpCode(std_opcodes, "ADD HL,BC", 0x09, 8, (regs, mmu, args) -> regs.setHL(Commands.add(regs, regs.getHL(), regs.getBC())));
-        setOpCode(std_opcodes, "ADD HL,DE", 0x19, 8, (regs, mmu, args) -> regs.setHL(Commands.add(regs, regs.getHL(), regs.getDE())));
-        setOpCode(std_opcodes, "ADD HL,HL", 0x29, 8, (regs, mmu, args) -> regs.setHL(Commands.add(regs, regs.getHL(), regs.getHL())));
-        setOpCode(std_opcodes, "ADD HL,SP", 0x39, 8, (regs, mmu, args) -> regs.setHL(Commands.add(regs, regs.getHL(), regs.getSP())));
+        setOpCode(std_opcodes, "ADD HL,BC", 0x09, 8, (regs, mmu, args) -> regs.setHL(Commands.addShorts(regs, regs.getHL(), regs.getBC())));
+        setOpCode(std_opcodes, "ADD HL,DE", 0x19, 8, (regs, mmu, args) -> regs.setHL(Commands.addShorts(regs, regs.getHL(), regs.getDE())));
+        setOpCode(std_opcodes, "ADD HL,HL", 0x29, 8, (regs, mmu, args) -> regs.setHL(Commands.addShorts(regs, regs.getHL(), regs.getHL())));
+        setOpCode(std_opcodes, "ADD HL,SP", 0x39, 8, (regs, mmu, args) -> regs.setHL(Commands.addShorts(regs, regs.getHL(), regs.getSP())));
 
         // ADD TO STACK POINTER
-        setOpCode(std_opcodes, "ADD SP,n", 0xE8, 16, (regs, mmu, args) -> regs.setSP((short) (regs.getSP() + args[0])));
+        setOpCode(std_opcodes, "ADD SP,n", 0xE8, 16, (regs, mmu, args) -> Commands.addToSP(regs, regs.getSP(), args[0]));
 
         // INCREMENT REGISTER PAIR
         setOpCode(std_opcodes, "INC BC", 0x03, 8, (regs, mmu, args) -> regs.setBC((short) (regs.getBC() + 1)));
@@ -548,7 +548,7 @@ public class Opcodes {
         // Add n to current address and jump to it
         setOpCode(std_opcodes, "JR n", 0x18, 8, 1, (regs, mmu, args) -> Commands.jr(regs, args[0])); // Fix function
 
-//        // Conditional jump + add
+//        // Conditional jump + addShorts
         setOpCode(std_opcodes, "JR NZ, PC+n", 0x20, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, args[0], "NZ"));
         setOpCode(std_opcodes, "JR Z, PC+n", 0x28, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, args[0], "Z"));
         setOpCode(std_opcodes, "JR NC, PC+n", 0x30, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, args[0], "NC"));
