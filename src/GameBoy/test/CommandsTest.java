@@ -1,6 +1,7 @@
 package GameBoy.test;
 
 import GameBoy.Commands;
+import GameBoy.Interrupts;
 import GameBoy.MMU;
 import GameBoy.Registers;
 import org.junit.jupiter.api.BeforeAll;
@@ -338,58 +339,271 @@ class CommandsTest {
 
     @Test
     void cpl() {
+        regs.setA((byte) 0);
+        Commands.cpl(regs);
+        assertEquals((byte) 0xFF, regs.getA());
+
+        regs.setA((byte) 0x0F);
+        Commands.cpl(regs);
+        assertEquals((byte) 0xF0, regs.getA());
+
+        assertEquals(1, regs.getNFlag());
+        assertEquals(1, regs.getHFlag());
     }
 
     @Test
     void ccf() {
+        regs.clearCFlag();
+        Commands.ccf(regs);
+        assertEquals((byte) 0x01, regs.getCFlag());
+        assertEquals(0, regs.getNFlag());
+        assertEquals(0, regs.getHFlag());
+
+        Commands.ccf(regs);
+        assertEquals((byte) 0x0, regs.getCFlag());
+        assertEquals(0, regs.getNFlag());
+        assertEquals(0, regs.getHFlag());
     }
 
     @Test
     void rlc() {
+        regs.clearCFlag();
+        byte ret = Commands.rlc(regs, (byte) 0x0);
+        assertEquals(0, ret);
+        assertEquals(0, regs.getCFlag());
+        assertEquals(1, regs.getZFlag());
+        assertEquals(0, regs.getNFlag());
+        assertEquals(0, regs.getHFlag());
+
+        regs.setCFlag();
+        ret = Commands.rlc(regs, (byte) 0xAF);
+        assertEquals((byte) 0x5F, ret);
+        assertEquals(1, regs.getCFlag());
+        assertEquals(0, regs.getZFlag());
+
+        regs.clearCFlag();
+        ret = Commands.rlc(regs, (byte) 0x7E);
+        assertEquals((byte) 0xFC, ret);
+        assertEquals(0, regs.getCFlag());
+        assertEquals(0, regs.getZFlag());
     }
 
     @Test
     void rl() {
+        regs.clearCFlag();
+        byte ret = Commands.rl(regs, (byte) 0x0);
+        assertEquals(0, ret);
+        assertEquals(0, regs.getCFlag());
+        assertEquals(1, regs.getZFlag());
+        assertEquals(0, regs.getNFlag());
+        assertEquals(0, regs.getHFlag());
+
+        regs.clearCFlag();
+        ret = Commands.rl(regs, (byte) 0xAF);
+        assertEquals((byte) 0x5E, ret);
+        assertEquals(1, regs.getCFlag());
+        assertEquals(0, regs.getZFlag());
+
+        regs.setCFlag();
+        ret = Commands.rl(regs, (byte) 0x7E);
+        assertEquals((byte) 0xFD, ret);
+        assertEquals(0, regs.getCFlag());
+        assertEquals(0, regs.getZFlag());
     }
 
     @Test
     void rrc() {
+        regs.clearCFlag();
+        byte ret = Commands.rrc(regs, (byte) 0x0);
+        assertEquals(0, ret);
+        assertEquals(0, regs.getCFlag());
+        assertEquals(1, regs.getZFlag());
+        assertEquals(0, regs.getNFlag());
+        assertEquals(0, regs.getHFlag());
+
+        regs.clearCFlag();
+        ret = Commands.rrc(regs, (byte) 0xAF);
+        assertEquals((byte) 0xD7, ret);
+        assertEquals(1, regs.getCFlag());
+        assertEquals(0, regs.getZFlag());
+
+        regs.setCFlag();
+        ret = Commands.rrc(regs, (byte) 0x7E);
+        assertEquals((byte) 0x3F, ret);
+        assertEquals(0, regs.getCFlag());
+        assertEquals(0, regs.getZFlag());
     }
 
     @Test
     void rr() {
+        regs.clearCFlag();
+        byte ret = Commands.rr(regs, (byte) 0x0);
+        assertEquals(0, ret);
+        assertEquals(0, regs.getCFlag());
+        assertEquals(1, regs.getZFlag());
+        assertEquals(0, regs.getNFlag());
+        assertEquals(0, regs.getHFlag());
+
+        regs.clearCFlag();
+        ret = Commands.rr(regs, (byte) 0xAF);
+        assertEquals((byte) 0x57, ret);
+        assertEquals(1, regs.getCFlag());
+        assertEquals(0, regs.getZFlag());
+
+        regs.setCFlag();
+        ret = Commands.rr(regs, (byte) 0x7E);
+        assertEquals((byte) 0xBF, ret);
+        assertEquals(0, regs.getCFlag());
+        assertEquals(0, regs.getZFlag());
     }
 
     @Test
     void sla() {
+        regs.clearCFlag();
+        byte ret = Commands.sla(regs, (byte) 0x0);
+        assertEquals(0, ret);
+        assertEquals(0, regs.getCFlag());
+        assertEquals(1, regs.getZFlag());
+        assertEquals(0, regs.getNFlag());
+        assertEquals(0, regs.getHFlag());
+
+        regs.clearCFlag();
+        ret = Commands.sla(regs, (byte) 0xAF);
+        assertEquals((byte) 0x5E, ret);
+        assertEquals(1, regs.getCFlag());
+        assertEquals(0, regs.getZFlag());
+
+        regs.setCFlag();
+        ret = Commands.sla(regs, (byte) 0x7E);
+        assertEquals((byte) 0xFC, ret);
+        assertEquals(0, regs.getCFlag());
+        assertEquals(0, regs.getZFlag());
     }
 
     @Test
     void sra() {
+        regs.clearCFlag();
+        byte ret = Commands.sra(regs, (byte) 0x0);
+        assertEquals(0, ret);
+        assertEquals(0, regs.getCFlag());
+        assertEquals(1, regs.getZFlag());
+        assertEquals(0, regs.getNFlag());
+        assertEquals(0, regs.getHFlag());
+
+        regs.clearCFlag();
+        ret = Commands.sra(regs, (byte) 0xAF);
+        assertEquals((byte) 0xD7, ret);
+        assertEquals(1, regs.getCFlag());
+        assertEquals(0, regs.getZFlag());
+
+        regs.setCFlag();
+        ret = Commands.sra(regs, (byte) 0x7E);
+        assertEquals((byte) 0x3F, ret);
+        assertEquals(0, regs.getCFlag());
+        assertEquals(0, regs.getZFlag());
     }
 
     @Test
     void srl() {
+        regs.clearCFlag();
+        byte ret = Commands.srl(regs, (byte) 0x0);
+        assertEquals(0, ret);
+        assertEquals(0, regs.getCFlag());
+        assertEquals(1, regs.getZFlag());
+        assertEquals(0, regs.getNFlag());
+        assertEquals(0, regs.getHFlag());
+
+        regs.clearCFlag();
+        ret = Commands.srl(regs, (byte) 0xAF);
+        assertEquals((byte) 0x57, ret);
+        assertEquals(1, regs.getCFlag());
+        assertEquals(0, regs.getZFlag());
+
+        regs.setCFlag();
+        ret = Commands.srl(regs, (byte) 0x7E);
+        assertEquals((byte) 0x3F, ret);
+        assertEquals(0, regs.getCFlag());
+        assertEquals(0, regs.getZFlag());
     }
 
     @Test
     void jpIf() {
+        regs.setPC((short) 0x0);
+        regs.clearZFlag();
+        Commands.jpIf(regs, (short) 0xFFFF, "Z");
+        assertEquals((short) 0x0, regs.getPC());
+
+        regs.clearZFlag();
+        Commands.jpIf(regs, (short) 0x0100, "NZ");
+        assertEquals((short) 0x0100, regs.getPC());
+
+        regs.setZFlag();
+        Commands.jpIf(regs, (short) 0xFF00, "Z");
+        assertEquals((short) 0xFF00, regs.getPC());
+
+        regs.setZFlag();
+        Commands.jpIf(regs, (short) 0xA000, "NZ");
+        assertEquals((short) 0xFF00, regs.getPC());
     }
 
     @Test
     void jr() {
+        regs.setPC((short) 0x0);
+        Commands.jr(regs, (byte) 0x00);
+        assertEquals((short) 0x0, regs.getPC());
+
+        regs.setPC((short) 0xFFFE);
+        Commands.jr(regs, (byte) 0xFF);
+        assertEquals((short) 0xFFFD, regs.getPC());
+
+        regs.setPC((short) 0x78AC);
+        Commands.jr(regs, (byte) 0x11);
+        assertEquals((short) 0x78BD, regs.getPC());
     }
 
     @Test
     void jrif() {
+        regs.setPC((short) 0x0);
+        regs.clearZFlag();
+        Commands.jrIf(regs, (byte) 0x00, "Z");
+        assertEquals((short) 0x0, regs.getPC());
+
+        regs.clearZFlag();
+        Commands.jrIf(regs, (byte) 0x01, "NZ");
+        assertEquals((short) 0x01, regs.getPC());
+
+        regs.setZFlag();
+        regs.setPC((short) 0xFF00);
+        Commands.jrIf(regs, (byte) 0xFF, "Z");
+        assertEquals((short) 0xFEFF, regs.getPC());
+
+        regs.setZFlag();
+        Commands.jrIf(regs, (byte) 0xA000, "NZ");
+        assertEquals((short) 0xFEFF, regs.getPC());
     }
 
     @Test
     void call() {
+        regs.setPC((short) 0x0);
+        regs.setSP((short) 0xFFFE);
+        Commands.call(regs, mmu, (short) 0x00);
+        assertEquals((short) 0x0, regs.getPC());
+        assertEquals((short) 0xFFFC, regs.getSP());
+        assertEquals((byte) 0x00, mmu.getMemVal(0xFFFE));
+        assertEquals((byte) 0x00, mmu.getMemVal(0xFFFD));
+
+        regs.setPC((short) 0xA542);
+        regs.setSP((short) 0xFF13);
+        Commands.call(regs, mmu, (short) 0x1234);
+        assertEquals((short) 0x1234, regs.getPC());
+        assertEquals((short) 0xFF11, regs.getSP());
+        assertEquals((byte) 0xA5, mmu.getMemVal(0xFF12));
+        assertEquals((byte) 0x42, mmu.getMemVal(0xFF11));
     }
 
     @Test
     void callIf() {
+
     }
 
     @Test
@@ -409,10 +623,6 @@ class CommandsTest {
     }
 
     @Test
-    void nop() {
-    }
-
-    @Test
     void halt() {
     }
 
@@ -422,9 +632,11 @@ class CommandsTest {
 
     @Test
     void disableInterrupts() {
+        assertFalse(Interrupts.isMasterEnabled());
     }
 
     @Test
     void enableInterrupts() {
+        assertTrue(Interrupts.isMasterEnabled());
     }
 }
