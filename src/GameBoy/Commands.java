@@ -522,10 +522,10 @@ public class Commands {
      */
     public static byte rrc(Registers regs, byte value) {
         byte lsb = (byte) (value & 0x1);
-        byte shiftedByte = (byte) (value >>> 1);
+        byte shiftedByte = (byte) ((value >> 1) & 0x7F);
 
         // Put LSB into MSB and C Flag
-        shiftedByte += (byte) (lsb << 7);
+        shiftedByte |= (byte) (lsb << 7);
         if (lsb == 0) {
             regs.clearCFlag();
         } else {
@@ -555,7 +555,7 @@ public class Commands {
     public static byte rr(Registers regs, byte value) {
         byte lsb = (byte) (value & 0x1);
         byte cFlag = regs.getCFlag();
-        byte shiftedByte = (byte) (value >>> 1);
+        byte shiftedByte = (byte) ((value >> 1) & 0x7F);
 
         // Put LSB into MSB and C Flag
         shiftedByte += (byte) (cFlag << 7);
@@ -897,6 +897,7 @@ public class Commands {
      */
     public static void stop() {
         Scanner scanner = new Scanner(System.in);
+        System.out.println("Stopped... waiting for input.");
         scanner.nextLine();
     }
 
