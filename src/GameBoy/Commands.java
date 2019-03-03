@@ -409,6 +409,7 @@ public class Commands {
     /**
      * Converts a number with a decimal point into binary form
      */
+    // TODO DAA Function
     public static void daa() {
 
     }
@@ -432,9 +433,9 @@ public class Commands {
      */
     public static void ccf(Registers regs) {
         if (regs.getCFlag() == 1) {
-            regs.setCFlag();
-        } else {
             regs.clearCFlag();
+        } else {
+            regs.setCFlag();
         }
         regs.clearNFlag();
         regs.clearHFlag();
@@ -452,7 +453,7 @@ public class Commands {
      * @return The shifted value of reg. The C flag is set.
      */
     public static byte rlc(Registers regs, byte value) {
-        byte msb = (byte) (value >>> 7);
+        byte msb = (byte) ((value >> 7) & 0x1);
         byte shiftedByte = (byte) (value << 1);
 
         // Put MSB into LSB and C Flag
@@ -465,9 +466,9 @@ public class Commands {
 
         // ZFlag updates
         if (shiftedByte == 0) {
-            regs.clearZFlag();
-        } else {
             regs.setZFlag();
+        } else {
+            regs.clearZFlag();
         }
 
         regs.clearHFlag();
