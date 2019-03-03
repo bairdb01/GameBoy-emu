@@ -501,9 +501,9 @@ public class Commands {
 
         // Z Flag updates
         if (shiftedByte == 0) {
-            regs.clearZFlag();
-        } else {
             regs.setZFlag();
+        } else {
+            regs.clearZFlag();
         }
 
         regs.clearHFlag();
