@@ -12,7 +12,6 @@ import static GameBoy.Emulator.mmu;
  * Resolution of 160 x 144, with 144 visible scanlines and 8 invisible scanlines used during the V-Blank period.
  * The current scanline is stored in adr 0xFF44.
  * It takes 456 cpu clock cycles to draw one scanline
- * TODO Change Tile/Sprites to load only the needed row of it's bitmap, for better efficiency.
  */
 public class GPU {
     JFrame window = new JFrame("SwoleBoy");
@@ -343,7 +342,7 @@ public class GPU {
 
             // Load CHR_CODE
             int chrCode = mmu.getMemVal(tileDataAdr + blockNum) & 0xFF;
-            tile = new Tile(chrCode);
+            tile = new Tile(1, chrCode);
 
             // Check if CHR_CODE will be signed
             if (signed) {
@@ -352,10 +351,10 @@ public class GPU {
             int tileAdr = (tileMapAdr + chrCode * 16);
 
             // Load Bitmap from tile address
-            byte[] bitmap = new byte[16];  // 16 because 2 bytes create 1 row. 16/2 = 8 rows
-            for (int i = 0; i < 16; i++) {
-                bitmap[i] = mmu.getMemVal((tileAdr + i));
-            }
+            byte[] bitmap = new byte[2];  // 16 because 2 bytes create 1 row. 16/2 = 8 rows
+            int row = (curScanline % 8) * 2;
+            bitmap[0] = mmu.getMemVal((tileAdr + row));
+            bitmap[1] = mmu.getMemVal((tileAdr + row+1));
             tile.setBitmap(bitmap);
 
             // Tile is ready to be drawn in it's 8x8 location
@@ -392,14 +391,14 @@ public class GPU {
                 palette[i / 2] = (byte) (colourBits & 0x3);
             }
 
-            // Load Bitmap from sprite address and CHR_CODE
-            byte [] bitmap = new byte[height * 2];
+            // Load Bitmap row from sprite address and CHR_CODE
+            byte [] bitmap = new byte[2];
+            int row = (curScanline % height) * 2;   // Which row of the bitmap to load, 2 bytes per row
             int tileAdr = (0x8000 + chr_code * 16);
-            for (int i = 0; i < (2 * height); i++) { // Account of 8x8 or 8x16 sprites
-                bitmap[i] = mmu.getMemVal((tileAdr + i));
-            }
+            bitmap[0] = mmu.getMemVal((tileAdr + row));
+            bitmap[1] = mmu.getMemVal((tileAdr + row + 1));
 
-            Sprite sprite = new Sprite(height, y_coord, x_coord, chr_code, attributes);
+            Sprite sprite = new Sprite(1, y_coord, x_coord, chr_code, attributes);
             sprite.setBitmap(bitmap);
 
             // Draw sprite
@@ -424,6 +423,29 @@ public class GPU {
             }
             mainScreenPixels[row][col + i].colour = colour;
         }
+    }
+
+    /**
+     * Loads an entire sprite's bitmap
+     * @param chr_code
+     * @param height
+     * @return
+     */
+    public byte [] loadSpriteBitmap(int chr_code, int height) {
+        byte [] bitmap = new byte[height * 2];
+        int tileAdr = (0x8000 + chr_code * 16);
+        for (int i = 0; i < (2 * height); i++) { // Account of 8x8 or 8x16 sprites
+            bitmap[i] = mmu.getMemVal((tileAdr + i));
+        }
+        return bitmap;
+    }
+
+    public byte [] loadBgTile(int tileAdr) {
+        byte[] bitmap = new byte[16];  // 16 because 2 bytes create 1 row. 16/2 = 8 rows
+        for (int i = 0; i < 16; i++) {
+            bitmap[i] = mmu.getMemVal((tileAdr + i));
+        }
+        return bitmap;
     }
 
 }

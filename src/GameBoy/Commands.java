@@ -6,7 +6,7 @@ import java.util.Scanner;
  * Created on: 2018-12-23
  * Filename: Commands
  * Description: Operations for various opcodes. These may be broken down into ALU, Bit Operations, etc. in the future.
- * <p>
+ *
  * Flag decriptors: - means unaffected, 0/1 clears/sets the flag, and * means affected accordingly
  * TODO: Split this file up into smaller classes
  * TODO: Test subc, adc, PUSH, POP, swap, cpl, ccf, rotate and shift operations
@@ -877,7 +877,7 @@ public class Commands {
      * Does nothing. Used to skip CPU cycles.
      */
     public static void nop() {
-        return;
+
     }
 
     /**

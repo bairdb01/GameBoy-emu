@@ -2,18 +2,16 @@ package GameBoy;
 
 /**
  * Executes the GameBoy emulator
- * TODO: Priority 1: Load a GB ROM. ROM -> MMU
- * TODO: Audio sounds
- * TODO: Take screen data and draw to screen
- * TODO: Colour Palettes
- * TODO: Change all bytes/shorts to ints, to stop type casting ints.
+ * TODO: Audio
+ * TODO: Remaining opcodes (DAA, etc)
+ * TODO: Break up Commands.java into modular files (LD, ALU, etc).
  */
 public class Emulator {
     static GPU gpu = new GPU();
     static CPU cpu = new CPU();
     static MMU mmu = new MMU();    // memory management unit
     static Registers regs = new Registers();
-    static Debugger debugger = new Debugger(mmu, regs);
+//    static Debugger debugger = new Debugger(mmu, regs);
 
     public static void main(String[] args) {
         String filename = "tetris.gb";
@@ -38,7 +36,7 @@ public class Emulator {
      */
     private static void step() {
         int cycles = cpu.runNextOpCode();
-        if (debugger.isDisplayable()) debugger.draw();
+//        if (debugger.isDisplayable()) debugger.draw();
 
         cpu.clockCycles += cycles;
 

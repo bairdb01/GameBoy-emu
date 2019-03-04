@@ -251,6 +251,7 @@ public class MMU {
                 }
             } else if (adr == 0xFF46) {
                 // Direct Memory Access (DMA)
+                mem[0xFF46] = val;
                 DMATransfer(val);
             } else if (adr == 0xFFFF) {
                 interruptEnabled = val;

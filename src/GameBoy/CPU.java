@@ -7,8 +7,8 @@ import static GameBoy.Emulator.regs;
  * Author: Benjamin Baird
  * Created on: 2018-08-28
  * Filename: GameBoy.CPU
- * Description: An emulation of a GameBoy GameBoy.CPU
- * 8-bit GameBoy.CPU
+ * Description: An emulation of a GameBoy CPU
+ * 8-bit CPU
  * 8kb RAM
  * 8kb VRAM
  * Resolution 160x144
