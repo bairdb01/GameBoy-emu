@@ -38,7 +38,6 @@ public class Tile {
                 bitmap[i / 2][j] = ((data[i + 1] >> (j - 1)) & 0b10); // Set upper bit of colour
                 bitmap[i / 2][j] += ((data[i] >> j) & 0b01);    // Set lower bit of colour
             }
-
         }
     }
 

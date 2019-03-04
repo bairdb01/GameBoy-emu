@@ -555,7 +555,7 @@ public class Commands {
     public static byte rr(Registers regs, byte value) {
         byte lsb = (byte) (value & 0x1);
         byte cFlag = regs.getCFlag();
-        byte shiftedByte = (byte) ((value >> 1) & 0x7F);
+        byte shiftedByte = (byte) ((value & 0xFF) >>> 1);
 
         // Put LSB into MSB and C Flag
         shiftedByte += (byte) (cFlag << 7);
@@ -590,7 +590,7 @@ public class Commands {
         byte shiftedByte = (byte) (value << 1);
 
         // Shift MSB into C Flag
-        if (shiftedByte == 0) {
+        if (msb == 0) {
             regs.clearCFlag();
         } else {
             regs.setCFlag();
@@ -612,8 +612,8 @@ public class Commands {
      * Shift right arithmetically. Shift bits right. (Signed shift) Duplicate MSB before shift and place into MSB after shift. LSB shifted into C flag.
      * Flags: Z=*, N=0, H=0, C=*
      *
-     * @param regs
-     * @param value
+     * @param regs Registers containing the flags
+     * @param value Value to shift
      * @return value shifted right. Flags set.
      */
     public static byte sra(Registers regs, byte value) {
@@ -621,17 +621,17 @@ public class Commands {
         byte shiftedByte = (byte) (value >> 1);
 
         // Shift LSB into C Flag
-        if (shiftedByte == 0) {
-            regs.setCFlag();
-        } else {
+        if (lsb == 0) {
             regs.clearCFlag();
+        } else {
+            regs.setCFlag();
         }
 
         // Setting remaining flags
         if (shiftedByte == 0) {
-            regs.clearZFlag();
-        } else {
             regs.setZFlag();
+        } else {
+            regs.clearZFlag();
         }
         regs.clearHFlag();
         regs.clearNFlag();
@@ -649,7 +649,7 @@ public class Commands {
      */
     public static byte srl(Registers regs, byte value) {
         byte lsb = (byte) (value & 0x1);
-        byte shiftedByte = (byte) (value >>> 1);
+        byte shiftedByte = (byte) ((value & 0xFF) >>> 1);
 
         // Shift LSB into C Flag
         if (lsb == 0) {
@@ -660,9 +660,9 @@ public class Commands {
 
         // Setting remaining flags
         if (shiftedByte == 0) {
-            regs.clearZFlag();
-        } else {
             regs.setZFlag();
+        } else {
+            regs.clearZFlag();
         }
         regs.clearHFlag();
         regs.clearNFlag();
@@ -727,26 +727,26 @@ public class Commands {
      * @param offset        8bit number
      * @param flagCondition String to choose a condition to be met
      */
-    public static void jrif(Registers regs, byte offset, String flagCondition) {
+    public static void jrIf(Registers regs, byte offset, String flagCondition) {
         switch (flagCondition) {
             case ("Z"):
                 if (regs.getZFlag() == 1) {
-                    regs.setPC((short) (regs.getPC() + offset));
+                    jr(regs, offset);
                 }
                 break;
             case ("NZ"):
                 if (regs.getZFlag() == 0) {
-                    regs.setPC((short) (regs.getPC() + offset));
+                    jr(regs, offset);
                 }
                 break;
             case ("C"):
                 if (regs.getCFlag() == 1) {
-                    regs.setPC((short) (regs.getPC() + offset));
+                    jr(regs, offset);
                 }
                 break;
             case ("NC"):
                 if (regs.getCFlag() == 0) {
-                    regs.setPC((short) (regs.getPC() + offset));
+                    jr(regs, offset);
                 }
                 break;
         }

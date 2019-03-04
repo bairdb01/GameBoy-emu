@@ -549,10 +549,10 @@ public class Opcodes {
         setOpCode(std_opcodes, "JR n", 0x18, 8, 1, (regs, mmu, args) -> Commands.jr(regs, args[0])); // Fix function
 
 //        // Conditional jump + addShorts
-        setOpCode(std_opcodes, "JR NZ, PC+n", 0x20, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, args[0], "NZ"));
-        setOpCode(std_opcodes, "JR Z, PC+n", 0x28, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, args[0], "Z"));
-        setOpCode(std_opcodes, "JR NC, PC+n", 0x30, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, args[0], "NC"));
-        setOpCode(std_opcodes, "JR C,PC+n", 0x38, 8, 1, (regs, mmu, args) -> Commands.jrif(regs, args[0], "C"));
+        setOpCode(std_opcodes, "JR NZ, PC+n", 0x20, 8, 1, (regs, mmu, args) -> Commands.jrIf(regs, args[0], "NZ"));
+        setOpCode(std_opcodes, "JR Z, PC+n", 0x28, 8, 1, (regs, mmu, args) -> Commands.jrIf(regs, args[0], "Z"));
+        setOpCode(std_opcodes, "JR NC, PC+n", 0x30, 8, 1, (regs, mmu, args) -> Commands.jrIf(regs, args[0], "NC"));
+        setOpCode(std_opcodes, "JR C,PC+n", 0x38, 8, 1, (regs, mmu, args) -> Commands.jrIf(regs, args[0], "C"));
 
 
         /*

@@ -25,7 +25,7 @@ public class Registers {
     private byte h_pos = 5; // Half-carry
     private byte c_pos = 4; // Carry
 
-    Registers() {
+    public Registers() {
         // Register values after a real GameBoy boots through boot ROM
 //        setAF((short) 0x01B0);
 //        setBC((short) 0x0013);
@@ -35,66 +35,66 @@ public class Registers {
         setBC((short) 0);
         setDE((short) 0);
         setHL((short) (0));
-        PC = 0x0000;
+//        PC = 0x0000;
     }
 
     /*
      * 8 Bit Getters/setters
      */
 
-    byte getA() {
+    public byte getA() {
         return this.registers[A];
     }
 
-    void setA(byte a) {
+    public void setA(byte a) {
         this.registers[A] = a;
     }
 
-    byte getB() {
+    public byte getB() {
         return this.registers[B];
     }
 
-    void setB(byte b) {
+    public void setB(byte b) {
         this.registers[B] = b;
     }
 
-    byte getC() {
+    public byte getC() {
         return this.registers[C];
     }
 
-    void setC(byte c) {
+    public void setC(byte c) {
         this.registers[C] = c;
     }
 
-    byte getD() {
+    public byte getD() {
         return registers[D];
     }
 
-    void setD(byte d) {
+    public void setD(byte d) {
         this.registers[D] = d;
     }
 
-    byte getE() {
+    public byte getE() {
         return registers[E];
     }
 
-    void setE(byte e) {
+    public void setE(byte e) {
         this.registers[E] = e;
     }
 
-    byte getH() {
+    public byte getH() {
         return registers[H];
     }
 
-    void setH(byte h) {
+    public void setH(byte h) {
         this.registers[H] = h;
     }
 
-    byte getL() {
+    public byte getL() {
         return registers[L];
     }
 
-    void setL(byte l) {
+    public void setL(byte l) {
         this.registers[L] = l;
     }
 
@@ -103,119 +103,116 @@ public class Registers {
      * 16-bit Getters/Setters
      */
 
-    void setRegPair(int upperReg, int lowerReg, short val) {
+    public void setRegPair(int upperReg, int lowerReg, short val) {
         registers[0xFF & lowerReg] = (byte) (val); // Cast lower half to a byte to remove upper bits
         registers[0xFF & upperReg] = (byte) (val >> 8); // Shift upper bits to lower half and fill upper half with 0's.
     }
 
-    short getRegPair(int upperReg, int lowerReg) {
+    public short getRegPair(int upperReg, int lowerReg) {
         return BitUtils.mergeBytes(registers[upperReg & 0xFF], registers[lowerReg & 0xFF]);
     }
 
-
-    short getSP() {
+    public short getSP() {
         return SP;
     }
 
-    void setSP(short sp) {
+    public void setSP(short sp) {
         this.SP = sp;
     }
 
-    short getPC() {
+    public short getPC() {
         return PC;
     }
 
-    void setPC(short pc) {
+    public void setPC(short pc) {
         this.PC = pc;
     }
 
-    short getAF() {
+    public short getAF() {
         return getRegPair(0, 5);
     }
 
-    void setAF(short val) {
+    public void setAF(short val) {
         setRegPair(A, F, val);
     }
 
-    short getBC() {
+    public short getBC() {
         return getRegPair(B, C);
     }
 
-    void setBC(short val) {
+    public void setBC(short val) {
         setRegPair(B, C, val);
     }
 
-    short getDE() {
+    public short getDE() {
         return getRegPair(D, E);
     }
 
-    void setDE(short val) {
+    public void setDE(short val) {
         setRegPair(D, E, val);
     }
 
-    short getHL() {
+    public short getHL() {
         return getRegPair(H, L);
     }
 
-    void setHL(short val) {
+    public void setHL(short val) {
         setRegPair(H, L, val);
     }
-
 
     /*
      * Flag set/clear methods
      */
 
-    void setZFlag() {
+    public void setZFlag() {
         registers[F] = BitUtils.setBit(registers[F], z_pos);
     }
 
-    void setNFlag() {
+    public void setNFlag() {
         registers[F] = BitUtils.setBit(registers[F], n_pos);
     }
 
-    void setHFlag() {
+    public void setHFlag() {
         registers[F] = BitUtils.setBit(registers[F], h_pos);
     }
 
-    void setCFlag() {
+    public void setCFlag() {
         registers[F] = BitUtils.setBit(registers[F], c_pos);
     }
 
-
-    byte getZFlag() {
+    public byte getZFlag() {
         return (byte) ((this.registers[F] >> this.z_pos) & 0x1);
     }
 
-    byte getNFlag() {
+    public byte getNFlag() {
         return (byte) ((this.registers[F] >> this.n_pos) & 0x1);
     }
 
-    byte getCFlag() {
+    public byte getCFlag() {
         return (byte) ((this.registers[F] >> this.c_pos) & 0x1);
     }
 
-    byte getHFlag() {
+    public byte getHFlag() {
         return (byte) ((this.registers[F] >> this.h_pos) & 0x1);
     }
 
-    void clearZFlag() {
+    public void clearZFlag() {
         registers[F] = BitUtils.clearBit(registers[F], z_pos);
     }
 
-    void clearNFlag() {
+    public void clearNFlag() {
         registers[F] = BitUtils.clearBit(registers[F], n_pos);
     }
 
-    void clearHFlag() {
+    public void clearHFlag() {
         registers[F] = BitUtils.clearBit(registers[F], h_pos);
     }
 
-    void clearCFlag() {
+    public void clearCFlag() {
         registers[F] = BitUtils.clearBit(registers[F], c_pos);
     }
 
-    void incPC() {
+    public void incPC() {
         short oldPC = this.PC;
         this.PC += 1;
         if (oldPC > this.PC) {

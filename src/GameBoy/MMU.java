@@ -13,7 +13,7 @@ import java.util.Random;
  * Filename: MMU
  * Description: Holds memory and methods required by the opcodes. Compatible with MBC1 and MBC2.
  * TODO: Handle read only and write only memory addresses
- * TODO: Change cartridge from storing all of it in memory to being a file pointer and loading in only the needed data
+ * TODO: Verify ROM1 - n is being switched. (HandleBanking() testing)
  */
 public class MMU {
 
@@ -74,54 +74,54 @@ public class MMU {
 
 
     public MMU() {
-        try {
-            RandomAccessFile fp = new RandomAccessFile("res/DMG_ROM.bin", "r");
-            // First 16k is always stored in memory $0000 - $3FFF after booting
-            byte b;
-            for (int i = 0; i < 0xFF; i++) {
-                b = fp.readByte();
-                mem[i] = b;
-            }
-        } catch (EOFException eof) {
-            System.err.println("End of file reached before loading home bank.");
-        } catch (IOException ioe) {
-            System.err.println("Error reading file");
-        }
+//        try {
+//            RandomAccessFile fp = new RandomAccessFile("res/DMG_ROM.bin", "r");
+//            // First 16k is always stored in memory $0000 - $3FFF after booting
+//            byte b;
+//            for (int i = 0; i < 0xFF; i++) {
+//                b = fp.readByte();
+//                mem[i] = b;
+//            }
+//        } catch (EOFException eof) {
+//            System.err.println("End of file reached before loading home bank.");
+//        } catch (IOException ioe) {
+//            System.err.println("Error reading file");
+//        }
 
-//        // Setting up registers post boot up sequence
-//        setMemVal(0xFF05, (byte) 0);
-//        setMemVal(0xFF06, (byte) 0);
-//        setMemVal(0xFF07, (byte) 0);
-//        setMemVal(0xFF10, (byte) 0x80);
-//        setMemVal(0xFF11, (byte) 0xBF);
-//        setMemVal(0xFF12, (byte) 0xF3);
-//        setMemVal(0xFF14, (byte) 0xBF);
-//        setMemVal(0xFF16, (byte) 0x3F);
-//        setMemVal(0xFF17, (byte) 0x00);
-//        setMemVal(0xFF19, (byte) 0xBF);
-//        setMemVal(0xFF1A, (byte) 0x7F);
-//        setMemVal(0xFF1B, (byte) 0xFF);
-//        setMemVal(0xFF1C, (byte) 0x9F);
-//        setMemVal(0xFF1E, (byte) 0xBF);
-//        setMemVal(0xFF20, (byte) 0xFF);
-//        setMemVal(0xFF21, (byte) 0x00);
-//        setMemVal(0xFF22, (byte) 0x00);
-//        setMemVal(0xFF23, (byte) 0xBF);
-//        setMemVal(0xFF24, (byte) 0x77);
-//        setMemVal(0xFF25, (byte) 0xF3);
-//        setMemVal(0xFF26, (byte) 0xF1);
-//        setMemVal(0xFF26, (byte) 0xF1);
-//        setMemVal(0xFF40, (byte) 0x91);
-//        setMemVal(0xFF41, (byte) 0x85);
-//        setMemVal(0xFF42, (byte) 0x00);
-//        setMemVal(0xFF43, (byte) 0x00);
-//        setMemVal(0xFF45, (byte) 0x00);
-//        setMemVal(0xFF47, (byte) 0xFC);
-//        setMemVal(0xFF48, (byte) 0xFF);
-//        setMemVal(0xFF49, (byte) 0xFF);
-//        setMemVal(0xFF4A, (byte) 0x00);
-//        setMemVal(0xFF4B, (byte) 0x00);
-//        setMemVal(0xFFFF, (byte) 0x00);
+        // Setting up registers post boot up sequence
+        setMemVal(0xFF05, (byte) 0);
+        setMemVal(0xFF06, (byte) 0);
+        setMemVal(0xFF07, (byte) 0);
+        setMemVal(0xFF10, (byte) 0x80);
+        setMemVal(0xFF11, (byte) 0xBF);
+        setMemVal(0xFF12, (byte) 0xF3);
+        setMemVal(0xFF14, (byte) 0xBF);
+        setMemVal(0xFF16, (byte) 0x3F);
+        setMemVal(0xFF17, (byte) 0x00);
+        setMemVal(0xFF19, (byte) 0xBF);
+        setMemVal(0xFF1A, (byte) 0x7F);
+        setMemVal(0xFF1B, (byte) 0xFF);
+        setMemVal(0xFF1C, (byte) 0x9F);
+        setMemVal(0xFF1E, (byte) 0xBF);
+        setMemVal(0xFF20, (byte) 0xFF);
+        setMemVal(0xFF21, (byte) 0x00);
+        setMemVal(0xFF22, (byte) 0x00);
+        setMemVal(0xFF23, (byte) 0xBF);
+        setMemVal(0xFF24, (byte) 0x77);
+        setMemVal(0xFF25, (byte) 0xF3);
+        setMemVal(0xFF26, (byte) 0xF1);
+        setMemVal(0xFF26, (byte) 0xF1);
+        setMemVal(0xFF40, (byte) 0x91);
+        setMemVal(0xFF41, (byte) 0x85);
+        setMemVal(0xFF42, (byte) 0x00);
+        setMemVal(0xFF43, (byte) 0x00);
+        setMemVal(0xFF45, (byte) 0x00);
+        setMemVal(0xFF47, (byte) 0xFC);
+        setMemVal(0xFF48, (byte) 0xFF);
+        setMemVal(0xFF49, (byte) 0xFF);
+        setMemVal(0xFF4A, (byte) 0x00);
+        setMemVal(0xFF4B, (byte) 0x00);
+        setMemVal(0xFFFF, (byte) 0x00);
     }
 
     /**
@@ -380,10 +380,10 @@ public class MMU {
      * @param val 16bit value to store
      */
     public void setMemVal(int adr, short val) {
-        byte upperByte = (byte) ((val >> 8) & 0xFF);
+        byte upperByte = (byte) ((val & 0xFF00) >> 8);
         byte lowerByte = (byte) (val & 0xFF);
-        setMemVal(adr - 1, lowerByte);
-        setMemVal(adr, upperByte);
+        setMemVal(adr & 0xFFFF, upperByte);
+        setMemVal((adr - 1) & 0xFFFF, lowerByte);
     }
 
     /**
@@ -470,6 +470,7 @@ public class MMU {
         // First 16k is always stored in memory $0000 - $3FFF after booting
         byte b;
         try {
+            fp.seek(0x100);
             for (int i = 0x100; i < 0x4000; i++) {
                 b = fp.readByte();
                 mem[i] = b;
@@ -760,15 +761,3 @@ public class MMU {
         return sb.toString();
     }
 }
-//     *$0000-$7FFF stores pages from a GameBoy cartridge
-//             *($0000-$3FFF)first 16k bank of cartridge(HOME BANK).Is always accessible here.
-//             *($0100)Stores the games HEADER
-//             *$8000-$9FFF is video RAM.($8000-97FF is for Character Data bank 0+1,split evenly)($9800-$9FFF is for background(BG)data)
-//             *$A000-$BFFF is cartridge/external RAM,if a cartridge HAS any RAM on it.NULL and VOID if no RAM on cartridge.
-//             *$C000-$DFFF is internal work RAM(WRAM)for most runtime variables.Other variables will be saved on the cartridge's RAM
-//             *$E000-$FDFF specified to copy contents of $C000-$DDFF,but DO NOT USE FOR ANYTHING.
-//             *$FE00-$FE9F for object attribute memory(Sprite RAM)(40sprites max.)Two modes:8x8 and 8x16,these modes will apply to ALL sprites.
-//             *$FEA0-$FEFF is unusable address space.
-//             *$FF00-$FFFE is the ZERO page.Lower 64bytes is memory-mapped I/O.Upper 63bytes is High RAM(HRAM).
-//             *$FFFF is a single memory-mapped I/O register.
-//             */

@@ -30,9 +30,6 @@ public class CPU {
     final int maxCycles = 69905;    // 1 frame per second, aim for 60fps
 
 
-
-
-
     /**
      * Executes the next opcode
      * @return The number of cycles the opcode took.
@@ -58,10 +55,10 @@ public class CPU {
             regs.incPC();
         }
 
-        if ((regs.getPC() & 0xFFFF) == 0x0056) {
-            System.out.print("");
-            debug = true;
-        }
+//        if ((regs.getPC() & 0xFFFF) == 0x0221) {
+//            System.out.print("");
+//            debug = true;
+//        }
 
         if (debug) {
             System.out.print("---\n| Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug print out
@@ -79,5 +76,6 @@ public class CPU {
         // Execute Instruction
         return opcodes.execute(opcode, regs, mmu, args);
     }
-    boolean debug = false;
+
+    boolean debug = true;
 }

@@ -12,6 +12,7 @@ import static GameBoy.Emulator.mmu;
  * Resolution of 160 x 144, with 144 visible scanlines and 8 invisible scanlines used during the V-Blank period.
  * The current scanline is stored in adr 0xFF44.
  * It takes 456 cpu clock cycles to draw one scanline
+ * TODO Change Tile/Sprites to load only the needed row of it's bitmap, for better efficiency.
  */
 public class GPU {
     JFrame window = new JFrame("SwoleBoy");
@@ -98,7 +99,7 @@ public class GPU {
     public GPU() {
         window.getContentPane().add(screen);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setSize(200, 200);
+        window.setSize(160, 144);
         window.setVisible(true);
 
         for (int i = 0; i < 144; i++) {
@@ -369,6 +370,8 @@ public class GPU {
      */
     public void renderSprites(byte lcdControl) {
         int height = BitUtils.testBit(lcdControl, 2)? 16 : 8;   // LCDC Bit 2 - OBJ (Sprite) Size (0=8x8, 1=8x16)
+        byte curScanline = mmu.getMemVal(this.ly);
+
         for (int spriteNumber = 0; spriteNumber < 40; spriteNumber++) {
             // All 40 sprites are stored at 0xFE00 to 0xFE9F and consist of 4 bytes
             int spriteAdr = 0xFE00 + (spriteNumber * 4);
@@ -378,7 +381,7 @@ public class GPU {
             byte x_coord = mmu.getMemVal((spriteAdr + 1));                           // Byte 2: LCD x_coordinate
             byte chr_code = (byte) ((mmu.getMemVal((spriteAdr + 2)) >> 1) << 1);    // Byte 3: CHR_CODE or tile code. Odd CHR_CODES get rounded down. 1->0. 3->2.
             byte attributes = mmu.getMemVal((spriteAdr + 3));                        // Byte 4: Attribute flag - Palette, Horizontal/Vertical Flip Flag, and Priority
-            int paletteSelection = (BitUtils.testBit(attributes, 4)) ? this.obp0 : this.obp1;
+            int paletteSelection = (BitUtils.testBit(attributes, 4)) ? this.obp1 : this.obp0;
 
             // Grab the colour palette
             byte objPalette = mmu.getMemVal(paletteSelection);
@@ -400,23 +403,26 @@ public class GPU {
             sprite.setBitmap(bitmap);
 
             // Draw sprite
-            drawTile(sprite, y_coord, x_coord, palette, true);
+            if (y_coord <= curScanline && (y_coord + height) > curScanline) {
+                drawTile(sprite, curScanline, x_coord, palette, true);
+            }
         }
     }
 
     /**
-     * Draws a tile to the LCD's current scanline.
-     * @param t The tile to draw.
-     * @param scanlineY The current scanline we are drawing (0-143)
+     * Draws a tile to specified row.
+     *
+     * @param t The tile to draw a row from.
+     * @param row The row to draw to
      * @param col The position of the tile within the row.
      */
-    public void drawTile(Tile t, int scanlineY, int col, byte[] palette, boolean isSprite) {
+    public void drawTile(Tile t, int row, int col, byte[] palette, boolean isSprite) {
         for (int i = 0; i < 8; i++) {
-            byte colour = palette[t.getPixel(scanlineY % 8, i)];
+            byte colour = palette[t.getPixel(row % t.height, i)];
             if (isSprite && colour == 0) {
                 continue;
             }
-            mainScreenPixels[scanlineY][col + i].colour = colour;
+            mainScreenPixels[row][col + i].colour = colour;
         }
     }
 
