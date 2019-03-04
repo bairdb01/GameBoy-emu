@@ -603,23 +603,111 @@ class CommandsTest {
 
     @Test
     void callIf() {
+        regs.setPC((short) 0x0);
+        regs.setSP((short) 0xFFFE);
+        regs.clearZFlag();
+        Commands.callIf(regs, mmu, (short) 0xFFFF, "Z");
+        assertEquals((short) 0x0, regs.getPC());
+        assertEquals((short) 0xFFFE, regs.getSP());
 
+        regs.setPC((short) 0x4321);
+        regs.setSP((short) 0xFF13);
+        regs.clearZFlag();
+        Commands.callIf(regs, mmu, (short) 0x1234, "NZ");
+        assertEquals((short) 0x1234, regs.getPC());
+        assertEquals((short) 0xFF11, regs.getSP());
+        assertEquals((byte) 0x43, mmu.getMemVal(0xFF12));
+        assertEquals((byte) 0x21, mmu.getMemVal(0xFF11));
+
+        regs.setPC((short) 0xABCD);
+        regs.setSP((short) 0xFF13);
+        regs.setZFlag();
+        Commands.callIf(regs, mmu, (short) 0xFFFF, "Z");
+        assertEquals((short) 0xFFFF, regs.getPC());
+        assertEquals((short) 0xFF11, regs.getSP());
+        assertEquals((byte) 0xAB, mmu.getMemVal(0xFF12));
+        assertEquals((byte) 0xCD, mmu.getMemVal(0xFF11));
+
+        regs.setPC((short) 0x4321);
+        regs.setSP((short) 0xFF13);
+        regs.setZFlag();
+        Commands.callIf(regs, mmu, (short) 0x1234, "NZ");
+        assertEquals((short) 0x4321, regs.getPC());
+        assertEquals((short) 0xFF13, regs.getSP());
+
+
+        // Test C flag cc
+        regs.setPC((short) 0x0);
+        regs.setSP((short) 0xFFFE);
+        regs.clearCFlag();
+        Commands.callIf(regs, mmu, (short) 0xFFFF, "C");
+        assertEquals((short) 0x0, regs.getPC());
+        assertEquals((short) 0xFFFE, regs.getSP());
+
+        regs.setPC((short) 0x4321);
+        regs.setSP((short) 0xFF13);
+        regs.clearCFlag();
+        Commands.callIf(regs, mmu, (short) 0x1234, "NC");
+        assertEquals((short) 0x1234, regs.getPC());
+        assertEquals((short) 0xFF11, regs.getSP());
+        assertEquals((byte) 0x43, mmu.getMemVal(0xFF12));
+        assertEquals((byte) 0x21, mmu.getMemVal(0xFF11));
+
+        regs.setPC((short) 0xABCD);
+        regs.setSP((short) 0xFF13);
+        regs.setCFlag();
+        Commands.callIf(regs, mmu, (short) 0xFFFF, "C");
+        assertEquals((short) 0xFFFF, regs.getPC());
+        assertEquals((short) 0xFF11, regs.getSP());
+        assertEquals((byte) 0xAB, mmu.getMemVal(0xFF12));
+        assertEquals((byte) 0xCD, mmu.getMemVal(0xFF11));
+
+        regs.setPC((short) 0x4321);
+        regs.setSP((short) 0xFF13);
+        regs.setCFlag();
+        Commands.callIf(regs, mmu, (short) 0x1234, "NC");
+        assertEquals((short) 0x4321, regs.getPC());
+        assertEquals((short) 0xFF13, regs.getSP());
     }
 
     @Test
     void restart() {
+        regs.setPC((short) 0x1234);
+        regs.setSP((short) 0xFFFC);
+        Commands.restart(regs, mmu, (byte) 0x7E);
+        assertEquals((short) 0x7E, regs.getPC());
+        assertEquals((short) 0xFFFA, regs.getSP());
     }
 
     @Test
     void ret() {
+        // pop adr off stack and store in pc
+        regs.setPC((short) 0x0000);
+        regs.setSP((short) 0xFFA0);
+        mmu.setMemVal(0xFFA0, (byte) 0xAC);
+        mmu.setMemVal(0xFFA1, (byte) 0xBD);
+        Commands.ret(regs, mmu);
+        assertEquals((short) 0xBDAC, regs.getPC());
+        assertEquals((short) 0xFFA2, regs.getSP());
+
     }
 
     @Test
     void retIf() {
+
     }
 
     @Test
     void testBit() {
+        Commands.testBit(regs, (byte) 0x84, (byte) 0);
+        assertEquals(1, regs.getZFlag());
+        assertEquals(0, regs.getNFlag());
+        assertEquals(1, regs.getHFlag());
+
+        Commands.testBit(regs, (byte) 0xFF, (byte) 7);
+        assertEquals(0, regs.getZFlag());
+        assertEquals(0, regs.getNFlag());
+        assertEquals(1, regs.getHFlag());
     }
 
     @Test
