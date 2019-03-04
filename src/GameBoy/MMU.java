@@ -74,54 +74,54 @@ public class MMU {
 
 
     public MMU() {
-//        try {
-//            RandomAccessFile fp = new RandomAccessFile("res/DMG_ROM.bin", "r");
-//            // First 16k is always stored in memory $0000 - $3FFF after booting
-//            byte b;
-//            for (int i = 0; i < 0xFF; i++) {
-//                b = fp.readByte();
-//                mem[i] = b;
-//            }
-//        } catch (EOFException eof) {
-//            System.err.println("End of file reached before loading home bank.");
-//        } catch (IOException ioe) {
-//            System.err.println("Error reading file");
-//        }
+        try {
+            RandomAccessFile fp = new RandomAccessFile("res/DMG_ROM.bin", "r");
+            // First 16k is always stored in memory $0000 - $3FFF after booting
+            byte b;
+            for (int i = 0; i < 0xFF; i++) {
+                b = fp.readByte();
+                mem[i] = b;
+            }
+        } catch (EOFException eof) {
+            System.err.println("End of file reached before loading home bank.");
+        } catch (IOException ioe) {
+            System.err.println("Error reading file");
+        }
 
         // Setting up registers post boot up sequence
-        setMemVal(0xFF05, (byte) 0);
-        setMemVal(0xFF06, (byte) 0);
-        setMemVal(0xFF07, (byte) 0);
-        setMemVal(0xFF10, (byte) 0x80);
-        setMemVal(0xFF11, (byte) 0xBF);
-        setMemVal(0xFF12, (byte) 0xF3);
-        setMemVal(0xFF14, (byte) 0xBF);
-        setMemVal(0xFF16, (byte) 0x3F);
-        setMemVal(0xFF17, (byte) 0x00);
-        setMemVal(0xFF19, (byte) 0xBF);
-        setMemVal(0xFF1A, (byte) 0x7F);
-        setMemVal(0xFF1B, (byte) 0xFF);
-        setMemVal(0xFF1C, (byte) 0x9F);
-        setMemVal(0xFF1E, (byte) 0xBF);
-        setMemVal(0xFF20, (byte) 0xFF);
-        setMemVal(0xFF21, (byte) 0x00);
-        setMemVal(0xFF22, (byte) 0x00);
-        setMemVal(0xFF23, (byte) 0xBF);
-        setMemVal(0xFF24, (byte) 0x77);
-        setMemVal(0xFF25, (byte) 0xF3);
-        setMemVal(0xFF26, (byte) 0xF1);
-        setMemVal(0xFF26, (byte) 0xF1);
-        setMemVal(0xFF40, (byte) 0x91);
-        setMemVal(0xFF41, (byte) 0x85);
-        setMemVal(0xFF42, (byte) 0x00);
-        setMemVal(0xFF43, (byte) 0x00);
-        setMemVal(0xFF45, (byte) 0x00);
-        setMemVal(0xFF47, (byte) 0xFC);
-        setMemVal(0xFF48, (byte) 0xFF);
-        setMemVal(0xFF49, (byte) 0xFF);
-        setMemVal(0xFF4A, (byte) 0x00);
-        setMemVal(0xFF4B, (byte) 0x00);
-        setMemVal(0xFFFF, (byte) 0x00);
+//        setMemVal(0xFF05, (byte) 0);
+//        setMemVal(0xFF06, (byte) 0);
+//        setMemVal(0xFF07, (byte) 0);
+//        setMemVal(0xFF10, (byte) 0x80);
+//        setMemVal(0xFF11, (byte) 0xBF);
+//        setMemVal(0xFF12, (byte) 0xF3);
+//        setMemVal(0xFF14, (byte) 0xBF);
+//        setMemVal(0xFF16, (byte) 0x3F);
+//        setMemVal(0xFF17, (byte) 0x00);
+//        setMemVal(0xFF19, (byte) 0xBF);
+//        setMemVal(0xFF1A, (byte) 0x7F);
+//        setMemVal(0xFF1B, (byte) 0xFF);
+//        setMemVal(0xFF1C, (byte) 0x9F);
+//        setMemVal(0xFF1E, (byte) 0xBF);
+//        setMemVal(0xFF20, (byte) 0xFF);
+//        setMemVal(0xFF21, (byte) 0x00);
+//        setMemVal(0xFF22, (byte) 0x00);
+//        setMemVal(0xFF23, (byte) 0xBF);
+//        setMemVal(0xFF24, (byte) 0x77);
+//        setMemVal(0xFF25, (byte) 0xF3);
+//        setMemVal(0xFF26, (byte) 0xF1);
+//        setMemVal(0xFF26, (byte) 0xF1);
+//        setMemVal(0xFF40, (byte) 0x91);
+//        setMemVal(0xFF41, (byte) 0x85);
+//        setMemVal(0xFF42, (byte) 0x00);
+//        setMemVal(0xFF43, (byte) 0x00);
+//        setMemVal(0xFF45, (byte) 0x00);
+//        setMemVal(0xFF47, (byte) 0xFC);
+//        setMemVal(0xFF48, (byte) 0xFF);
+//        setMemVal(0xFF49, (byte) 0xFF);
+//        setMemVal(0xFF4A, (byte) 0x00);
+//        setMemVal(0xFF4B, (byte) 0x00);
+//        setMemVal(0xFFFF, (byte) 0x00);
     }
 
     /**
@@ -236,6 +236,7 @@ public class MMU {
      * @param val 8bit value to store
      */
     public void setMemVal(int adr, byte val) {
+        adr &= 0xFFFF;
         if (adr < 0x8000) {
             handleBanking(adr, val);
         } else if ((adr >= 0xA000 && adr < 0xC000)) {
