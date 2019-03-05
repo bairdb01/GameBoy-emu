@@ -442,12 +442,13 @@ public class Commands {
     }
 
 
-    /**
+    /*
      * Rotates and  Shifts
      */
     /**
      * Rotates LEFT a byte through the carry flag and returns the new byte. The MSB is shifted into the carry flag and the LSB.
      * Flags: Z=*, N=0, H=0, C=*
+     *
      * @param regs Registers containing the flags
      * @param value  the value of a byte
      * @return The shifted value of reg. The C flag is set.
@@ -479,7 +480,7 @@ public class Commands {
     /**
      * Rotates LEFT and returns a byte. The MSB is shifted into the carry flag. The carry flag is shifted into the LSB.
      * Flags: Z=*, N=0, H=0, C=*
-     * TODO BUG CHECK
+     *
      * @param regs  Registers containing the flags
      * @param value the value of a byte
      * @return The shifted value of reg. The C flag is set.
@@ -711,7 +712,7 @@ public class Commands {
     }
 
     /**
-     * Adds offset to program counter
+     * Adds signed offset to program counter
      *
      * @param regs   All registers
      * @param offset 8bit number to inc/dec the PC
@@ -758,7 +759,7 @@ public class Commands {
      ******************************************************/
 
     /**
-     * Push address of next instruction onto stack and then jump to address
+     * Push PC onto stack and then jump to address
      *
      * @param regs All registers
      * @param mmu  memory management unit

@@ -12,6 +12,7 @@ import static GameBoy.Emulator.mmu;
  * Resolution of 160 x 144, with 144 visible scanlines and 8 invisible scanlines used during the V-Blank period.
  * The current scanline is stored in adr 0xFF44.
  * It takes 456 cpu clock cycles to draw one scanline
+ * TODO Change Tile/Sprites to load only the needed row of it's bitmap, for better efficiency.
  */
 public class GPU {
     JFrame window = new JFrame("SwoleBoy");
@@ -342,7 +343,7 @@ public class GPU {
 
             // Load CHR_CODE
             int chrCode = mmu.getMemVal(tileDataAdr + blockNum) & 0xFF;
-            tile = new Tile(1, chrCode);
+            tile = new Tile(chrCode);
 
             // Check if CHR_CODE will be signed
             if (signed) {
@@ -351,10 +352,10 @@ public class GPU {
             int tileAdr = (tileMapAdr + chrCode * 16);
 
             // Load Bitmap from tile address
-            byte[] bitmap = new byte[2];  // 16 because 2 bytes create 1 row. 16/2 = 8 rows
-            int row = (curScanline % 8) * 2;
-            bitmap[0] = mmu.getMemVal((tileAdr + row));
-            bitmap[1] = mmu.getMemVal((tileAdr + row+1));
+            byte[] bitmap = new byte[16];  // 16 because 2 bytes create 1 row. 16/2 = 8 rows
+            for (int i = 0; i < 16; i++) {
+                bitmap[i] = mmu.getMemVal((tileAdr + i));
+            }
             tile.setBitmap(bitmap);
 
             // Tile is ready to be drawn in it's 8x8 location
@@ -364,7 +365,7 @@ public class GPU {
 
     /**
      * Renders a row of sprites onto the LCD screen.
-     *
+     * TODO: Horizontal and Vertical flip flags
      * @param lcdControl The LCDC register's value.
      */
     public void renderSprites(byte lcdControl) {
@@ -381,6 +382,11 @@ public class GPU {
             byte chr_code = (byte) ((mmu.getMemVal((spriteAdr + 2)) >> 1) << 1);    // Byte 3: CHR_CODE or tile code. Odd CHR_CODES get rounded down. 1->0. 3->2.
             byte attributes = mmu.getMemVal((spriteAdr + 3));                        // Byte 4: Attribute flag - Palette, Horizontal/Vertical Flip Flag, and Priority
             int paletteSelection = (BitUtils.testBit(attributes, 4)) ? this.obp1 : this.obp0;
+            // Check for vertical flip
+            boolean yFlip = (BitUtils.testBit(attributes, 6));
+
+            // Check for horizontal flip
+            boolean xFlip = (BitUtils.testBit(attributes, 5));
 
             // Grab the colour palette
             byte objPalette = mmu.getMemVal(paletteSelection);
@@ -391,14 +397,24 @@ public class GPU {
                 palette[i / 2] = (byte) (colourBits & 0x3);
             }
 
-            // Load Bitmap row from sprite address and CHR_CODE
-            byte [] bitmap = new byte[2];
-            int row = (curScanline % height) * 2;   // Which row of the bitmap to load, 2 bytes per row
-            int tileAdr = (0x8000 + chr_code * 16);
-            bitmap[0] = mmu.getMemVal((tileAdr + row));
-            bitmap[1] = mmu.getMemVal((tileAdr + row + 1));
+            // Load Bitmap from sprite address, CHR_CODE, and flip flags
 
-            Sprite sprite = new Sprite(1, y_coord, x_coord, chr_code, attributes);
+            byte [] bitmap = new byte[height * 2];
+            int tileAdr = (0x8000 + chr_code * 16);
+            for (int i = 0; i < (2 * height); i++) { // Account of 8x8 or 8x16 sprites
+                int row = i;
+                if (yFlip) {
+                    row = height - i;
+                }
+
+                bitmap[i] = mmu.getMemVal((tileAdr + row));
+
+                if (xFlip) {
+                    bitmap[i] = BitUtils.reverseByte(bitmap[i]);
+                }
+            }
+
+            Sprite sprite = new Sprite(height, y_coord, x_coord, chr_code, attributes);
             sprite.setBitmap(bitmap);
 
             // Draw sprite
@@ -423,29 +439,6 @@ public class GPU {
             }
             mainScreenPixels[row][col + i].colour = colour;
         }
-    }
-
-    /**
-     * Loads an entire sprite's bitmap
-     * @param chr_code
-     * @param height
-     * @return
-     */
-    public byte [] loadSpriteBitmap(int chr_code, int height) {
-        byte [] bitmap = new byte[height * 2];
-        int tileAdr = (0x8000 + chr_code * 16);
-        for (int i = 0; i < (2 * height); i++) { // Account of 8x8 or 8x16 sprites
-            bitmap[i] = mmu.getMemVal((tileAdr + i));
-        }
-        return bitmap;
-    }
-
-    public byte [] loadBgTile(int tileAdr) {
-        byte[] bitmap = new byte[16];  // 16 because 2 bytes create 1 row. 16/2 = 8 rows
-        for (int i = 0; i < 16; i++) {
-            bitmap[i] = mmu.getMemVal((tileAdr + i));
-        }
-        return bitmap;
     }
 
 }

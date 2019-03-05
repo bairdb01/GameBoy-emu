@@ -131,7 +131,7 @@ public class MMU {
      * @return A byte from the corresponding address
      */
     public byte getMemVal(int adr) {
-        adr = adr & 0xFFFF;
+        adr &= 0xFFFF;
         if ((adr >= 0xA000) && (adr < 0xC000)) {
             return ramBanks[(adr - 0xA000) + (currentRAMBank * 0x2000)];
         } else {
@@ -384,8 +384,8 @@ public class MMU {
     public void setMemVal(int adr, short val) {
         byte upperByte = (byte) ((val & 0xFF00) >> 8);
         byte lowerByte = (byte) (val & 0xFF);
-        setMemVal(adr & 0xFFFF, upperByte);
-        setMemVal((adr - 1) & 0xFFFF, lowerByte);
+        setMemVal(adr, upperByte);
+        setMemVal((adr - 1), lowerByte);
     }
 
     /**
@@ -395,7 +395,6 @@ public class MMU {
      * @param val 16 bit value
      */
     public void push(int adr, short val) {
-        adr &= 0xFFFF;
         setMemVal(adr-1, val);
     }
 
@@ -406,8 +405,8 @@ public class MMU {
      * @return The popped 16 bit value.
      */
     public short pop(int adr) {
-        byte valLower = getMemVal(adr & 0xFFFF);
-        byte valUpper = getMemVal((adr + 1) & 0xFFFF);
+        byte valLower = getMemVal(adr);
+        byte valUpper = getMemVal((adr + 1));
         return BitUtils.mergeBytes(valUpper, valLower);
     }
 
@@ -514,18 +513,19 @@ public class MMU {
      * @param val Value to write to address.
      */
     public void handleBanking(int adr, byte val) {
+        adr &= 0xFFFF;
         // Handles RAM/ROM bank selections
-        if (adr >= 0 && adr < 0x2000) {
+        if (adr < 0x2000) {
             if (usesMBC2 || usesMBC1) {
                 enableERAMCheck(adr, val);
             }
-        } else if (adr >= 0x2000 && adr < 0x4000) {
+        } else if (adr < 0x4000) {
             // ROM Bank change
             if (usesMBC2 || usesMBC1) {
                 // LowRom Bank
                 romBankChange(adr, val);
             }
-        } else if (adr >= 0x4000 && adr < 0x6000) {
+        } else if (adr < 0x6000) {
             // No RAM bank in mbc2. Always use ram bank 0
             if (usesMBC1) {
                 if (romBanking) {
@@ -535,7 +535,7 @@ public class MMU {
                     ramBankChange(val);
                 }
             }
-        } else if (adr >= 0x6000 && adr < 0x8000) {
+        } else if (adr < 0x8000) {
             romRamModeSwitch(val);
         }
     }
@@ -569,6 +569,7 @@ public class MMU {
      * @param val Byte value of data to be written to an address
      */
     private void romBankChange(int adr, byte val) {
+        adr &= 0xFFFF;
         if (adr >= 0x2000 && adr < 0x4000) {
             // ROM bank changing
             if (usesMBC2) {
@@ -710,7 +711,7 @@ public class MMU {
      *               from. Starting memory address = offset << 8, since all start address are 0x0000, 0x0100, .., 0xFF00
      */
     private void DMATransfer(byte offset) {
-        int startAdr = (offset << 8);
+        int startAdr = ((offset & 0xFF) << 8);
         for (int i = 0; i < 0xA0; i++) {
             setMemVal((0xFE00 + i), getMemVal((startAdr + i)));
         }
