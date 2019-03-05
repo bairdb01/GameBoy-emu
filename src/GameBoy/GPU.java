@@ -243,7 +243,7 @@ public class GPU {
             // Request interrupt
             mmu.setMemVal(this.stat, (byte) ((lcdStatus & 0xFB) + 4));
             if (BitUtils.testBit(lcdStatus, 6)) {
-                Interrupts.requestInterrupt(mmu, new Interrupt("LCD Interrupt", "Coincidence (0xFF44 == 0xFF45)", 2));
+                Interrupts.requestInterrupt(mmu, new Interrupt("LCD Interrupt", "Coincidence (0xFF44 == 0xFF45)", 1));
             }
         } else {
             // Clear coincidence flag

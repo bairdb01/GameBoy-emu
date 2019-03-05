@@ -1,5 +1,7 @@
 package GameBoy;
 
+import java.util.Scanner;
+
 /**
  * Executes the GameBoy emulator
  * TODO: Audio
@@ -11,14 +13,18 @@ public class Emulator {
     static CPU cpu = new CPU();
     static MMU mmu = new MMU();    // memory management unit
     static Registers regs = new Registers();
-//    static Debugger debugger = new Debugger(mmu, regs);
+    static Debugger debugger = new Debugger(mmu, regs);
+    static boolean debug = true;
 
     public static void main(String[] args) {
         String filename = "tetris.gb";
 //        String filename = "C:\\Users\\Ben\\Dropbox\\GameBoy\\test-roms\\cpu_instrs\\individual\\03-op sp,hl.gb";
+//        String filename = "/Users/ben/Dropbox/GameBoy/test-roms/cpu_instrs/cpu_instrs.gb";
+//        String filename = "/Users/ben/Dropbox/GameBoy/test-roms/cpu_instrs/individual/01-special.gb";
 
         // Load ROM
         mmu.load(filename);
+        regs.setPC((short)0x100);
 
 //        test();
 
@@ -36,9 +42,17 @@ public class Emulator {
      */
     private static void step() {
         int cycles = cpu.runNextOpCode();
-//        if (debugger.isDisplayable()) debugger.draw();
+        if (debug && debugger.isDisplayable()) {
+            Scanner s = new Scanner(System.in);
+            debugger.draw();
+//            s.nextLine();
+        }
 
         cpu.clockCycles += cycles;
+
+        if (mmu.getMemVal(0xFF02) == (byte) 0x81) {
+            System.out.println(mmu.getMemVal(0xFF01) & 0xFF);
+        }
 
         // Timer updates
         mmu.updateTimers(cycles);

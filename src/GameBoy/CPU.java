@@ -1,5 +1,7 @@
 package GameBoy;
 
+import java.util.Scanner;
+
 import static GameBoy.Emulator.mmu;
 import static GameBoy.Emulator.regs;
 
@@ -48,6 +50,11 @@ public class CPU {
             opcode = 0xCB00 + opcode;   // 0xCBnn
         }
 
+        if (Emulator.debug) {
+            System.out.print("---\n| Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");
+        }
+
+
         // Load arguments for opcode
         int numArgs = opcodes.getNumArgs(opcode);
         for (int i = 0; i < numArgs; i++) {
@@ -55,13 +62,7 @@ public class CPU {
             regs.incPC();
         }
 
-//        if ((regs.getPC() & 0xFFFF) == 0x0221) {
-//            System.out.print("");
-//            debug = true;
-//        }
-
-        if (debug) {
-            System.out.print("---\n| Opcode: " + Integer.toHexString(opcode) + " " + opcodes.getName(opcode) + " ");   // Debug print out
+        if (Emulator.debug) {
             for (int i : args) {
                 System.out.print(Integer.toHexString(i) + " ");
             }
@@ -77,5 +78,4 @@ public class CPU {
         return opcodes.execute(opcode, regs, mmu, args);
     }
 
-    boolean debug = true;
 }
