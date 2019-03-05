@@ -26,4 +26,21 @@ public class BitUtils {
     static short mergeBytes(byte upper, byte lower) {
         return (short) ((upper << 8) + (lower & 0xFF));
     }
+
+    static byte reverseByte(byte b) {
+
+        byte shiftedByte = b;
+
+        // Shift
+        for (int i = 0; i < 7; i++) {
+            // Shift left 1 byte
+            byte msb = (byte) ((b >> 7) & 0x1);
+            shiftedByte = (byte) (b << 1);
+
+            // Put MSB into LSB
+            shiftedByte += msb;
+        }
+
+        return shiftedByte;
+    }
 }

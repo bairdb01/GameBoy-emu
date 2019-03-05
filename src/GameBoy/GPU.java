@@ -365,7 +365,7 @@ public class GPU {
 
     /**
      * Renders a row of sprites onto the LCD screen.
-     *
+     * TODO: Horizontal and Vertical flip flags
      * @param lcdControl The LCDC register's value.
      */
     public void renderSprites(byte lcdControl) {
@@ -382,6 +382,11 @@ public class GPU {
             byte chr_code = (byte) ((mmu.getMemVal((spriteAdr + 2)) >> 1) << 1);    // Byte 3: CHR_CODE or tile code. Odd CHR_CODES get rounded down. 1->0. 3->2.
             byte attributes = mmu.getMemVal((spriteAdr + 3));                        // Byte 4: Attribute flag - Palette, Horizontal/Vertical Flip Flag, and Priority
             int paletteSelection = (BitUtils.testBit(attributes, 4)) ? this.obp1 : this.obp0;
+            // Check for vertical flip
+            boolean yFlip = (BitUtils.testBit(attributes, 6));
+
+            // Check for horizontal flip
+            boolean xFlip = (BitUtils.testBit(attributes, 5));
 
             // Grab the colour palette
             byte objPalette = mmu.getMemVal(paletteSelection);
@@ -392,11 +397,21 @@ public class GPU {
                 palette[i / 2] = (byte) (colourBits & 0x3);
             }
 
-            // Load Bitmap from sprite address and CHR_CODE
+            // Load Bitmap from sprite address, CHR_CODE, and flip flags
+
             byte [] bitmap = new byte[height * 2];
             int tileAdr = (0x8000 + chr_code * 16);
             for (int i = 0; i < (2 * height); i++) { // Account of 8x8 or 8x16 sprites
-                bitmap[i] = mmu.getMemVal((tileAdr + i));
+                int row = i;
+                if (yFlip) {
+                    row = height - i;
+                }
+
+                bitmap[i] = mmu.getMemVal((tileAdr + row));
+
+                if (xFlip) {
+                    bitmap[i] = BitUtils.reverseByte(bitmap[i]);
+                }
             }
 
             Sprite sprite = new Sprite(height, y_coord, x_coord, chr_code, attributes);

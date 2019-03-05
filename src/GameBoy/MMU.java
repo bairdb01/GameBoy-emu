@@ -74,54 +74,54 @@ public class MMU {
 
 
     public MMU() {
-//        try {
-//            RandomAccessFile fp = new RandomAccessFile("res/DMG_ROM.bin", "r");
-//            // First 16k is always stored in memory $0000 - $3FFF after booting
-//            byte b;
-//            for (int i = 0; i < 0xFF; i++) {
-//                b = fp.readByte();
-//                mem[i] = b;
-//            }
-//        } catch (EOFException eof) {
-//            System.err.println("End of file reached before loading home bank.");
-//        } catch (IOException ioe) {
-//            System.err.println("Error reading file");
-//        }
+        try {
+            RandomAccessFile fp = new RandomAccessFile("res/DMG_ROM.bin", "r");
+            // First 16k is always stored in memory $0000 - $3FFF after booting
+            byte b;
+            for (int i = 0; i < 0xFF; i++) {
+                b = fp.readByte();
+                mem[i] = b;
+            }
+        } catch (EOFException eof) {
+            System.err.println("End of file reached before loading home bank.");
+        } catch (IOException ioe) {
+            System.err.println("Error reading file");
+        }
 
         // Setting up registers post boot up sequence
-        setMemVal(0xFF05, (byte) 0);
-        setMemVal(0xFF06, (byte) 0);
-        setMemVal(0xFF07, (byte) 0);
-        setMemVal(0xFF10, (byte) 0x80);
-        setMemVal(0xFF11, (byte) 0xBF);
-        setMemVal(0xFF12, (byte) 0xF3);
-        setMemVal(0xFF14, (byte) 0xBF);
-        setMemVal(0xFF16, (byte) 0x3F);
-        setMemVal(0xFF17, (byte) 0x00);
-        setMemVal(0xFF19, (byte) 0xBF);
-        setMemVal(0xFF1A, (byte) 0x7F);
-        setMemVal(0xFF1B, (byte) 0xFF);
-        setMemVal(0xFF1C, (byte) 0x9F);
-        setMemVal(0xFF1E, (byte) 0xBF);
-        setMemVal(0xFF20, (byte) 0xFF);
-        setMemVal(0xFF21, (byte) 0x00);
-        setMemVal(0xFF22, (byte) 0x00);
-        setMemVal(0xFF23, (byte) 0xBF);
-        setMemVal(0xFF24, (byte) 0x77);
-        setMemVal(0xFF25, (byte) 0xF3);
-        setMemVal(0xFF26, (byte) 0xF1);
-        setMemVal(0xFF26, (byte) 0xF1);
-        setMemVal(0xFF40, (byte) 0x91);
-        setMemVal(0xFF41, (byte) 0x85);
-        setMemVal(0xFF42, (byte) 0x00);
-        setMemVal(0xFF43, (byte) 0x00);
-        setMemVal(0xFF45, (byte) 0x00);
-        setMemVal(0xFF47, (byte) 0xFC);
-        setMemVal(0xFF48, (byte) 0xFF);
-        setMemVal(0xFF49, (byte) 0xFF);
-        setMemVal(0xFF4A, (byte) 0x00);
-        setMemVal(0xFF4B, (byte) 0x00);
-        setMemVal(0xFFFF, (byte) 0x00);
+//        setMemVal(0xFF05, (byte) 0);
+//        setMemVal(0xFF06, (byte) 0);
+//        setMemVal(0xFF07, (byte) 0);
+//        setMemVal(0xFF10, (byte) 0x80);
+//        setMemVal(0xFF11, (byte) 0xBF);
+//        setMemVal(0xFF12, (byte) 0xF3);
+//        setMemVal(0xFF14, (byte) 0xBF);
+//        setMemVal(0xFF16, (byte) 0x3F);
+//        setMemVal(0xFF17, (byte) 0x00);
+//        setMemVal(0xFF19, (byte) 0xBF);
+//        setMemVal(0xFF1A, (byte) 0x7F);
+//        setMemVal(0xFF1B, (byte) 0xFF);
+//        setMemVal(0xFF1C, (byte) 0x9F);
+//        setMemVal(0xFF1E, (byte) 0xBF);
+//        setMemVal(0xFF20, (byte) 0xFF);
+//        setMemVal(0xFF21, (byte) 0x00);
+//        setMemVal(0xFF22, (byte) 0x00);
+//        setMemVal(0xFF23, (byte) 0xBF);
+//        setMemVal(0xFF24, (byte) 0x77);
+//        setMemVal(0xFF25, (byte) 0xF3);
+//        setMemVal(0xFF26, (byte) 0xF1);
+//        setMemVal(0xFF26, (byte) 0xF1);
+//        setMemVal(0xFF40, (byte) 0x91);
+//        setMemVal(0xFF41, (byte) 0x85);
+//        setMemVal(0xFF42, (byte) 0x00);
+//        setMemVal(0xFF43, (byte) 0x00);
+//        setMemVal(0xFF45, (byte) 0x00);
+//        setMemVal(0xFF47, (byte) 0xFC);
+//        setMemVal(0xFF48, (byte) 0xFF);
+//        setMemVal(0xFF49, (byte) 0xFF);
+//        setMemVal(0xFF4A, (byte) 0x00);
+//        setMemVal(0xFF4B, (byte) 0x00);
+//        setMemVal(0xFFFF, (byte) 0x00);
     }
 
     /**
@@ -131,7 +131,7 @@ public class MMU {
      * @return A byte from the corresponding address
      */
     public byte getMemVal(int adr) {
-        adr = adr & 0xFFFF;
+        adr &= 0xFFFF;
         if ((adr >= 0xA000) && (adr < 0xC000)) {
             return ramBanks[(adr - 0xA000) + (currentRAMBank * 0x2000)];
         } else {
@@ -236,6 +236,7 @@ public class MMU {
      * @param val 8bit value to store
      */
     public void setMemVal(int adr, byte val) {
+        adr &= 0xFFFF;
         if (adr < 0x8000) {
             handleBanking(adr, val);
         } else if ((adr >= 0xA000 && adr < 0xC000)) {
@@ -382,8 +383,8 @@ public class MMU {
     public void setMemVal(int adr, short val) {
         byte upperByte = (byte) ((val & 0xFF00) >> 8);
         byte lowerByte = (byte) (val & 0xFF);
-        setMemVal(adr & 0xFFFF, upperByte);
-        setMemVal((adr - 1) & 0xFFFF, lowerByte);
+        setMemVal(adr, upperByte);
+        setMemVal((adr - 1), lowerByte);
     }
 
     /**
@@ -393,7 +394,6 @@ public class MMU {
      * @param val 16 bit value
      */
     public void push(int adr, short val) {
-        adr &= 0xFFFF;
         setMemVal(adr-1, val);
     }
 
@@ -404,8 +404,8 @@ public class MMU {
      * @return The popped 16 bit value.
      */
     public short pop(int adr) {
-        byte valLower = getMemVal(adr & 0xFFFF);
-        byte valUpper = getMemVal((adr + 1) & 0xFFFF);
+        byte valLower = getMemVal(adr);
+        byte valUpper = getMemVal((adr + 1));
         return BitUtils.mergeBytes(valUpper, valLower);
     }
 
@@ -512,18 +512,19 @@ public class MMU {
      * @param val Value to write to address.
      */
     public void handleBanking(int adr, byte val) {
+        adr &= 0xFFFF;
         // Handles RAM/ROM bank selections
-        if (adr >= 0 && adr < 0x2000) {
+        if (adr < 0x2000) {
             if (usesMBC2 || usesMBC1) {
                 enableERAMCheck(adr, val);
             }
-        } else if (adr >= 0x2000 && adr < 0x4000) {
+        } else if (adr < 0x4000) {
             // ROM Bank change
             if (usesMBC2 || usesMBC1) {
                 // LowRom Bank
                 romBankChange(adr, val);
             }
-        } else if (adr >= 0x4000 && adr < 0x6000) {
+        } else if (adr < 0x6000) {
             // No RAM bank in mbc2. Always use ram bank 0
             if (usesMBC1) {
                 if (romBanking) {
@@ -533,7 +534,7 @@ public class MMU {
                     ramBankChange(val);
                 }
             }
-        } else if (adr >= 0x6000 && adr < 0x8000) {
+        } else if (adr < 0x8000) {
             romRamModeSwitch(val);
         }
     }
@@ -567,6 +568,7 @@ public class MMU {
      * @param val Byte value of data to be written to an address
      */
     private void romBankChange(int adr, byte val) {
+        adr &= 0xFFFF;
         if (adr >= 0x2000 && adr < 0x4000) {
             // ROM bank changing
             if (usesMBC2) {
@@ -708,7 +710,7 @@ public class MMU {
      *               from. Starting memory address = offset << 8, since all start address are 0x0000, 0x0100, .., 0xFF00
      */
     private void DMATransfer(byte offset) {
-        int startAdr = (offset << 8);
+        int startAdr = ((offset & 0xFF) << 8);
         for (int i = 0; i < 0xA0; i++) {
             setMemVal((0xFE00 + i), getMemVal((startAdr + i)));
         }
