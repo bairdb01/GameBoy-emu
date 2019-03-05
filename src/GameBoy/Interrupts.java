@@ -80,6 +80,9 @@ public class Interrupts {
 
         // Set program counter to interrupt handler
         regs.setPC(ir.getServiceAdr());
+
+        interrupts[ir.getPriority()] = new Interrupt(); // Clears interrupt
+        Interrupts.masterInterruptSwitch = true;
     }
 
     static public boolean isMasterEnabled() {

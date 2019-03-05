@@ -160,49 +160,49 @@ public class GPU {
      * an interrupt will be attempted.
      *
      * @param mode Mode to change the lcd to ( 0 - 3)
-     * @param mask Bitmasks LCD status to use remaining bits as mode
      */
-    public void setLCDMode(byte mode, int mask) {
+    public void setLCDMode(byte mode) {
         byte lcdStatus = mmu.getMemVal(this.stat);
-        byte lcdMode = (byte) (lcdStatus & mask);
+        byte lcdMode = (byte) (lcdStatus & 0x3);
 
         if (lcdMode != mode) {
-            // When LCD status changes to 0, 1, or 2 an LCD interrupt Request can happen
-            if (mode == (byte) 0) {
+            // When LCD status changes to 0, 1, or 2 an LCD interrupt Request can happen, set bits in LCD stat
+            if (mode == 0) {
                 if (BitUtils.testBit(lcdStatus, 3)) {
                     Interrupts.requestInterrupt(mmu, new Interrupt("LCD Interrupt", "Switched to mode 0 (H-Blank)", 1));
                 }
-                mmu.setMemVal(this.stat, (byte) (((lcdStatus & 0xFC) + (mode & 3))));
-            } else if (mode == (byte) 1) {
+                mmu.setMemVal(this.stat, (byte) (((lcdStatus & 0x4) + 0xB)));
+            } else if (mode == 1) {
                 if (BitUtils.testBit(lcdStatus, 4)) {
                     Interrupts.requestInterrupt(mmu, new Interrupt("LCD Interrupt", "Switched to mode 1 (V-Blank)", 1));
                 }
-                mmu.setMemVal(this.stat, (byte) (((lcdStatus & 0xFC) + (mode & 3))));
-            } else if (mode == (byte) 2) {
+                mmu.setMemVal(this.stat, (byte) (((lcdStatus & 0x4) + 0x11)));
+            } else if (mode == 2) {
                 if (BitUtils.testBit(lcdStatus, 5)) {
                     Interrupts.requestInterrupt(mmu, new Interrupt("LCD Interrupt", "Switched to Mode 2 (OAM)", 1));
                 }
-                mmu.setMemVal(this.stat, (byte) (((lcdStatus & 0xFC) + (mode & 3))));
-            } else if (mode == (byte) 4) {
-                if (BitUtils.testBit(lcdStatus, 6)) {
-                    Interrupts.requestInterrupt(mmu, new Interrupt("LCD Interrupt", "Coincidence (0xFF44 == 0xFF45)", 1));
-                }
-                mmu.setMemVal(this.stat, (byte) (((lcdStatus & 0xFB) + (mode & 4))));
+                mmu.setMemVal(this.stat, (byte) (((lcdStatus & 0x4) + 0x23)));
+            } else if (mode == 3) {
+                mmu.setMemVal(this.stat, (byte) (lcdStatus & 0xFC + 3));
             }
         }
     }
 
     /**
-     * Updates the LCD status register and requests interruptes if applicable.
+     * Updates the LCD status register and requests interrupts if applicable.
      *
      */
     private void updateLCDStatus() {
         // If LCD is disabled, mode must be 1, clock cycle counter and current scanline must be reset
         if (!isLCDEnabled()) {
-            setLCDMode((byte) 1, 0x3);
+            setLCDMode((byte) 1);
             clockCounter = 0;
             mmu.setMemVal(this.ly, (byte) 0);
             return;
+        }
+        int curScanline = (mmu.getMemVal(ly) & 0xFF);
+        if ( curScanline >= 144) {
+            setLCDMode((byte) 1);
         }
 
         // Sets the mode of the LCD status register
@@ -210,16 +210,16 @@ public class GPU {
         int mode3Length = 172;
         if (clockCounter < mode2Length) {
             // Searching OAM RAM (OAM being used by LCD controller, inaccessible to CPU) (Mode 2)
-            setLCDMode((byte) 2, 0x3);
+            setLCDMode((byte) 2);
         } else if (clockCounter < (mode2Length + mode3Length)) {
             // Transferring data to LCD driver. (Mode 3)
-            setLCDMode((byte) 3, 0x3);
+            setLCDMode((byte) 3);
         } else {
             // Enable CPU access to all display RAM (H-Blank period)
-            setLCDMode((byte) 0, 0x3);
+            setLCDMode((byte) 0);
         }
 
-        // Perform coincidence check
+        // Perform coincidence check (ly = lyc)
         LCDCoincidenceCheck();
     }
 
@@ -237,10 +237,18 @@ public class GPU {
 
         // Bit 2 of stat is set to 1 if 0xFF44 == 0xFF45, else set to 0
         byte curScanline = mmu.getMemVal(this.ly);
-        int coincidenceFlag = (curScanline == mmu.getMemVal(this.lyc)) ? 0x4 : 0;
-        mmu.setMemVal(this.stat, (byte) ((lcdStatus & 0xFB) + coincidenceFlag));
+        boolean coincidenceFlag = (curScanline == mmu.getMemVal(this.lyc));
 
-        setLCDMode((byte) 4, 0x4);
+        if (coincidenceFlag) {
+            // Request interrupt
+            mmu.setMemVal(this.stat, (byte) ((lcdStatus & 0xFB) + 4));
+            if (BitUtils.testBit(lcdStatus, 6)) {
+                Interrupts.requestInterrupt(mmu, new Interrupt("LCD Interrupt", "Coincidence (0xFF44 == 0xFF45)", 2));
+            }
+        } else {
+            // Clear coincidence flag
+            mmu.setMemVal(this.stat, (byte) ((lcdStatus & 0xFB)));
+        }
     }
 
     /**

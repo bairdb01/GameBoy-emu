@@ -250,6 +250,10 @@ public class MMU {
                     mem[adr] = val;
                     setClockFreq();
                 }
+            } else if (adr == 0xFF44) {
+                // Reset scanline if tried to write to it
+                mem[0xFF44] = 0;
+
             } else if (adr == 0xFF46) {
                 // Direct Memory Access (DMA)
                 mem[0xFF46] = val;
@@ -414,7 +418,7 @@ public class MMU {
      * Increment the scanline register
      */
     public void incScanline() {
-        setMemVal(0xFF44, (byte) (getMemVal(0xFF44) + 1));
+        mem[0xFF44]++;
 //        zram[0xFF44]++;
     }
 
