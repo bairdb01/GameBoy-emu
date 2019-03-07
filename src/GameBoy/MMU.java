@@ -30,11 +30,11 @@ public class MMU {
      * $FF00 - $FFFE is the ZERO page. Lower 64bytes is memory-mapped I/O. Upper 63 bytes is High RAM (HRAM).
      * $FFFF is a single memory-mapped I/O register.
      */
-
+    private byte[] bios = new byte[0x100];
     private byte[] mem = new byte[0x10000];
     private byte[] ramBanks = new byte[0x8000]; // Max of 4 RAM banks, 0x2000 each
 
-    RandomAccessFile cartridge; // Game cartridge file pointer
+    private String filename; // Game cartridge file pointer
 
     // Interrupt Register Toggle @ $FFFF
     private byte interruptEnabled = 0;
@@ -63,19 +63,19 @@ public class MMU {
 
 
     public MMU() {
-        try {
-            RandomAccessFile fp = new RandomAccessFile("res/DMG_ROM.bin", "r");
-            // First 16k is always stored in memory $0000 - $3FFF after booting
-            byte b;
-            for (int i = 0; i < 0xFF; i++) {
-                b = fp.readByte();
-                mem[i] = b;
-            }
-        } catch (EOFException eof) {
-            System.err.println("End of file reached before loading home bank.");
-        } catch (IOException ioe) {
-            System.err.println("Error reading file");
-        }
+//        try {
+//            RandomAccessFile fp = new RandomAccessFile("res/DMG_ROM.bin", "r");
+//            // First 16k is always stored in memory $0000 - $3FFF after booting
+//            byte b;
+//            for (int i = 0; i < 0xFF; i++) {
+//                b = fp.readByte();
+//                bios[i] = b;
+//            }
+//        } catch (EOFException eof) {
+//            System.err.println("End of file reached before loading home bank.");
+//        } catch (IOException ioe) {
+//            System.err.println("Error reading file");
+//        }
 
         // Setting up registers post boot up sequence
         setMemVal(0xFF05, (byte) 0);
@@ -121,6 +121,10 @@ public class MMU {
      */
     public byte getMemVal(int adr) {
         adr &= 0xFFFF;
+        if (Emulator.inBios && adr < 0x100) {
+            return bios[adr];
+        }
+
         if ((adr >= 0xA000) && (adr < 0xC000)) {
             return ramBanks[(adr - 0xA000) + (currentRAMBank * 0x2000)];
         } else {
@@ -140,6 +144,10 @@ public class MMU {
      */
     public void setMemVal(int adr, byte val) {
         adr &= 0xFFFF;
+        if (Emulator.inBios && adr < 0x100) {
+            return;
+        }
+
         if (adr < 0x8000) {
             handleBanking(adr, val);
         } else if ((adr >= 0xA000 && adr < 0xC000)) {
@@ -208,7 +216,7 @@ public class MMU {
     /**
      * Increment the scanline register
      */
-    public void incScanline() {
+    void incScanline() {
         mem[0xFF44]++;
 //        zram[0xFF44]++;
     }
@@ -219,58 +227,47 @@ public class MMU {
      * @param filename Relative path of ROM to load into memory
      */
     public void load(String filename) {
-        try {
-            cartridge = new RandomAccessFile(filename, "r");
-            System.out.println("Loading ROM: " + filename);
+        this.filename = filename;
+        System.out.println("Loading ROM: " + filename);
 
-            // Load homebank
-            loadHomeRom(cartridge);
+        // Load homebank
+        loadHomeRom();
 
-            // Load bank1 to store at 0x4000 - 0x7FFF
-            loadBank(cartridge, currentRomBank);
+        // Load bank1 to store at 0x4000 - 0x7FFF
+        loadBank(currentRomBank);
 
-            // State the type of MBC used
-            switch (getMemVal(0x147)) {
-                case 1:
-                case 2:
-                case 3:
-                    usesMBC1 = true;
-                    break;
-                case 5:
-                case 6:
-                    usesMBC2 = true;
-                    break;
-                default:
-                    break;
-            }
-        } catch (IOException ioErr) {
-            ioErr.printStackTrace();
-        } finally {
-            try {
-                if (cartridge != null) {
-                    cartridge.close();
-                }
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            }
+        // State the type of MBC used
+        switch (getMemVal(0x147)) {
+            case 1:
+            case 2:
+            case 3:
+                usesMBC1 = true;
+                break;
+            case 5:
+            case 6:
+                usesMBC2 = true;
+                break;
+            default:
+                break;
         }
+
         System.out.println("Loaded ROM: " + filename);
     }
 
     /**
      * Loads the home rom bank (rom0) into 0x0000 - 0x3FFF
      *
-     * @param fp A file pointer to the game cartridge.
      */
-    void loadHomeRom(RandomAccessFile fp) {
+    private void loadHomeRom() {
         // First 16k is always stored in memory $0000 - $3FFF after booting
         byte b;
         try {
-            fp.seek(0x100);
-            for (int i = 0x100; i < 0x4000; i++) {
+            RandomAccessFile fp = new RandomAccessFile(filename, "r");
+            for (int i = 0x00; i < 0x4000; i++) {
                 b = fp.readByte();
                 mem[i] = b;
             }
+            fp.close();
         } catch (EOFException eof) {
             System.err.println("End of file reached before loading home bank.");
         } catch (IOException ioe) {
@@ -278,23 +275,25 @@ public class MMU {
         }
     }
 
+
     /**
      * Loads a new rom bank into paged memory 0x4000 - 0x7FFF.
      *
-     * @param fp   The file pointer to the game cartridge.
      * @param bank The rom bank to load. Bank=0 will not be loaded.
      */
-    private void loadBank(RandomAccessFile fp, int bank) {
+    private void loadBank(int bank) {
         if (bank == 0) {
             return;
         }
         byte b;
         try {
+            RandomAccessFile fp = new RandomAccessFile(filename, "r");
             fp.seek(0x4000 * bank);
             for (int i = 0x4000 * bank; i < 0x4000 * (bank + 1); i++) {
                 b = fp.readByte();
                 mem[i] = b;
             }
+            fp.close();
         } catch (EOFException eof) {
             System.err.println("End of file reached before loading home bank.");
         } catch (IOException ioe) {
@@ -307,7 +306,7 @@ public class MMU {
      * @param adr Requested address to write to.
      * @param val Value to write to address.
      */
-    public void handleBanking(int adr, byte val) {
+    private void handleBanking(int adr, byte val) {
         adr &= 0xFFFF;
         // Handles RAM/ROM bank selections
         if (adr < 0x2000) {
@@ -373,7 +372,7 @@ public class MMU {
                     // Bank 0 never changes, trying to change it results in changing bank 1
                     currentRomBank++;
                 }
-                loadBank(cartridge, currentRomBank);
+                loadBank(currentRomBank);
             } else if (usesMBC1) {
                 // mbc1 means the lower 5bits of current rom bank is set to lower 5 bits of val
                 byte lowerFiveBits = (byte) (val & 0x1F);
@@ -381,7 +380,7 @@ public class MMU {
                 if (currentRomBank == 0) {
                     currentRomBank++;
                 }
-                loadBank(cartridge, currentRomBank);
+                loadBank(currentRomBank);
             }
         } else if (adr >= 0x4000 && adr < 0x6000) {
             // ROM/RAM bank change
@@ -392,7 +391,7 @@ public class MMU {
                 if (currentRomBank == 0) {
                     currentRomBank++;
                 }
-                loadBank(cartridge, currentRomBank);
+                loadBank(currentRomBank);
             }
         }
     }
@@ -423,7 +422,7 @@ public class MMU {
 
     /**
      * Update the timer and divider registers
-     * @param cycles
+     * @param cycles Number of cpu cycles passed
      */
     void updateTimers(int cycles) {
         // Update the divider register
