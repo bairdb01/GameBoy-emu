@@ -19,13 +19,13 @@ public class Tile {
     public Tile(){
         this.CHR_CODE = -1;
         this.bitmap = new int[height][width];
-        palette = (short) 0xFF48;
+        palette = (short) 0xFF47;
     }
 
     public Tile(int CHR_CODE) {
         this.CHR_CODE = CHR_CODE;
         this.bitmap = new int[height][width];
-        palette = (short) 0xFF48;
+        palette = (short) 0xFF47;
     }
 
     /**
@@ -36,9 +36,11 @@ public class Tile {
      */
     public void setBitmap(byte [] data) {
         for (int i = 0; i < data.length; i+=2) {
+            int row = i / 2;
             for (int j = 0; j < 8; j++) {
-                bitmap[i / 2][j] = ((data[i + 1] >> (6 - j * 2)) & 0b10); // Set upper bit of colour
-                bitmap[i / 2][j] += ((data[i] >> (7 - j * 2)) & 0b01);    // Set lower bit of colour
+                int shift = (7 - j);
+                bitmap[row][j] = ((data[i] >> (shift)) & 0b1) << 1;
+                bitmap[row][j] += ((data[i + 1] >> shift) & 0b1);
             }
         }
     }
