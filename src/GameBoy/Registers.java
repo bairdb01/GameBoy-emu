@@ -27,15 +27,15 @@ public class Registers {
 
     public Registers() {
         // Register values after a real GameBoy boots through boot ROM
-        setAF((short) 0x01B0);
-        setBC((short) 0x0013);
-        setDE((short) 0x00D8);
-        setHL((short) (0x014D));
-//        setAF((short) 0);
-//        setBC((short) 0);
-//        setDE((short) 0);
-//        setHL((short) (0));
-//        PC = 0x0000;
+//        setAF((short) 0x01B0);
+//        setBC((short) 0x0013);
+//        setDE((short) 0x00D8);
+//        setHL((short) (0x014D));
+        setAF((short) 0);
+        setBC((short) 0);
+        setDE((short) 0);
+        setHL((short) 0);
+        PC = 0x0000;
     }
 
     /*
@@ -221,6 +221,18 @@ public class Registers {
     }
 
     public String toString() {
+        String s = "";
+        s += "AF: " + String.format("0x%04X", getAF()) + " ";
+        s += "BC: " + String.format("0x%04X", getBC()) + " ";
+        s += "DE: " + String.format("0x%04X", getDE()) + " ";
+        s += "HL: " + String.format("0x%04X", getHL()) + " ";
+
+        s += "PC = " + String.format("0x%04X", getPC()) + " ";
+        s += "SP = " + String.format("0x%04X", getSP()) + " ";
+        return s;
+    }
+
+    public String stringify() {
         String s = "";
         s += "Register AF: " + String.format("0x%04X", getAF()) + "\n";
         s += "Register BC: " + String.format("0x%04X", getBC()) + "\n";
