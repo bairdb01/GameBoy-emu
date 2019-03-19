@@ -29,7 +29,7 @@ import static GameBoy.Emulator.regs;
 public class CPU {
     private Opcodes opcodes = new Opcodes();
     int clockCycles = 0;   // Number of cycles performed during each update
-    final int maxCycles = 69905;    // 1 frame per second, aim for 60fps
+    final int maxCycles = 69905;
 
 
     /**
@@ -67,9 +67,8 @@ public class CPU {
                 System.out.print(Integer.toHexString(i) + " ");
             }
             System.out.println();
-            System.out.println(regs.toString());
-            System.out.println(mmu.toString());
-            System.out.println("---");
+            System.out.println("| " + regs.toString());
+            System.out.println("| " + mmu.toString());
         }
 
 

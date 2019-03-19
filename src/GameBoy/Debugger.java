@@ -42,7 +42,7 @@ public class Debugger {
     }
 
     public void draw() {
-        regText.setText(regs.toString());
+        regText.setText(regs.stringify());
         memText.setText(mmu.stringify());
 
         window.pack();

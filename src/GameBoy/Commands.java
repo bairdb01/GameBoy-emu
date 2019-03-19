@@ -64,6 +64,7 @@ public class Commands {
 
     /**
      * Puts SP + offset into register HL
+     * Flags: Z=0, N=0, H=*, C=*
      *
      * @param regs   Registers containing H and L
      * @param offset One byte to offset SP
@@ -318,7 +319,6 @@ public class Commands {
             regs.clearHFlag();
         }
 
-
         if ((((a & 0xFFFF) + (b & 0xFFFF)) & 0x10000) == 0x10000) {
             regs.setCFlag();
         } else {
@@ -343,7 +343,7 @@ public class Commands {
         sum = (short) (sp + offset);
 
         // Setting flags
-        regs.clearZFlag();
+//        regs.clearZFlag();
         regs.clearNFlag();
 
         if ((((sp & 0xFFF) + (offset & 0xFFF)) & 0x1000) == 0x1000) {
@@ -644,8 +644,8 @@ public class Commands {
      * Shift right logically. Shift all bits right. Place 0 into MSB. LSB into C Flag.
      * Flags: Z=*, N=0, H=0, C=*
      *
-     * @param regs
-     * @param value
+     * @param regs Registers containing the flags
+     * @param value Value to shift
      * @return value is shifted. Flags in regs set.
      */
     public static byte srl(Registers regs, byte value) {

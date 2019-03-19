@@ -21,7 +21,7 @@ import java.util.PriorityQueue;
  *      corresponding interrupt bit is set to 1 to allow servicing of this particular interrupt.
  */
 public class Interrupts {
-    static boolean masterInterruptSwitch = true; // Tool used by GameBoy to enable servicing of an interrupt.
+    static boolean masterInterruptSwitch = false; // Tool used by GameBoy to enable servicing of an interrupt.
     static Interrupt[] interrupts = new Interrupt[4];
 
     /**
@@ -40,6 +40,9 @@ public class Interrupts {
 
     /**
      * Handles all interrupts if their respective flags are set.
+     *
+     * @param mmu Memory management unit
+     * @param regs Contains the stack pointer and program counter
      */
     static void handleInterrupts(MMU mmu, Registers regs) {
         // Make sure the system is allowing interrupts
@@ -68,6 +71,8 @@ public class Interrupts {
      * Services an interrupt.
      *
      * @param ir An iterrupt to service
+     * @param mmu Memory management unit
+     * @param regs Contains the stack pointer and program counter
      */
     static private void serviceInterrupt(Interrupt ir, MMU mmu, Registers regs) {
         Interrupts.masterInterruptSwitch = false;   // Need to set to true once interrupts are done

@@ -43,4 +43,8 @@ public class BitUtils {
 
         return shiftedByte;
     }
+
+    static byte getBit(byte b, int pos) {
+        return (byte) (b >> pos);
+    }
 }
